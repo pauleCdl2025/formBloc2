@@ -665,21 +665,34 @@ export default function PreAnesthesiaForm() {
   };
 
   const handleSave = async () => {
+    console.log('handleSave appelé');
     try {
       const patientNumber = formData.patient?.numeroIdentification?.trim();
+      console.log('Numéro patient:', patientNumber);
+      
       if (!patientNumber) {
         alert("Veuillez renseigner le numéro d'identification du patient pour sauvegarder.");
         return;
       }
+      
+      console.log('Tentative de sauvegarde vers Supabase...');
       const payload = { patient_number: patientNumber, data: formData };
+      console.log('Payload:', payload);
+      
       const { error } = await supabase
         .from('preanesthesia_forms')
         .upsert(payload, { onConflict: 'patient_number' });
-      if (error) throw error;
+        
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw error;
+      }
+      
+      console.log('Sauvegarde réussie');
       setSavedMessage('✓ Données sauvegardées sur Supabase');
       setTimeout(() => setSavedMessage(''), 3000);
     } catch (e: any) {
-      console.error(e);
+      console.error('Erreur dans handleSave:', e);
       alert('Erreur lors de la sauvegarde Supabase: ' + (e?.message || e));
     }
   };
