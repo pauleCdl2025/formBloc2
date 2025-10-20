@@ -2025,8 +2025,7 @@ export default function PreAnesthesiaForm() {
               rows={3}
                   value={formData.autres || ''}
               onChange={(e) => setFormData({ ...formData, autres: e.target.value })}
-            />
-              </div>
+              />
             </div>
           </div>
         </section>
