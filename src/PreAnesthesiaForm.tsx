@@ -199,7 +199,6 @@ interface FormData {
   };
   checklistHDJ: {
     asa3MalEquilibre: string;
-    apneesSommeil: string;
     conduitVehicule: string;
     rentreSeul: string;
     nonAccompagneNuit: string;
@@ -398,7 +397,6 @@ export default function PreAnesthesiaForm() {
     },
     checklistHDJ: {
       asa3MalEquilibre: '',
-      apneesSommeil: '',
       conduitVehicule: '',
       rentreSeul: '',
       nonAccompagneNuit: '',
@@ -422,9 +420,11 @@ export default function PreAnesthesiaForm() {
   // Calcule automatiquement le statut d'admission HospiDay à partir de la checklist
   const computeAdmissionHospiDay = (c: FormData['checklistHDJ']): string => {
     if (!c) return '';
+    // Utilise le score STOP-BANG au lieu de la valeur manuelle apneesSommeil
+    const apneesSommeilRisk = calculateStopBangScore() >= 3 ? 'Oui' : 'Non';
     const strongCriteriaYesCount = [
       c.asa3MalEquilibre,
-      c.apneesSommeil,
+      apneesSommeilRisk,
       c.saignementImportant,
     ].filter((v) => v === 'Oui').length;
 
@@ -461,13 +461,21 @@ export default function PreAnesthesiaForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     formData.checklistHDJ.asa3MalEquilibre,
-    formData.checklistHDJ.apneesSommeil,
     formData.checklistHDJ.conduitVehicule,
     formData.checklistHDJ.rentreSeul,
     formData.checklistHDJ.nonAccompagneNuit,
     formData.checklistHDJ.plus75Ans,
     formData.checklistHDJ.douleurNonControllable,
     formData.checklistHDJ.saignementImportant,
+    // Ajouter les champs STOP-BANG pour le calcul automatique des apnées
+    formData.stopBang.ronflement,
+    formData.stopBang.fatigue,
+    formData.stopBang.apnee,
+    formData.stopBang.pressionArterielle,
+    formData.stopBang.imc,
+    formData.stopBang.age,
+    formData.stopBang.tourCou,
+    formData.stopBang.sexe,
   ]);
 
   // Met à jour automatiquement le risque de douleurs postopératoires sévères selon le score
@@ -4042,39 +4050,22 @@ export default function PreAnesthesiaForm() {
             </div>
               </div>
 
-              {/* Souffre d'apnées du sommeil diagnostiquées */}
+              {/* Souffre d'apnées du sommeil diagnostiquées (calcul automatique) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Souffre d'apnées du sommeil diagnostiquées</label>
-                <div className="flex items-center gap-6">
-                  <label className="flex items-center">
-              <input
-                      type="radio"
-                      name="apneesSommeil"
-                      value="Non"
-                      className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
-                      checked={formData.checklistHDJ.apneesSommeil === 'Non'}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        checklistHDJ: { ...formData.checklistHDJ, apneesSommeil: e.target.value } 
-                      })}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Non</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="apneesSommeil"
-                      value="Oui"
-                      className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
-                      checked={formData.checklistHDJ.apneesSommeil === 'Oui'}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        checklistHDJ: { ...formData.checklistHDJ, apneesSommeil: e.target.value } 
-                      })}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Oui</span>
-                  </label>
-            </div>
+                <div
+                  className={`inline-flex items-center px-3 py-2 rounded-md border text-sm font-medium ${
+                    calculateStopBangScore() >= 3
+                      ? 'bg-red-50 text-red-700 border-red-300'
+                      : 'bg-green-50 text-green-700 border-green-300'
+                  }`}
+                >
+                  {calculateStopBangScore() >= 3 ? 'Oui (Score ≥ 3)' : 'Non (Score < 3)'}
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  Basé sur le score STOP-BANG: {calculateStopBangScore()}/8
+                </p>
+              </div>
               </div>
 
               {/* Conduit un véhicule après l'intervention */}
@@ -4506,7 +4497,6 @@ export default function PreAnesthesiaForm() {
               })}
             />
           </div>
-        </section>
         </section>
 
         {/* Boutons d'action */}
