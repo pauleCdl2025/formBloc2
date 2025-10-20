@@ -4026,8 +4026,8 @@ export default function PreAnesthesiaForm() {
           </div>
         </section>
 
-        {/* Check-list Admission Hôpital de Jour */}
-        <section className="mb-8">
+         {/* Check-list Admission Hôpital de Jour */}
+         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-[#1e3a8a] border-b-2 border-[#0ea5e9] pb-2 mb-4">
             Check-list Admission Hôpital de Jour
           </h2>
@@ -4037,11 +4037,6 @@ export default function PreAnesthesiaForm() {
               <h3 className="text-lg font-semibold text-[#1e3a8a] bg-[#0ea5e9] text-white px-4 py-2 rounded-md">
                 12. Checklist admission HospiDay
               </h3>
-              <button className="text-[#0ea5e9] hover:text-[#0284c7] transition">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-              </button>
             </div>
 
             <div className="space-y-4">
@@ -4050,7 +4045,7 @@ export default function PreAnesthesiaForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">ASA 3 mal équilibré</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center">
-              <input
+                    <input
                       type="radio"
                       name="asa3MalEquilibre"
                       value="Non"
@@ -4077,7 +4072,7 @@ export default function PreAnesthesiaForm() {
                     />
                     <span className="ml-2 text-sm text-gray-700">Oui</span>
                   </label>
-            </div>
+                </div>
               </div>
 
               {/* Souffre d'apnées du sommeil diagnostiquées (calcul automatique) */}
@@ -4095,7 +4090,6 @@ export default function PreAnesthesiaForm() {
                 <p className="mt-2 text-xs text-gray-500">
                   Basé sur le score STOP-BANG: {calculateStopBangScore()}/8
                 </p>
-            </div>
               </div>
 
               {/* Conduit un véhicule après l'intervention */}
@@ -4103,7 +4097,7 @@ export default function PreAnesthesiaForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Conduit un véhicule après l'intervention</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center">
-              <input
+                    <input
                       type="radio"
                       name="conduitVehicule"
                       value="Non"
@@ -4130,7 +4124,7 @@ export default function PreAnesthesiaForm() {
                     />
                     <span className="ml-2 text-sm text-gray-700">Oui</span>
                   </label>
-            </div>
+                </div>
               </div>
 
               {/* Rentre seul à son domicile */}
@@ -4138,7 +4132,7 @@ export default function PreAnesthesiaForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Rentre seul à son domicile</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center">
-              <input
+                    <input
                       type="radio"
                       name="rentreSeul"
                       value="Non"
@@ -4339,7 +4333,6 @@ export default function PreAnesthesiaForm() {
                 })}
               />
             </div>
-            </div>
           </div>
         </section>
 
@@ -4517,7 +4510,7 @@ export default function PreAnesthesiaForm() {
           {/* Conclusion textuelle */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion</label>
-          <textarea
+            <textarea
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
               rows={8}
               placeholder="Synthèse, recommandations anesthésiques, préparation préopératoire, classification ASA..."
