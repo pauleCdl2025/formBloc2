@@ -580,6 +580,7 @@ export default function PreAnesthesiaForm() {
     return age;
   };
 
+  // Fonction de calcul IMC (utilisée dans le useEffect)
   const calculateIMC = (poids: string, taille: string) => {
     const p = parseFloat(poids);
     const t = parseFloat(taille) / 100;

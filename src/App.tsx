@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import PreAnesthesiaForm from './PreAnesthesiaForm'
 
 function App() {
