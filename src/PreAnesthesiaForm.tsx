@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from './lib/supabaseClient';
 import { Plus, Trash2, Save, Printer, FileText, Upload } from 'lucide-react';
 
 interface PatientInfo {
@@ -529,24 +530,42 @@ export default function PreAnesthesiaForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.parametresPhysiques.poids, formData.parametresPhysiques.taille]);
 
-  // Charger les données depuis localStorage au montage du composant
+  // Charger les données depuis Supabase au montage si un numéro patient est présent
   useEffect(() => {
-    const savedData = localStorage.getItem('preAnesthesiaFormData');
-    if (savedData) {
+    const load = async () => {
       try {
-        const parsed = JSON.parse(savedData);
-        setFormData(parsed);
+        const patientNumber = formData.patient?.numeroIdentification?.trim();
+        if (!patientNumber) return;
+        const { data, error } = await supabase
+          .from('preanesthesia_forms')
+          .select('data')
+          .eq('patient_number', patientNumber)
+          .maybeSingle();
+        if (error) throw error;
+        if (data?.data) setFormData(data.data);
       } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
+        console.error('Erreur lors du chargement Supabase:', error);
       }
-    }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sauvegarder automatiquement dans localStorage
+  // Sauvegarder automatiquement vers Supabase (debounce)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      localStorage.setItem('preAnesthesiaFormData', JSON.stringify(formData));
-    }, 1000);
+    const timer = setTimeout(async () => {
+      try {
+        const patientNumber = formData.patient?.numeroIdentification?.trim();
+        if (!patientNumber) return;
+        const payload = { patient_number: patientNumber, data: formData };
+        const { error } = await supabase
+          .from('preanesthesia_forms')
+          .upsert(payload, { onConflict: 'patient_number' });
+        if (error) throw error;
+      } catch (error) {
+        console.error('Autosave Supabase error:', error);
+      }
+    }, 1500);
     return () => clearTimeout(timer);
   }, [formData]);
 
@@ -636,10 +655,24 @@ export default function PreAnesthesiaForm() {
     });
   };
 
-  const handleSave = () => {
-    localStorage.setItem('preAnesthesiaFormData', JSON.stringify(formData));
-    setSavedMessage('✓ Données sauvegardées avec succès');
-    setTimeout(() => setSavedMessage(''), 3000);
+  const handleSave = async () => {
+    try {
+      const patientNumber = formData.patient?.numeroIdentification?.trim();
+      if (!patientNumber) {
+        alert("Veuillez renseigner le numéro d'identification du patient pour sauvegarder.");
+        return;
+      }
+      const payload = { patient_number: patientNumber, data: formData };
+      const { error } = await supabase
+        .from('preanesthesia_forms')
+        .upsert(payload, { onConflict: 'patient_number' });
+      if (error) throw error;
+      setSavedMessage('✓ Données sauvegardées sur Supabase');
+      setTimeout(() => setSavedMessage(''), 3000);
+    } catch (e: any) {
+      console.error(e);
+      alert('Erreur lors de la sauvegarde Supabase: ' + (e?.message || e));
+    }
   };
 
   const handleReset = () => {
