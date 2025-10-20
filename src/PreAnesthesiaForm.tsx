@@ -811,6 +811,7 @@ export default function PreAnesthesiaForm() {
             </div>
             <h1 className="text-3xl font-bold text-[#1e3a8a] mb-2">Formulaire de Consultation Pré-Anesthésique</h1>
           </div>
+        </section>
 
         {/* Informations Patient */}
         <section className="mb-8">
