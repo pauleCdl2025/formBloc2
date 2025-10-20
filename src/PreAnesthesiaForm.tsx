@@ -690,7 +690,7 @@ export default function PreAnesthesiaForm() {
       
       console.log('Sauvegarde réussie');
       setSavedMessage('✓ Données sauvegardées sur Supabase');
-      setTimeout(() => setSavedMessage(''), 3000);
+    setTimeout(() => setSavedMessage(''), 3000);
     } catch (e: any) {
       console.error('Erreur dans handleSave:', e);
       alert('Erreur lors de la sauvegarde Supabase: ' + (e?.message || e));
@@ -4078,7 +4078,7 @@ export default function PreAnesthesiaForm() {
                 <p className="mt-2 text-xs text-gray-500">
                   Basé sur le score STOP-BANG: {calculateStopBangScore()}/8
                 </p>
-              </div>
+            </div>
               </div>
 
               {/* Conduit un véhicule après l'intervention */}
