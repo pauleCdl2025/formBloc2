@@ -675,6 +675,22 @@ export default function PreAnesthesiaForm() {
         return;
       }
       
+      console.log('Test de connexion Supabase...');
+      
+      // Test simple de connexion
+      const { data: testData, error: testError } = await supabase
+        .from('preanesthesia_forms')
+        .select('count')
+        .limit(1);
+        
+      if (testError) {
+        console.error('Erreur de test Supabase:', testError);
+        alert('Erreur de connexion Supabase: ' + testError.message);
+        return;
+      }
+      
+      console.log('Connexion Supabase OK, testData:', testData);
+      
       console.log('Tentative de sauvegarde vers Supabase...');
       const payload = { patient_number: patientNumber, data: formData };
       console.log('Payload:', payload);
@@ -2025,7 +2041,7 @@ export default function PreAnesthesiaForm() {
               rows={3}
                   value={formData.autres || ''}
               onChange={(e) => setFormData({ ...formData, autres: e.target.value })}
-              />
+            />
             </div>
           </div>
         </section>
