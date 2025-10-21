@@ -706,7 +706,7 @@ export default function PreAnesthesiaForm() {
       
       console.log('Sauvegarde réussie');
       setSavedMessage('✓ Données sauvegardées sur Supabase');
-    setTimeout(() => setSavedMessage(''), 3000);
+      setTimeout(() => setSavedMessage(''), 5000);
     } catch (e: any) {
       console.error('Erreur dans handleSave:', e);
       alert('Erreur lors de la sauvegarde Supabase: ' + (e?.message || e));
@@ -4026,8 +4026,8 @@ export default function PreAnesthesiaForm() {
           </div>
         </section>
 
-         {/* Check-list Admission Hôpital de Jour */}
-         <section className="mb-8">
+        {/* Check-list Admission Hôpital de Jour */}
+        <section className="mb-8">
           <h2 className="text-2xl font-semibold text-[#1e3a8a] border-b-2 border-[#0ea5e9] pb-2 mb-4">
             Check-list Admission Hôpital de Jour
           </h2>
@@ -4045,7 +4045,7 @@ export default function PreAnesthesiaForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">ASA 3 mal équilibré</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center">
-                    <input
+              <input
                       type="radio"
                       name="asa3MalEquilibre"
                       value="Non"
@@ -4072,7 +4072,7 @@ export default function PreAnesthesiaForm() {
                     />
                     <span className="ml-2 text-sm text-gray-700">Oui</span>
                   </label>
-                </div>
+            </div>
               </div>
 
               {/* Souffre d'apnées du sommeil diagnostiquées (calcul automatique) */}
@@ -4086,7 +4086,7 @@ export default function PreAnesthesiaForm() {
                   }`}
                 >
                   {calculateStopBangScore() >= 3 ? 'Oui (Score ≥ 3)' : 'Non (Score < 3)'}
-                </div>
+            </div>
                 <p className="mt-2 text-xs text-gray-500">
                   Basé sur le score STOP-BANG: {calculateStopBangScore()}/8
                 </p>
@@ -4097,7 +4097,7 @@ export default function PreAnesthesiaForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Conduit un véhicule après l'intervention</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center">
-                    <input
+              <input
                       type="radio"
                       name="conduitVehicule"
                       value="Non"
@@ -4124,7 +4124,7 @@ export default function PreAnesthesiaForm() {
                     />
                     <span className="ml-2 text-sm text-gray-700">Oui</span>
                   </label>
-                </div>
+            </div>
               </div>
 
               {/* Rentre seul à son domicile */}
@@ -4132,7 +4132,7 @@ export default function PreAnesthesiaForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Rentre seul à son domicile</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center">
-                    <input
+              <input
                       type="radio"
                       name="rentreSeul"
                       value="Non"
@@ -4510,7 +4510,7 @@ export default function PreAnesthesiaForm() {
           {/* Conclusion textuelle */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion</label>
-            <textarea
+          <textarea
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
               rows={8}
               placeholder="Synthèse, recommandations anesthésiques, préparation préopératoire, classification ASA..."
