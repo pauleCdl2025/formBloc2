@@ -96,8 +96,7 @@ export default function FormManager() {
               className="h-16 w-auto"
             />
             <div>
-              <h1 className="text-3xl font-bold text-[#1e3a8a]">Centre Diagnostic de Libreville</h1>
-              <p className="text-gray-600 mt-2">Système de gestion des formulaires médicaux</p>
+              <p className="text-gray-600">Système de gestion des formulaires médicaux</p>
             </div>
           </div>
         </div>
