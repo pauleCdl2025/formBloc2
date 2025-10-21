@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stethoscope, Heart, Shield, FileCheck } from 'lucide-react';
+import { Stethoscope, Heart, Shield, FileCheck, FileText, Users, ClipboardList } from 'lucide-react';
 import PreAnesthesiaForm from './forms/PreAnesthesiaForm';
 import SurveillanceSSPIForm from './forms/SurveillanceSSPIForm';
 import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
