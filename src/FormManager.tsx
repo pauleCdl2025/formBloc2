@@ -23,7 +23,7 @@ const availableForms: FormConfig[] = [
     description: 'Formulaire de consultation pré-anesthésique complet',
     icon: <Stethoscope className="w-8 h-8" />,
     component: PreAnesthesiaForm,
-    color: 'bg-blue-500'
+    color: 'bg-gradient-to-br from-blue-600 to-blue-700'
   },
   {
     id: 'compte-rendu',
@@ -31,7 +31,7 @@ const availableForms: FormConfig[] = [
     description: 'Formulaire de compte-rendu de consultation pré-anesthésique',
     icon: <FileCheck className="w-8 h-8" />,
     component: CompteRenduPreAnesthesiqueForm,
-    color: 'bg-blue-600'
+    color: 'bg-gradient-to-br from-teal-600 to-teal-700'
   },
   {
     id: 'consentement',
@@ -39,7 +39,7 @@ const availableForms: FormConfig[] = [
     description: 'Formulaire de consentement éclairé pour l\'anesthésie',
     icon: <Shield className="w-8 h-8" />,
     component: ConsentementAnesthesiqueForm,
-    color: 'bg-slate-500'
+    color: 'bg-gradient-to-br from-emerald-600 to-emerald-700'
   }
 ];
 
@@ -166,7 +166,7 @@ export default function FormManager() {
                     handleFormSelect(form.id);
                   }
                 }}
-                className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 hover:border-blue-200"
               >
                 <div className="flex items-center mb-4">
                   <div className={`${form.color} text-white p-3 rounded-lg mr-4`}>
@@ -202,7 +202,7 @@ export default function FormManager() {
                           handleFormSelect(form.id);
                         }
                       }}
-                      className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
+                      className="flex items-center px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition cursor-pointer font-medium"
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       <span className="text-sm font-medium">Consulter</span>
@@ -221,7 +221,7 @@ export default function FormManager() {
                           handleFormSelect(form.id);
                         }
                       }}
-                      className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
+                      className="flex items-center px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition cursor-pointer font-medium"
                     >
                       <span className="text-sm font-medium mr-1">
                         {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
@@ -240,50 +240,50 @@ export default function FormManager() {
 
           {/* Quick Stats */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6 border border-blue-200">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl mr-4 shadow-md">
+                  <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Formulaires</p>
-                  <p className="text-2xl font-bold text-gray-900">{availableForms.length}</p>
+                  <p className="text-sm font-medium text-blue-700">Formulaires</p>
+                  <p className="text-2xl font-bold text-blue-800">{availableForms.length}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-lg p-6 border border-emerald-200">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg mr-3">
-                  <Users className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl mr-4 shadow-md">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Patients</p>
-                  <p className="text-2xl font-bold text-gray-900">-</p>
+                  <p className="text-sm font-medium text-emerald-700">Patients</p>
+                  <p className="text-2xl font-bold text-emerald-800">-</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 border border-purple-200">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg mr-3">
-                  <ClipboardList className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl mr-4 shadow-md">
+                  <ClipboardList className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Consultations</p>
-                  <p className="text-2xl font-bold text-gray-900">-</p>
+                  <p className="text-sm font-medium text-purple-700">Consultations</p>
+                  <p className="text-2xl font-bold text-purple-800">-</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl shadow-lg p-6 border border-orange-200">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg mr-3">
-                  <Stethoscope className="w-6 h-6 text-orange-600" />
+                <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl mr-4 shadow-md">
+                  <Stethoscope className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Actifs</p>
-                  <p className="text-2xl font-bold text-gray-900">{availableForms.length}</p>
+                  <p className="text-sm font-medium text-orange-700">Actifs</p>
+                  <p className="text-2xl font-bold text-orange-800">{availableForms.length}</p>
                 </div>
               </div>
             </div>
@@ -297,16 +297,21 @@ export default function FormManager() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-6">
-              <img 
-                src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
-                alt="Centre Diagnostic de Libreville" 
-                className="h-16 w-auto"
-              />
+              <div className="bg-white p-3 rounded-xl shadow-md">
+                <img 
+                  src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
+                  alt="Centre Diagnostic de Libreville" 
+                  className="h-16 w-auto"
+                />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-[#1e3a8a]">Système de gestion des formulaires médicaux</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Système de gestion des formulaires médicaux
+                </h1>
+                <p className="text-gray-600 mt-2 text-lg">Centre Diagnostic de Libreville</p>
               </div>
             </div>
           </div>

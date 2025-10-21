@@ -94,24 +94,28 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-6">
-              <img 
-                src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
-                alt="Centre Diagnostic de Libreville" 
-                className="h-16 w-auto"
-              />
+              <div className="bg-white p-3 rounded-xl shadow-md">
+                <img 
+                  src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
+                  alt="Centre Diagnostic de Libreville" 
+                  className="h-16 w-auto"
+                />
+              </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#1e3a8a]">Consultation des Formulaires</h1>
-                <p className="text-gray-600 mt-2">Gestion des consultations pré-anesthésiques</p>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Consultation des Formulaires
+                </h1>
+                <p className="text-gray-600 mt-2 text-lg">Gestion des consultations pré-anesthésiques</p>
               </div>
             </div>
             <div className="flex gap-3">
               {onBackToList && (
                 <button
                   onClick={onBackToList}
-                  className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition shadow-md"
+                  className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition shadow-md font-medium"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Retour aux formulaires
@@ -119,7 +123,7 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
               )}
               <button
                 onClick={onCreateNew}
-                className="flex items-center px-6 py-3 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition shadow-md"
+                className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-md font-medium"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Nouveau Formulaire
@@ -149,21 +153,25 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6 border border-blue-200">
             <div className="flex items-center">
-              <User className="w-8 h-8 text-[#0ea5e9] mr-3" />
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl mr-4 shadow-md">
+                <User className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Patients</p>
-                <p className="text-2xl font-bold text-gray-900">{patients.length}</p>
+                <p className="text-sm font-medium text-blue-700">Total Patients</p>
+                <p className="text-2xl font-bold text-blue-800">{patients.length}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-lg p-6 border border-emerald-200">
             <div className="flex items-center">
-              <Calendar className="w-8 h-8 text-green-500 mr-3" />
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl mr-4 shadow-md">
+                <Calendar className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Ce Mois</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-emerald-700">Ce Mois</p>
+                <p className="text-2xl font-bold text-emerald-800">
                   {patients.filter(p => {
                     const date = new Date(p.created_at);
                     const now = new Date();
@@ -173,12 +181,14 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 border border-purple-200">
             <div className="flex items-center">
-              <Search className="w-8 h-8 text-purple-500 mr-3" />
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl mr-4 shadow-md">
+                <Search className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Résultats</p>
-                <p className="text-2xl font-bold text-gray-900">{filteredPatients.length}</p>
+                <p className="text-sm font-medium text-purple-700">Résultats</p>
+                <p className="text-2xl font-bold text-purple-800">{filteredPatients.length}</p>
               </div>
             </div>
           </div>
