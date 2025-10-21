@@ -18,8 +18,6 @@ export default function SignaturePad({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
-  const [lastX, setLastX] = useState(0);
-  const [lastY, setLastY] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -28,24 +26,26 @@ export default function SignaturePad({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Configuration du canvas avec DPI scaling
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    // Configuration simple du canvas
+    canvas.width = width;
+    canvas.height = height;
     
-    ctx.scale(dpr, dpr);
+    // Style du canvas
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
+
+    // Dessiner un cadre pour tester la visibilité
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, width, height);
     
-    // Test de visibilité - dessiner un point de test rouge
+    // Dessiner un point de test
     ctx.fillStyle = '#ff0000';
-    ctx.fillRect(10, 10, 5, 5);
+    ctx.fillRect(5, 5, 10, 10);
 
     // Fonction pour obtenir les coordonnées
     const getCoordinates = (e: MouseEvent | TouchEvent) => {
@@ -69,11 +69,12 @@ export default function SignaturePad({
       e.preventDefault();
       e.stopPropagation();
       setIsDrawing(true);
+      
       const coords = getCoordinates(e);
-      setLastX(coords.x);
-      setLastY(coords.y);
       
       // Commencer un nouveau chemin
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(coords.x, coords.y);
     };
@@ -86,15 +87,9 @@ export default function SignaturePad({
       
       const coords = getCoordinates(e);
       
-      // S'assurer que la couleur est bien noire
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 4;
-      
       ctx.lineTo(coords.x, coords.y);
       ctx.stroke();
       
-      setLastX(coords.x);
-      setLastY(coords.y);
       setHasSignature(true);
       
       // Notifier le changement
@@ -130,7 +125,7 @@ export default function SignaturePad({
       canvas.removeEventListener('touchmove', draw);
       canvas.removeEventListener('touchend', stopDrawing);
     };
-  }, [isDrawing, lastX, lastY, width, height, onSignatureChange]);
+  }, [isDrawing, width, height, onSignatureChange]);
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
@@ -139,12 +134,19 @@ export default function SignaturePad({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    const dpr = window.devicePixelRatio || 1;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Remplir avec un fond blanc
+    // Effacer et redessiner le fond
+    ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
+    
+    // Redessiner le cadre
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, width, height);
+    
+    // Redessiner le point de test
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(5, 5, 10, 10);
     
     setHasSignature(false);
     
