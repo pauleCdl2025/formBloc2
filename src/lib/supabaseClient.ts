@@ -29,7 +29,7 @@ export const testSupabaseConnection = async () => {
     
     // Test simple de lecture
     const { data, error } = await supabase
-      .from('preanesthesia_forms')
+      .from('consultation_preanesthesique')
       .select('count')
       .limit(1);
     

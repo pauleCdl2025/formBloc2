@@ -141,31 +141,28 @@ export default function ConsentementAnesthesiqueForm({
 
       const payload = { 
         patient_number: patientNumber, 
-        data: formData,
-        form_type: 'consentement_anesthesique'
+        data: formData
       };
 
       // Vérifier si l'enregistrement existe déjà
       const { data: existingRecord } = await supabase
-        .from('preanesthesia_forms')
+        .from('consentement_anesthesique')
         .select('id')
         .eq('patient_number', patientNumber)
-        .eq('form_type', 'consentement_anesthesique')
         .single();
       
       if (existingRecord) {
         // Mettre à jour l'enregistrement existant
         const { error } = await supabase
-          .from('preanesthesia_forms')
+          .from('consentement_anesthesique')
           .update({ data: formData })
-          .eq('patient_number', patientNumber)
-          .eq('form_type', 'consentement_anesthesique');
+          .eq('patient_number', patientNumber);
         
         if (error) throw error;
       } else {
         // Créer un nouvel enregistrement
         const { error } = await supabase
-          .from('preanesthesia_forms')
+          .from('consentement_anesthesique')
           .insert(payload);
         
         if (error) throw error;

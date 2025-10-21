@@ -41,11 +41,10 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
   const loadForms = async () => {
     try {
       // Essayer d'abord avec le filtre form_type
-      const { data, error } = await supabase
-        .from('preanesthesia_forms')
-        .select('*')
-        .eq('form_type', 'compte_rendu_preanesthesique')
-        .order('updated_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('compte_rendu_preanesthesique')
+          .select('*')
+          .order('updated_at', { ascending: false });
 
       if (error) {
         console.error('Erreur Supabase:', error);

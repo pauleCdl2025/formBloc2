@@ -40,11 +40,10 @@ const SSPIConsultation: React.FC<SSPIConsultationProps> = ({
 
   const loadForms = async () => {
     try {
-      const { data, error } = await supabase
-        .from('preanesthesia_forms')
-        .select('*')
-        .eq('form_type', 'surveillance_sspi')
-        .order('updated_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('surveillance_sspi')
+          .select('*')
+          .order('updated_at', { ascending: false });
 
       if (error) {
         console.error('Erreur Supabase:', error);

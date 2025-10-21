@@ -214,31 +214,28 @@ export default function CompteRenduPreAnesthesiqueForm({
 
       const payload = { 
         patient_number: patientNumber, 
-        data: formData,
-        form_type: 'compte_rendu_preanesthesique'
+        data: formData
       };
 
       // Vérifier si l'enregistrement existe déjà
       const { data: existingRecord } = await supabase
-        .from('preanesthesia_forms')
+        .from('compte_rendu_preanesthesique')
         .select('id')
         .eq('patient_number', patientNumber)
-        .eq('form_type', 'compte_rendu_preanesthesique')
         .single();
       
       if (existingRecord) {
         // Mettre à jour l'enregistrement existant
         const { error } = await supabase
-          .from('preanesthesia_forms')
+          .from('compte_rendu_preanesthesique')
           .update({ data: formData })
-          .eq('patient_number', patientNumber)
-          .eq('form_type', 'compte_rendu_preanesthesique');
+          .eq('patient_number', patientNumber);
         
         if (error) throw error;
       } else {
         // Créer un nouvel enregistrement
         const { error } = await supabase
-          .from('preanesthesia_forms')
+          .from('compte_rendu_preanesthesique')
           .insert(payload);
         
         if (error) throw error;

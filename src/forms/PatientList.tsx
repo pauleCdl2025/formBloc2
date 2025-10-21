@@ -27,10 +27,10 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
   const loadPatients = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('preanesthesia_forms')
-        .select('*')
-        .order('updated_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('consultation_preanesthesique')
+      .select('*')
+      .order('updated_at', { ascending: false });
 
       if (error) throw error;
       setPatients(data || []);
@@ -48,7 +48,7 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
 
     try {
       const { error } = await supabase
-        .from('preanesthesia_forms')
+        .from('consultation_preanesthesique')
         .delete()
         .eq('id', id);
 

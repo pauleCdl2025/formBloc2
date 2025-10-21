@@ -578,7 +578,7 @@ export default function PreAnesthesiaForm({
         
         // Vérifier si l'enregistrement existe déjà
         const { data: existingRecord } = await supabase
-          .from('preanesthesia_forms')
+          .from('consultation_preanesthesique')
           .select('id')
           .eq('patient_number', patientNumber)
           .single();
@@ -586,7 +586,7 @@ export default function PreAnesthesiaForm({
         if (existingRecord) {
           // Mettre à jour l'enregistrement existant
           const { error } = await supabase
-            .from('preanesthesia_forms')
+            .from('consultation_preanesthesique')
             .update({ data: formData })
             .eq('patient_number', patientNumber);
           
@@ -595,11 +595,10 @@ export default function PreAnesthesiaForm({
           // Créer un nouvel enregistrement
           const payload = { 
         patient_number: patientNumber, 
-        data: formData,
-        form_type: 'preanesthesia'
+        data: formData
       };
           const { error } = await supabase
-            .from('preanesthesia_forms')
+            .from('consultation_preanesthesique')
             .insert(payload);
           
           if (error) throw error;
@@ -713,7 +712,7 @@ export default function PreAnesthesiaForm({
       
       // Test simple de connexion
       const { data: testData, error: testError } = await supabase
-        .from('preanesthesia_forms')
+        .from('consultation_preanesthesique')
         .select('count')
         .limit(1);
         
@@ -728,14 +727,13 @@ export default function PreAnesthesiaForm({
       console.log('Tentative de sauvegarde vers Supabase...');
       const payload = { 
         patient_number: patientNumber, 
-        data: formData,
-        form_type: 'preanesthesia'
+        data: formData
       };
       console.log('Payload:', payload);
       
       // Vérifier si l'enregistrement existe déjà
       const { data: existingRecord } = await supabase
-        .from('preanesthesia_forms')
+        .from('consultation_preanesthesique')
         .select('id')
         .eq('patient_number', patientNumber)
         .single();
@@ -743,7 +741,7 @@ export default function PreAnesthesiaForm({
       if (existingRecord) {
         // Mettre à jour l'enregistrement existant
         const { error } = await supabase
-          .from('preanesthesia_forms')
+          .from('consultation_preanesthesique')
           .update({ data: formData })
           .eq('patient_number', patientNumber);
         
@@ -752,7 +750,7 @@ export default function PreAnesthesiaForm({
       } else {
         // Créer un nouvel enregistrement
         const { error } = await supabase
-          .from('preanesthesia_forms')
+          .from('consultation_preanesthesique')
           .insert(payload);
         
         if (error) throw error;
