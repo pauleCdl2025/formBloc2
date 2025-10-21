@@ -192,11 +192,31 @@ export default function SurveillanceSSPIForm({
         form_type: 'surveillance_sspi'
       };
 
-      const { error } = await supabase
+      // Vérifier si l'enregistrement existe déjà
+      const { data: existingRecord } = await supabase
         .from('preanesthesia_forms')
-        .upsert(payload, { onConflict: 'patient_number' });
-
-      if (error) throw error;
+        .select('id')
+        .eq('patient_number', patientNumber)
+        .eq('form_type', 'surveillance_sspi')
+        .single();
+      
+      if (existingRecord) {
+        // Mettre à jour l'enregistrement existant
+        const { error } = await supabase
+          .from('preanesthesia_forms')
+          .update({ data: formData })
+          .eq('patient_number', patientNumber)
+          .eq('form_type', 'surveillance_sspi');
+        
+        if (error) throw error;
+      } else {
+        // Créer un nouvel enregistrement
+        const { error } = await supabase
+          .from('preanesthesia_forms')
+          .insert(payload);
+        
+        if (error) throw error;
+      }
 
       setSavedMessage('✓ Surveillance SSPI sauvegardée avec succès');
       setTimeout(() => setSavedMessage(''), 5000);

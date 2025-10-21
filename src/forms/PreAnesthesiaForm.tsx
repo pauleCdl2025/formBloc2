@@ -575,11 +575,31 @@ export default function PreAnesthesiaForm({
       try {
         const patientNumber = formData.patient?.numeroIdentification?.trim();
         if (!patientNumber) return;
-        const payload = { patient_number: patientNumber, data: formData };
-        const { error } = await supabase
+        
+        // Vérifier si l'enregistrement existe déjà
+        const { data: existingRecord } = await supabase
           .from('preanesthesia_forms')
-          .upsert(payload, { onConflict: 'patient_number' });
-        if (error) throw error;
+          .select('id')
+          .eq('patient_number', patientNumber)
+          .single();
+        
+        if (existingRecord) {
+          // Mettre à jour l'enregistrement existant
+          const { error } = await supabase
+            .from('preanesthesia_forms')
+            .update({ data: formData })
+            .eq('patient_number', patientNumber);
+          
+          if (error) throw error;
+        } else {
+          // Créer un nouvel enregistrement
+          const payload = { patient_number: patientNumber, data: formData };
+          const { error } = await supabase
+            .from('preanesthesia_forms')
+            .insert(payload);
+          
+          if (error) throw error;
+        }
       } catch (error) {
         console.error('Autosave Supabase error:', error);
       }
@@ -705,16 +725,31 @@ export default function PreAnesthesiaForm({
       const payload = { patient_number: patientNumber, data: formData };
       console.log('Payload:', payload);
       
-      const { error } = await supabase
+      // Vérifier si l'enregistrement existe déjà
+      const { data: existingRecord } = await supabase
         .from('preanesthesia_forms')
-        .upsert(payload, { onConflict: 'patient_number' });
-        
-      if (error) {
-        console.error('Erreur Supabase:', error);
-        throw error;
-      }
+        .select('id')
+        .eq('patient_number', patientNumber)
+        .single();
       
-      console.log('Sauvegarde réussie');
+      if (existingRecord) {
+        // Mettre à jour l'enregistrement existant
+        const { error } = await supabase
+          .from('preanesthesia_forms')
+          .update({ data: formData })
+          .eq('patient_number', patientNumber);
+        
+        if (error) throw error;
+        console.log('Enregistrement mis à jour');
+      } else {
+        // Créer un nouvel enregistrement
+        const { error } = await supabase
+          .from('preanesthesia_forms')
+          .insert(payload);
+        
+        if (error) throw error;
+        console.log('Nouvel enregistrement créé');
+      }
       setSavedMessage('✓ Données sauvegardées sur Supabase');
       setTimeout(() => setSavedMessage(''), 5000);
     } catch (e: any) {
