@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Stethoscope, Heart, Shield, FileCheck, FileText, Users, ClipboardList, Eye } from 'lucide-react';
 import PreAnesthesiaForm from './forms/PreAnesthesiaForm';
-import SurveillanceSSPIForm from './forms/SurveillanceSSPIForm';
 import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
 import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
 import PatientList from './forms/PatientList';
-import SSPIConsultation from './forms/SSPIConsultation';
 import CompteRenduConsultation from './forms/CompteRenduConsultation';
 import ConsentementConsultation from './forms/ConsentementConsultation';
 
@@ -28,14 +26,6 @@ const availableForms: FormConfig[] = [
     color: 'bg-blue-500'
   },
   {
-    id: 'sspi',
-    name: 'Surveillance SSPI',
-    description: 'Formulaire de surveillance en Salle de Soins Post Interventionnelle',
-    icon: <Heart className="w-8 h-8" />,
-    component: SurveillanceSSPIForm,
-    color: 'bg-purple-500'
-  },
-  {
     id: 'compte-rendu',
     name: 'Compte-rendu Pré-anesthésique',
     description: 'Formulaire de compte-rendu de consultation pré-anesthésique',
@@ -55,7 +45,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'sspi-consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -74,9 +64,6 @@ export default function FormManager() {
     setCurrentView('form');
   };
 
-  const handleSSPIConsultation = () => {
-    setCurrentView('sspi-consultation');
-  };
 
   const handleCompteRenduConsultation = () => {
     setCurrentView('compte-rendu-consultation');
@@ -109,21 +96,6 @@ export default function FormManager() {
     );
   }
 
-  if (currentView === 'sspi-consultation') {
-    return (
-      <SSPIConsultation 
-        onBackToList={handleBackToList}
-        onCreateNew={() => {
-          setSelectedForm('sspi');
-          setCurrentView('form');
-        }}
-        onSelectPatient={(patientNumber) => {
-          setSelectedForm('sspi');
-          setCurrentView('form');
-        }}
-      />
-    );
-  }
 
   if (currentView === 'compte-rendu-consultation') {
     return (
@@ -185,8 +157,6 @@ export default function FormManager() {
                 onClick={() => {
                   if (form.id === 'preanesthesia') {
                     setCurrentView('list');
-                  } else if (form.id === 'sspi') {
-                    handleSSPIConsultation();
                   } else if (form.id === 'compte-rendu') {
                     handleCompteRenduConsultation();
                   } else if (form.id === 'consentement') {
@@ -220,9 +190,6 @@ export default function FormManager() {
                         if (form.id === 'preanesthesia') {
                           console.log('Aller à PatientList');
                           setCurrentView('list');
-                        } else if (form.id === 'sspi') {
-                          console.log('Aller à SSPI Consultation');
-                          handleSSPIConsultation();
                         } else if (form.id === 'compte-rendu') {
                           console.log('Aller à Compte-rendu Consultation');
                           handleCompteRenduConsultation();
@@ -257,7 +224,6 @@ export default function FormManager() {
                     >
                       <span className="text-sm font-medium mr-1">
                         {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
-                         form.id === 'sspi' ? 'Nouveau SSPI' :
                          form.id === 'compte-rendu' ? 'Nouveau Compte-rendu' :
                          form.id === 'consentement' ? 'Nouveau Consentement' : 'Nouveau'}
                       </span>
@@ -353,8 +319,6 @@ export default function FormManager() {
               onClick={() => {
                 if (form.id === 'preanesthesia') {
                   setCurrentView('list');
-                } else if (form.id === 'sspi') {
-                  handleSSPIConsultation();
                 } else if (form.id === 'compte-rendu') {
                   handleCompteRenduConsultation();
                 } else if (form.id === 'consentement') {
@@ -388,9 +352,6 @@ export default function FormManager() {
                       if (form.id === 'preanesthesia') {
                         console.log('Aller à PatientList');
                         setCurrentView('list');
-                      } else if (form.id === 'sspi') {
-                        console.log('Aller à SSPI Consultation');
-                        handleSSPIConsultation();
                       } else if (form.id === 'compte-rendu') {
                         console.log('Aller à Compte-rendu Consultation');
                         handleCompteRenduConsultation();
@@ -425,7 +386,6 @@ export default function FormManager() {
                   >
                     <span className="text-sm font-medium mr-1">
                       {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
-                       form.id === 'sspi' ? 'Nouveau SSPI' :
                        form.id === 'compte-rendu' ? 'Nouveau Compte-rendu' :
                        form.id === 'consentement' ? 'Nouveau Consentement' : 'Nouveau'}
                     </span>
