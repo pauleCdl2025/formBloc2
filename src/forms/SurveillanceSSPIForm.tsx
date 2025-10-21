@@ -55,6 +55,7 @@ interface SSPIData {
     heureTransfert: string;
     medecinTransfert: string;
   };
+  signature: string;
 }
 
 export default function SurveillanceSSPIForm({ 
@@ -118,7 +119,8 @@ export default function SurveillanceSSPIForm({
       serviceDestination: '',
       heureTransfert: '',
       medecinTransfert: ''
-    }
+    },
+    signature: ''
   });
 
   const calculateAge = () => {
@@ -243,20 +245,19 @@ export default function SurveillanceSSPIForm({
             respiration: 0,
             circulation: 0,
             conscience: 0,
-            saturation: 0
+            saturation: 0,
+            total: 0
           }
         },
         medicaments: {
-          analgesiques: '',
-          antiemetiques: '',
-          autres: '',
+          analgesie: '',
+          medications: '',
           perfusions: ''
         },
         transfert: {
           serviceDestination: '',
           heureTransfert: '',
-          medecinTransfert: '',
-          observationsTransfert: ''
+          medecinTransfert: ''
         },
         signature: ''
       });
