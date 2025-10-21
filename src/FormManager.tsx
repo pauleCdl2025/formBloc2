@@ -224,7 +224,8 @@ export default function FormManager() {
                 </span>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation(); // Empêche le clic sur la carte
                       if (form.id === 'preanesthesia') {
                         setCurrentView('list');
                       } else if (form.id === 'sspi') handleSSPIConsultation();
@@ -238,7 +239,10 @@ export default function FormManager() {
                     <span className="text-sm font-medium">Consulter</span>
                   </button>
                   <button
-                    onClick={() => handleFormSelect(form.id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Empêche le clic sur la carte
+                      handleFormSelect(form.id);
+                    }}
                     className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition"
                   >
                     <span className="text-sm font-medium mr-1">
