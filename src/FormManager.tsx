@@ -193,7 +193,19 @@ export default function FormManager() {
           {availableForms.map((form) => (
             <div
               key={form.id}
-              onClick={() => handleFormSelect(form.id)}
+              onClick={() => {
+                if (form.id === 'preanesthesia') {
+                  setCurrentView('list');
+                } else if (form.id === 'sspi') {
+                  handleSSPIConsultation();
+                } else if (form.id === 'compte-rendu') {
+                  handleCompteRenduConsultation();
+                } else if (form.id === 'consentement') {
+                  handleConsentementConsultation();
+                } else {
+                  handleFormSelect(form.id);
+                }
+              }}
               className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
               <div className="flex items-center mb-4">
@@ -213,7 +225,9 @@ export default function FormManager() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      if (form.id === 'sspi') handleSSPIConsultation();
+                      if (form.id === 'preanesthesia') {
+                        setCurrentView('list');
+                      } else if (form.id === 'sspi') handleSSPIConsultation();
                       else if (form.id === 'compte-rendu') handleCompteRenduConsultation();
                       else if (form.id === 'consentement') handleConsentementConsultation();
                       else handleFormSelect(form.id);
@@ -227,7 +241,12 @@ export default function FormManager() {
                     onClick={() => handleFormSelect(form.id)}
                     className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition"
                   >
-                    <span className="text-sm font-medium mr-1">Nouveau</span>
+                    <span className="text-sm font-medium mr-1">
+                      {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
+                       form.id === 'sspi' ? 'Nouveau SSPI' :
+                       form.id === 'compte-rendu' ? 'Nouveau Compte-rendu' :
+                       form.id === 'consentement' ? 'Nouveau Consentement' : 'Nouveau'}
+                    </span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
