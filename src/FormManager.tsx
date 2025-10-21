@@ -55,7 +55,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'list' | 'form' | 'sspi-consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('list');
+  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'sspi-consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -63,7 +63,7 @@ export default function FormManager() {
   };
 
   const handleBackToList = () => {
-    setCurrentView('list');
+    setCurrentView('main');
   };
 
   const handleCreateNew = () => {
@@ -154,6 +154,175 @@ export default function FormManager() {
           setCurrentView('form');
         }}
       />
+    );
+  }
+
+  if (currentView === 'main') {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-6">
+                <img 
+                  src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
+                  alt="Centre Diagnostic de Libreville" 
+                  className="h-16 w-auto"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-[#1e3a8a]">Système de gestion des formulaires médicaux</h1>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Forms Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {availableForms.map((form) => (
+              <div
+                key={form.id}
+                onClick={() => {
+                  if (form.id === 'preanesthesia') {
+                    setCurrentView('list');
+                  } else if (form.id === 'sspi') {
+                    handleSSPIConsultation();
+                  } else if (form.id === 'compte-rendu') {
+                    handleCompteRenduConsultation();
+                  } else if (form.id === 'consentement') {
+                    handleConsentementConsultation();
+                  } else {
+                    handleFormSelect(form.id);
+                  }
+                }}
+                className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div className="flex items-center mb-4">
+                  <div className={`${form.color} text-white p-3 rounded-lg mr-4`}>
+                    {form.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{form.name}</h3>
+                    <p className="text-sm text-gray-600">{form.description}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-green-600 font-semibold">
+                    Disponible
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Bouton Consulter cliqué pour:', form.id);
+                        if (form.id === 'preanesthesia') {
+                          console.log('Aller à PatientList');
+                          setCurrentView('list');
+                        } else if (form.id === 'sspi') {
+                          console.log('Aller à SSPI Consultation');
+                          handleSSPIConsultation();
+                        } else if (form.id === 'compte-rendu') {
+                          console.log('Aller à Compte-rendu Consultation');
+                          handleCompteRenduConsultation();
+                        } else if (form.id === 'consentement') {
+                          console.log('Aller à Consentement Consultation');
+                          handleConsentementConsultation();
+                        } else {
+                          console.log('Aller à FormSelect');
+                          handleFormSelect(form.id);
+                        }
+                      }}
+                      className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      <span className="text-sm font-medium">Consulter</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Bouton Nouveau cliqué pour:', form.id);
+                        if (form.id === 'preanesthesia') {
+                          console.log('Aller au formulaire PreAnesthesia');
+                          setSelectedForm('preanesthesia');
+                          setCurrentView('form');
+                        } else {
+                          console.log('Aller à FormSelect');
+                          handleFormSelect(form.id);
+                        }
+                      }}
+                      className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
+                    >
+                      <span className="text-sm font-medium mr-1">
+                        {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
+                         form.id === 'sspi' ? 'Nouveau SSPI' :
+                         form.id === 'compte-rendu' ? 'Nouveau Compte-rendu' :
+                         form.id === 'consentement' ? 'Nouveau Consentement' : 'Nouveau'}
+                      </span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Formulaires</p>
+                  <p className="text-2xl font-bold text-gray-900">{availableForms.length}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg mr-3">
+                  <Users className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Patients</p>
+                  <p className="text-2xl font-bold text-gray-900">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                  <ClipboardList className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Consultations</p>
+                  <p className="text-2xl font-bold text-gray-900">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 rounded-lg mr-3">
+                  <Stethoscope className="w-6 h-6 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Actifs</p>
+                  <p className="text-2xl font-bold text-gray-900">{availableForms.length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
