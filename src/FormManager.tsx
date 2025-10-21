@@ -156,7 +156,8 @@ export default function FormManager() {
                 key={form.id}
                 onClick={() => {
                   if (form.id === 'preanesthesia') {
-                    setCurrentView('list');
+                    setSelectedForm('preanesthesia');
+                    setCurrentView('form');
                   } else if (form.id === 'compte-rendu') {
                     handleCompteRenduConsultation();
                   } else if (form.id === 'consentement') {
@@ -318,7 +319,8 @@ export default function FormManager() {
               key={form.id}
               onClick={() => {
                 if (form.id === 'preanesthesia') {
-                  setCurrentView('list');
+                  setSelectedForm('preanesthesia');
+                  setCurrentView('form');
                 } else if (form.id === 'compte-rendu') {
                   handleCompteRenduConsultation();
                 } else if (form.id === 'consentement') {
