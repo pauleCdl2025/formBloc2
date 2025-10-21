@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabaseClient';
-import { Plus, Trash2, Save, Printer, FileText, Upload } from 'lucide-react';
+import { Plus, Trash2, Save, Printer, FileText, Upload, List, ArrowLeft } from 'lucide-react';
+import PatientList from './PatientList';
 
 interface PatientInfo {
   nom: string;
@@ -221,6 +222,8 @@ interface FormData {
 
 export default function PreAnesthesiaForm() {
   const [savedMessage, setSavedMessage] = useState<string>('');
+  const [currentView, setCurrentView] = useState<'form' | 'list'>('list');
+  const [selectedPatientNumber, setSelectedPatientNumber] = useState<string>('');
   
   const initialFormData: FormData = {
     patient: {
@@ -538,16 +541,16 @@ export default function PreAnesthesiaForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.parametresPhysiques.poids, formData.parametresPhysiques.taille]);
 
-  // Charger les données depuis Supabase au montage si un numéro patient est présent
+  // Charger les données depuis Supabase quand un patient est sélectionné
   useEffect(() => {
     const load = async () => {
+      if (!selectedPatientNumber) return;
+      
       try {
-        const patientNumber = formData.patient?.numeroIdentification?.trim();
-        if (!patientNumber) return;
         const { data, error } = await supabase
           .from('preanesthesia_forms')
           .select('data')
-          .eq('patient_number', patientNumber)
+          .eq('patient_number', selectedPatientNumber)
           .maybeSingle();
         if (error) throw error;
         if (data?.data) setFormData(data.data);
@@ -556,8 +559,7 @@ export default function PreAnesthesiaForm() {
       }
     };
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedPatientNumber]);
 
   // Sauvegarder automatiquement vers Supabase (debounce)
   useEffect(() => {
@@ -755,6 +757,27 @@ export default function PreAnesthesiaForm() {
     }
   };
 
+  const handleSelectPatient = (patientNumber: string) => {
+    setSelectedPatientNumber(patientNumber);
+    setCurrentView('form');
+  };
+
+  const handleCreateNew = () => {
+    setSelectedPatientNumber('');
+    setFormData(initialFormData);
+    setCurrentView('form');
+  };
+
+  const handleBackToList = () => {
+    setCurrentView('list');
+    setSelectedPatientNumber('');
+  };
+
+  // Si on est en mode liste, afficher la liste des patients
+  if (currentView === 'list') {
+    return <PatientList onSelectPatient={handleSelectPatient} onCreateNew={handleCreateNew} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-8">
@@ -767,9 +790,21 @@ export default function PreAnesthesiaForm() {
             />
             <div>
               <h1 className="text-3xl font-bold text-[#1e3a8a]">Formulaire de Consultation Pré-Anesthésique</h1>
+              {selectedPatientNumber && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Patient: {selectedPatientNumber}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={handleBackToList}
+              className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition shadow-md"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour à la liste
+            </button>
             <input
               type="file"
               accept=".json"
