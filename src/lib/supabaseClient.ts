@@ -8,7 +8,47 @@ console.log('Configuration Supabase:');
 console.log('URL:', supabaseUrl);
 console.log('Key:', supabaseAnonKey ? 'Présente' : 'Manquante');
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Configuration Supabase avec options de débogage
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+});
+
+// Fonction de test de connexion
+export const testSupabaseConnection = async () => {
+  try {
+    console.log('=== TEST DE CONNEXION SUPABASE ===');
+    
+    // Test simple de lecture
+    const { data, error } = await supabase
+      .from('preanesthesia_forms')
+      .select('count')
+      .limit(1);
+    
+    if (error) {
+      console.error('Erreur Supabase:', error);
+      console.error('Code:', error.code);
+      console.error('Message:', error.message);
+      console.error('Details:', error.details);
+      console.error('Hint:', error.hint);
+      return false;
+    }
+    
+    console.log('Connexion Supabase OK:', data);
+    return true;
+  } catch (e) {
+    console.error('Erreur de connexion:', e);
+    return false;
+  }
+};
 
 
 
