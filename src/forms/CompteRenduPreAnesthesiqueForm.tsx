@@ -231,6 +231,92 @@ export default function CompteRenduPreAnesthesiqueForm({
     }
   };
 
+  const handleReset = () => {
+    if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+      setFormData({
+        identification: {
+          dateConsultation: new Date().toISOString().split('T')[0],
+          medecinAnesthesiste: '',
+          rpps: ''
+        },
+        patient: {
+          nom: '',
+          prenom: '',
+          dateNaissance: '',
+          sexe: '',
+          poids: 0,
+          taille: 0,
+          imc: 0,
+          age: ''
+        },
+        intervention: {
+          type: '',
+          datePrevue: '',
+          chirurgien: '',
+          duree: '',
+          caractere: '',
+          hospitalisation: ''
+        },
+        antecedents: {
+          allergies: '',
+          allergiesDetails: '',
+          cardio: '',
+          respiratory: '',
+          endocrine: '',
+          neuro: '',
+          digestive: '',
+          renal: '',
+          otherPatho: '',
+          previousConsultation: '',
+          previousDetails: '',
+          previousComplications: ''
+        },
+        examenClinique: {
+          heartRate: 0,
+          taSys: 0,
+          taDia: 0,
+          ecg: '',
+          auscultationCardio: '',
+          asa: '',
+          ven: 0,
+          spo2: 0,
+          auscultationResp: ''
+        },
+        examensComplementaires: {
+          biologyDate: '',
+          biologyResults: '',
+          imagingDate: '',
+          imagingResults: ''
+        },
+        preparation: {
+          fastingSolids: '',
+          fastingLiquids: '',
+          premedication: '',
+          preparationInstructions: ''
+        },
+        techniqueAnesthesique: {
+          anesthesiaType: '',
+          anesthesiaDetails: '',
+          monitoringPlan: ''
+        },
+        informationConsentement: {
+          risksExplained: false,
+          complicationsExplained: false,
+          alternativesExplained: false,
+          consentObtained: false,
+          consentDate: '',
+          patientQuestions: ''
+        },
+        signatures: {
+          doctorSignature: '',
+          patientSignature: ''
+        }
+      });
+      setSavedMessage('✓ Formulaire réinitialisé');
+      setTimeout(() => setSavedMessage(''), 3000);
+    }
+  };
+
   const handleExportJSON = () => {
     const dataStr = JSON.stringify(formData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -312,6 +398,13 @@ export default function CompteRenduPreAnesthesiqueForm({
           >
             <Printer className="w-4 h-4 mr-2" />
             Imprimer
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-md"
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Réinitialiser
           </button>
           <button
             onClick={handleSave}

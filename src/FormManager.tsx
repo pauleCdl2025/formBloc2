@@ -120,8 +120,8 @@ export default function FormManager() {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">
-                  {form.id === 'preanesthesia' ? 'Disponible' : 'En développement'}
+                <span className="text-sm text-green-600 font-semibold">
+                  Disponible
                 </span>
                 <div className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition">
                   <span className="text-sm font-medium mr-1">Ouvrir</span>

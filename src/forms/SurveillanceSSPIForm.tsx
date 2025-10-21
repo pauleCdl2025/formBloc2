@@ -203,6 +203,68 @@ export default function SurveillanceSSPIForm({
     }
   };
 
+  const handleReset = () => {
+    if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+      setFormData({
+        patient: {
+          nom: '',
+          prenom: '',
+          dateNaissance: '',
+          age: ''
+        },
+        equipe: {
+          anesthesiste: '',
+          tsar: '',
+          dateSurveillance: new Date().toISOString().split('T')[0],
+          heureEntreeSSPI: '',
+          heureSortieSSPI: ''
+        },
+        observations: {
+          conditionEntree: '',
+          observations: '',
+          conditionSortie: '',
+          complications: ''
+        },
+        ventilation: {
+          saO2: '',
+          etO2: '',
+          vs: false,
+          vi: '',
+          vc: false,
+          fr: '',
+          pi: '',
+          eva: '',
+          tof: '',
+          hematocrite: ''
+        },
+        scores: {
+          aldrete: {
+            activite: 0,
+            respiration: 0,
+            circulation: 0,
+            conscience: 0,
+            saturation: 0
+          }
+        },
+        medicaments: {
+          analgesiques: '',
+          antiemetiques: '',
+          autres: '',
+          perfusions: ''
+        },
+        transfert: {
+          serviceDestination: '',
+          heureTransfert: '',
+          medecinTransfert: '',
+          observationsTransfert: ''
+        },
+        signature: ''
+      });
+      setSavedMessage('✓ Formulaire réinitialisé');
+      setTimeout(() => setSavedMessage(''), 3000);
+    }
+  };
+
   const handleExportJSON = () => {
     const dataStr = JSON.stringify(formData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -285,6 +347,13 @@ export default function SurveillanceSSPIForm({
           >
             <Printer className="w-4 h-4 mr-2" />
             Imprimer
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-md"
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Réinitialiser
           </button>
           <button
             onClick={handleSave}

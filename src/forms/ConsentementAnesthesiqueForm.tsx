@@ -158,6 +158,62 @@ export default function ConsentementAnesthesiqueForm({
     }
   };
 
+  const handleReset = () => {
+    if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+      setFormData({
+        patient: {
+          nom: '',
+          prenom: '',
+          dateNaissance: '',
+          age: ''
+        },
+        medecin: {
+          nom: '',
+          dateConsentement: new Date().toISOString().split('T')[0],
+          lieu: ''
+        },
+        diagnostic: '',
+        indication: '',
+        informationsPreop: {
+          jeune: false,
+          tabac: false,
+          medicaments: false
+        },
+        anesthesie: {
+          generale: false,
+          locoRegionale: false,
+          localeSedation: false
+        },
+        transfusion: {
+          oui: false,
+          non: false,
+          refusDocument: false
+        },
+        gestes: {
+          invasifs: '',
+          autres: ''
+        },
+        risquesALR: {
+          lesionsNerveuses: false,
+          hematome: false,
+          infection: false,
+          criseConvulsive: false,
+          brecheDuremere: false
+        },
+        risquesPatient: '',
+        risquesDentition: '',
+        complicationsPostop: '',
+        lieuTransfert: '',
+        consentementEclaire: false,
+        documentSigne: false,
+        signaturePatient: ''
+      });
+      setHasSignature(false);
+      setSavedMessage('✓ Formulaire réinitialisé');
+      setTimeout(() => setSavedMessage(''), 3000);
+    }
+  };
+
   const handleExportJSON = () => {
     const dataStr = JSON.stringify(formData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -240,6 +296,13 @@ export default function ConsentementAnesthesiqueForm({
           >
             <Printer className="w-4 h-4 mr-2" />
             Imprimer
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-md"
+          >
+            <AlertTriangle className="w-4 h-4 mr-2" />
+            Réinitialiser
           </button>
           <button
             onClick={handleSave}
