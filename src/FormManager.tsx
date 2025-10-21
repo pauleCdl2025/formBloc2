@@ -227,7 +227,7 @@ export default function FormManager() {
                     onClick={(e) => {
                       e.stopPropagation(); // Empêche le clic sur la carte
                       if (form.id === 'preanesthesia') {
-                        setCurrentView('list');
+                        setCurrentView('list'); // Va à PatientList
                       } else if (form.id === 'sspi') handleSSPIConsultation();
                       else if (form.id === 'compte-rendu') handleCompteRenduConsultation();
                       else if (form.id === 'consentement') handleConsentementConsultation();
@@ -241,7 +241,12 @@ export default function FormManager() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Empêche le clic sur la carte
-                      handleFormSelect(form.id);
+                      if (form.id === 'preanesthesia') {
+                        setSelectedForm('preanesthesia');
+                        setCurrentView('form'); // Va au formulaire de création
+                      } else {
+                        handleFormSelect(form.id);
+                      }
                     }}
                     className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
                   >
