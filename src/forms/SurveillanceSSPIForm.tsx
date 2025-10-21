@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Save, Printer, FileText, Upload, ArrowLeft, Heart, Clock, Activity } from 'lucide-react';
+import { Save, Printer, FileText, Upload, ArrowLeft, Heart, Clock, Activity, Calendar, User } from 'lucide-react';
 import SignaturePad from '../components/SignaturePad';
 
 interface SSPIData {
+  // Informations patient
   patient: {
     nom: string;
     prenom: string;
     dateNaissance: string;
     age: string;
   };
+  
+  // Équipe et horaires
   equipe: {
     anesthesiste: string;
     tsar: string;
@@ -17,13 +20,17 @@ interface SSPIData {
     heureEntreeSSPI: string;
     heureSortieSSPI: string;
   };
+  
+  // Observations générales
   observations: {
     conditionEntree: string;
-    observations: string;
+    observationsGenerales: string;
     conditionSortie: string;
     complications: string;
   };
-  ventilation: {
+  
+  // Paramètres vitaux et ventilation
+  parametresVitaux: {
     saO2: string;
     etO2: string;
     vs: boolean;
@@ -35,28 +42,109 @@ interface SSPIData {
     tof: string;
     hematocrite: string;
   };
-  scores: {
-    aldrete: {
-      activite: number;
-      respiration: number;
-      circulation: number;
-      conscience: number;
-      saturation: number;
-      total: number;
-    };
+  
+  // Score d'Aldrete détaillé
+  aldrete: {
+    activite: number;
+    respiration: number;
+    circulation: number;
+    conscience: number;
+    saturation: number;
+    total: number;
   };
+  
+  // Médicaments
   medicaments: {
     analgesie: string;
     medications: string;
     perfusions: string;
   };
+  
+  // Bilans entrées/sorties
+  bilans: {
+    diurese: string;
+    saignement: string;
+    pertesInsensibles: string;
+    redon1: string;
+    redon2: string;
+    totalSorties: string;
+    totalEntrees: string;
+    bilanCumulatif: string;
+  };
+  
+  // Transfert
   transfert: {
     serviceDestination: string;
     heureTransfert: string;
-    medecinTransfert: string;
+    medecinResponsable: string;
   };
+  
+  // Signature
   signature: string;
 }
+
+const initialSSPIData: SSPIData = {
+  patient: {
+    nom: '',
+    prenom: '',
+    dateNaissance: '',
+    age: ''
+  },
+  equipe: {
+    anesthesiste: '',
+    tsar: '',
+    dateSurveillance: new Date().toLocaleDateString('fr-FR'),
+    heureEntreeSSPI: '',
+    heureSortieSSPI: ''
+  },
+  observations: {
+    conditionEntree: '',
+    observationsGenerales: '',
+    conditionSortie: '',
+    complications: ''
+  },
+  parametresVitaux: {
+    saO2: '',
+    etO2: '',
+    vs: false,
+    vi: '',
+    vc: false,
+    fr: '',
+    pi: '',
+    eva: '',
+    tof: '',
+    hematocrite: ''
+  },
+  aldrete: {
+    activite: 0,
+    respiration: 0,
+    circulation: 0,
+    conscience: 0,
+    saturation: 0,
+    total: 0
+  },
+  medicaments: {
+    analgesie: '',
+    medications: '',
+    perfusions: ''
+  },
+  bilans: {
+    diurese: '',
+    saignement: '',
+    pertesInsensibles: '',
+    redon1: '',
+    redon2: '',
+    totalSorties: '',
+    totalEntrees: '',
+    bilanCumulatif: ''
+  },
+  transfert: {
+    serviceDestination: '',
+    heureTransfert: '',
+    medecinResponsable: ''
+  },
+  signature: ''
+};
 
 export default function SurveillanceSSPIForm({ 
   onBackToList, 
@@ -67,120 +155,51 @@ export default function SurveillanceSSPIForm({
   onCreateNew?: () => void;
   onSelectPatient?: (patientNumber: string) => void;
 }) {
-  const [savedMessage, setSavedMessage] = useState<string>('');
-  const [formData, setFormData] = useState<SSPIData>({
-    patient: {
-      nom: '',
-      prenom: '',
-      dateNaissance: '',
-      age: ''
-    },
-    equipe: {
-      anesthesiste: '',
-      tsar: '',
-      dateSurveillance: new Date().toISOString().split('T')[0],
-      heureEntreeSSPI: '',
-      heureSortieSSPI: ''
-    },
-    observations: {
-      conditionEntree: '',
-      observations: '',
-      conditionSortie: '',
-      complications: ''
-    },
-    ventilation: {
-      saO2: '',
-      etO2: '',
-      vs: false,
-      vi: '',
-      vc: false,
-      fr: '',
-      pi: '',
-      eva: '',
-      tof: '',
-      hematocrite: ''
-    },
-    scores: {
-      aldrete: {
-        activite: 0,
-        respiration: 0,
-        circulation: 0,
-        conscience: 0,
-        saturation: 0,
-        total: 0
-      }
-    },
-    medicaments: {
-      analgesie: '',
-      medications: '',
-      perfusions: ''
-    },
-    transfert: {
-      serviceDestination: '',
-      heureTransfert: '',
-      medecinTransfert: ''
-    },
-    signature: ''
-  });
+  const [formData, setFormData] = useState<SSPIData>(initialSSPIData);
+  const [savedMessage, setSavedMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const calculateAge = () => {
-    if (formData.patient.dateNaissance) {
-      const today = new Date();
-      const birth = new Date(formData.patient.dateNaissance);
-      let age = today.getFullYear() - birth.getFullYear();
-      const monthDiff = today.getMonth() - birth.getMonth();
-      
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-        age--;
-      }
-      
-      setFormData(prev => ({
-        ...prev,
-        patient: { ...prev.patient, age: age + ' ans' }
-      }));
-    }
-  };
+  // Calcul automatique du score d'Aldrete
+  useEffect(() => {
+    const total = formData.aldrete.activite + formData.aldrete.respiration + 
+                  formData.aldrete.circulation + formData.aldrete.conscience + 
+                  formData.aldrete.saturation;
+    setFormData(prev => ({
+      ...prev,
+      aldrete: { ...prev.aldrete, total }
+    }));
+  }, [formData.aldrete.activite, formData.aldrete.respiration, 
+      formData.aldrete.circulation, formData.aldrete.conscience, 
+      formData.aldrete.saturation]);
 
-  const setCurrentTime = (field: string) => {
-    const now = new Date();
-    const timeString = now.toTimeString().substr(0, 5);
+  // Calcul automatique des bilans
+  useEffect(() => {
+    const diurese = parseFloat(formData.bilans.diurese) || 0;
+    const saignement = parseFloat(formData.bilans.saignement) || 0;
+    const pertesInsensibles = parseFloat(formData.bilans.pertesInsensibles) || 0;
+    const redon1 = parseFloat(formData.bilans.redon1) || 0;
+    const redon2 = parseFloat(formData.bilans.redon2) || 0;
     
-    if (field === 'heureEntreeSSPI') {
-      setFormData(prev => ({
-        ...prev,
-        equipe: { ...prev.equipe, heureEntreeSSPI: timeString }
-      }));
-    } else if (field === 'heureSortieSSPI') {
-      setFormData(prev => ({
-        ...prev,
-        equipe: { ...prev.equipe, heureSortieSSPI: timeString }
-      }));
-    } else if (field === 'heureTransfert') {
-      setFormData(prev => ({
-        ...prev,
-        transfert: { ...prev.transfert, heureTransfert: timeString }
-      }));
-    }
-  };
-
-  const updateAldreteScore = (category: string, value: number) => {
-    setFormData(prev => {
-      const newScores = { ...prev.scores.aldrete, [category]: value };
-      const total = Object.values(newScores).reduce((sum, score) => sum + score, 0) - newScores.total;
-      
-      return {
-        ...prev,
-        scores: {
-          ...prev.scores,
-          aldrete: { ...newScores, total }
-        }
-      };
-    });
-  };
+    const totalSorties = diurese + saignement + pertesInsensibles + redon1 + redon2;
+    const totalEntrees = parseFloat(formData.bilans.totalEntrees) || 0;
+    const bilanCumulatif = totalEntrees - totalSorties;
+    
+    setFormData(prev => ({
+      ...prev,
+      bilans: {
+        ...prev.bilans,
+        totalSorties: totalSorties.toString(),
+        bilanCumulatif: bilanCumulatif.toString()
+      }
+    }));
+  }, [formData.bilans.diurese, formData.bilans.saignement, 
+      formData.bilans.pertesInsensibles, formData.bilans.redon1, 
+      formData.bilans.redon2, formData.bilans.totalEntrees]);
 
   const handleSave = async () => {
     try {
       const patientNumber = `${formData.patient.nom}_${formData.patient.prenom}`.trim();
+      
       if (!patientNumber || patientNumber === '_') {
         alert("Veuillez renseigner le nom et prénom du patient pour sauvegarder.");
         return;
@@ -223,64 +242,8 @@ export default function SurveillanceSSPIForm({
   };
 
   const handleReset = () => {
-    if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
-      setFormData({
-        patient: {
-          nom: '',
-          prenom: '',
-          dateNaissance: '',
-          age: ''
-        },
-        equipe: {
-          anesthesiste: '',
-          tsar: '',
-          dateSurveillance: new Date().toISOString().split('T')[0],
-          heureEntreeSSPI: '',
-          heureSortieSSPI: ''
-        },
-        observations: {
-          conditionEntree: '',
-          observations: '',
-          conditionSortie: '',
-          complications: ''
-        },
-        ventilation: {
-          saO2: '',
-          etO2: '',
-          vs: false,
-          vi: '',
-          vc: false,
-          fr: '',
-          pi: '',
-          eva: '',
-          tof: '',
-          hematocrite: ''
-        },
-        scores: {
-          aldrete: {
-            activite: 0,
-            respiration: 0,
-            circulation: 0,
-            conscience: 0,
-            saturation: 0,
-            total: 0
-          }
-        },
-        medicaments: {
-          analgesie: '',
-          medications: '',
-          perfusions: ''
-        },
-        transfert: {
-          serviceDestination: '',
-          heureTransfert: '',
-          medecinTransfert: ''
-        },
-        signature: ''
-      });
-      setSavedMessage('✓ Formulaire réinitialisé');
-      setTimeout(() => setSavedMessage(''), 3000);
-    }
+    setFormData(initialSSPIData);
+    setSavedMessage('');
   };
 
   const handleExportJSON = () => {
@@ -289,7 +252,7 @@ export default function SurveillanceSSPIForm({
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `surveillance_sspi_${formData.patient.nom}_${formData.patient.prenom}_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `surveillance_sspi_${formData.patient.nom}_${formData.patient.prenom}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -300,592 +263,850 @@ export default function SurveillanceSSPIForm({
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const imported = JSON.parse(e.target?.result as string);
-          setFormData(imported);
+          const importedData = JSON.parse(e.target?.result as string);
+          setFormData(importedData);
           setSavedMessage('✓ Données importées avec succès');
           setTimeout(() => setSavedMessage(''), 3000);
         } catch (error) {
-          alert('Erreur lors de l\'importation du fichier');
+          alert('Erreur lors de l\'importation du fichier JSON');
         }
       };
       reader.readAsText(file);
     }
   };
 
-  useEffect(() => {
-    calculateAge();
-  }, [formData.patient.dateNaissance]);
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const setCurrentTime = (field: 'heureEntreeSSPI' | 'heureSortieSSPI' | 'heureTransfert') => {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    setFormData(prev => ({
+      ...prev,
+      equipe: field.includes('Transfert') ? prev.equipe : { ...prev.equipe, [field]: timeString },
+      transfert: field === 'heureTransfert' ? { ...prev.transfert, heureTransfert: timeString } : prev.transfert
+    }));
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-6">
-      <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 text-center relative">
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent"></div>
-          <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
-            <Heart className="w-8 h-8" />
-            SURVEILLANCE SSPI
-          </h1>
-          <p className="text-blue-100 text-lg">Salle de Soins Post Interventionnelle</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header avec boutons d'action */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-6">
+              <img 
+                src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
+                alt="Centre Diagnostic de Libreville" 
+                className="h-16 w-auto"
+              />
+              <div>
+                <h1 className="text-3xl font-bold text-[#1e3a8a]">Surveillance SSPI</h1>
+                <p className="text-gray-600 mt-2">Salle de Soins Post Interventionnelle</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={onBackToList}
+                className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition shadow-md"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Retour aux formulaires
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition shadow-md"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Sauvegarder
+              </button>
+            </div>
+          </div>
+
+          {/* Barre d'outils */}
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">ID surveillance:</label>
+              <input
+                type="text"
+                className="px-3 py-1 border rounded text-sm"
+                placeholder="Auto-généré"
+                readOnly
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Recherche:</label>
+              <input
+                type="text"
+                className="px-3 py-1 border rounded text-sm w-64"
+                placeholder="Patient, anesthésiste..."
+              />
+            </div>
+            <div className="flex gap-2 ml-auto">
+              <button
+                onClick={handlePrint}
+                className="flex items-center px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              >
+                <Printer className="w-4 h-4 mr-1" />
+                Imprimer
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Toolbar */}
-        <div className="bg-white border-2 border-blue-200 p-4 flex gap-3 items-center flex-wrap">
-          <button
-            onClick={onBackToList}
-            className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition shadow-md"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour aux formulaires
-          </button>
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImportJSON}
-            className="hidden"
-            id="import-file"
-          />
-          <label
-            htmlFor="import-file"
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition cursor-pointer shadow-md"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Importer
-          </label>
-          <button
-            onClick={handleExportJSON}
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition shadow-md"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Exporter
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition shadow-md"
-          >
-            <Printer className="w-4 h-4 mr-2" />
-            Imprimer
-          </button>
-          <button
-            onClick={handleReset}
-            className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition shadow-md"
-          >
-            <Activity className="w-4 h-4 mr-2" />
-            Réinitialiser
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-md"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Sauvegarder
-          </button>
-        </div>
-
+        {/* Message de sauvegarde */}
         {savedMessage && (
-          <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 mx-6 mt-4 rounded">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
             {savedMessage}
           </div>
         )}
 
-        {/* Patient Info */}
-        <div className="bg-blue-50 p-6 border-b-2 border-blue-200">
-          <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Informations Patient et Équipe
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Formulaire principal */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          {/* Informations patient */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Nom du patient *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nom du patient *
+              </label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.patient.nom}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   patient: { ...prev.patient, nom: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Prénom *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prénom *
+              </label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.patient.prenom}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   patient: { ...prev.patient, prenom: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Date de naissance</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date de naissance
+              </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.patient.dateNaissance}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   patient: { ...prev.patient, dateNaissance: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Âge</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Âge
+              </label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg bg-gray-100"
                 value={formData.patient.age}
-                readOnly
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  patient: { ...prev.patient, age: e.target.value }
+                }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="ans"
               />
             </div>
+          </div>
+
+          {/* Équipe et horaires */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Anesthésiste *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Anesthésiste *
+              </label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.equipe.anesthesiste}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   equipe: { ...prev.equipe, anesthesiste: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">TSAR</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                TSAR
+              </label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.equipe.tsar}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   equipe: { ...prev.equipe, tsar: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Date surveillance *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date surveillance *
+              </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.equipe.dateSurveillance}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   equipe: { ...prev.equipe, dateSurveillance: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Heure entrée SSPI</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Heure entrée SSPI
+              </label>
               <div className="flex gap-2">
                 <input
                   type="time"
-                  className="flex-1 px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={formData.equipe.heureEntreeSSPI}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
                     equipe: { ...prev.equipe, heureEntreeSSPI: e.target.value }
                   }))}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setCurrentTime('heureEntreeSSPI')}
-                  className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm"
+                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
                 >
-                  <Clock className="w-4 h-4" />
+                  Maintenant
                 </button>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Heure sortie SSPI</label>
+          </div>
+
+          {/* Heure sortie SSPI */}
+          <div className="mb-8">
+            <div className="max-w-xs">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Heure sortie SSPI
+              </label>
               <div className="flex gap-2">
                 <input
                   type="time"
-                  className="flex-1 px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={formData.equipe.heureSortieSSPI}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
                     equipe: { ...prev.equipe, heureSortieSSPI: e.target.value }
                   }))}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setCurrentTime('heureSortieSSPI')}
-                  className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm"
+                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
                 >
-                  <Clock className="w-4 h-4" />
+                  Maintenant
                 </button>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Observations */}
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-blue-800 mb-4">Observations Générales</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-2">Condition d'entrée</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="État du patient à l'arrivée"
-                value={formData.observations.conditionEntree}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  observations: { ...prev.observations, conditionEntree: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-2">Condition de sortie</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="État du patient à la sortie"
-                value={formData.observations.conditionSortie}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  observations: { ...prev.observations, conditionSortie: e.target.value }
-                }))}
-              />
-            </div>
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-semibold text-blue-700 mb-2">Observations</label>
-              <textarea
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder="Observations générales..."
-                value={formData.observations.observations}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  observations: { ...prev.observations, observations: e.target.value }
-                }))}
-              />
+          {/* Section Observations */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Observations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Condition d'entrée
+                </label>
+                <textarea
+                  value={formData.observations.conditionEntree}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    observations: { ...prev.observations, conditionEntree: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="État du patient à l'arrivée"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Observations générales
+                </label>
+                <textarea
+                  value={formData.observations.observationsGenerales}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    observations: { ...prev.observations, observationsGenerales: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Observations générales..."
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Ventilation */}
-        <div className="p-6 bg-blue-50">
-          <h2 className="text-xl font-bold text-blue-800 mb-4">Ventilation et Paramètres</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Sa O₂ (%)</label>
-              <div className="flex gap-2">
+          {/* Section Paramètres vitaux et ventilation */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Paramètres vitaux et ventilation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sa O₂ (%)
+                </label>
                 <input
                   type="text"
-                  className="flex-1 px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="98"
-                  value={formData.ventilation.saO2}
+                  value={formData.parametresVitaux.saO2}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    ventilation: { ...prev.ventilation, saO2: e.target.value }
+                    parametresVitaux: { ...prev.parametresVitaux, saO2: e.target.value }
                   }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Valeur"
                 />
-                <button
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, ventilation: { ...prev.ventilation, saO2: '98' } }))}
-                  className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                >
-                  98
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Et O₂ (mmHg)</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valeur"
-                value={formData.ventilation.etO2}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, etO2: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Vi</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valeur"
-                value={formData.ventilation.vi}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, vi: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">FR</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valeur"
-                value={formData.ventilation.fr}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, fr: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Pi</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valeur"
-                value={formData.ventilation.pi}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, pi: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">E.V.A. (/10)</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="/10"
-                value={formData.ventilation.eva}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, eva: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">T.O.F./Niveau A.L.R.</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valeur"
-                value={formData.ventilation.tof}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, tof: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Hématocrite/Dextro</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valeur"
-                value={formData.ventilation.hematocrite}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, hematocrite: e.target.value }
-                }))}
-              />
-            </div>
-          </div>
-          
-          {/* Checkboxes */}
-          <div className="mt-4 flex gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600"
-                checked={formData.ventilation.vs}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, vs: e.target.checked }
-                }))}
-              />
-              <span className="font-semibold text-blue-700">VS</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600"
-                checked={formData.ventilation.vc}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  ventilation: { ...prev.ventilation, vc: e.target.checked }
-                }))}
-              />
-              <span className="font-semibold text-blue-700">VC</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Score d'Aldrete */}
-        <div className="p-6 bg-gradient-to-r from-blue-50 to-cyan-50">
-          <h2 className="text-xl font-bold text-blue-800 mb-4">Score d'ALDRETE</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {[
-              { key: 'activite', label: 'Activité motrice' },
-              { key: 'respiration', label: 'Respiration' },
-              { key: 'circulation', label: 'Circulation' },
-              { key: 'conscience', label: 'Conscience' },
-              { key: 'saturation', label: 'Saturation O₂' }
-            ].map(({ key, label }) => (
-              <div key={key} className="text-center">
-                <label className="block text-sm font-semibold text-blue-700 mb-2">{label}</label>
-                <div className="flex gap-1 justify-center">
-                  {[0, 1, 2].map(value => (
-                    <button
-                      key={value}
-                      type="button"
-                      className={`w-8 h-8 border-2 rounded font-bold transition ${
-                        formData.scores.aldrete[key as keyof typeof formData.scores.aldrete] === value
-                          ? 'bg-blue-500 text-white border-blue-500'
-                          : 'bg-white border-blue-200 hover:border-blue-500'
-                      }`}
-                      onClick={() => updateAldreteScore(key, value)}
-                    >
-                      {value}
-                    </button>
-                  ))}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      parametresVitaux: { ...prev.parametresVitaux, saO2: '98' }
+                    }))}
+                    className="px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                  >
+                    98
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      parametresVitaux: { ...prev.parametresVitaux, saO2: '99' }
+                    }))}
+                    className="px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                  >
+                    99
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      parametresVitaux: { ...prev.parametresVitaux, saO2: '100' }
+                    }))}
+                    className="px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                  >
+                    100
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="text-center mt-4 p-4 bg-white rounded-lg">
-            <span className="text-2xl font-bold text-blue-800">
-              Score total : {formData.scores.aldrete.total} / 10
-            </span>
-          </div>
-        </div>
-
-        {/* Médicaments */}
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-blue-800 mb-4">Médicaments et Perfusions</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-2">Analgésie</label>
-              <textarea
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={4}
-                placeholder="Médicaments analgésiques administrés..."
-                value={formData.medicaments.analgesie}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  medicaments: { ...prev.medicaments, analgesie: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-2">Médications</label>
-              <textarea
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={4}
-                placeholder="Autres médicaments administrés..."
-                value={formData.medicaments.medications}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  medicaments: { ...prev.medicaments, medications: e.target.value }
-                }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-2">Perfusions</label>
-              <textarea
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={4}
-                placeholder="Perfusions en cours..."
-                value={formData.medicaments.perfusions}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  medicaments: { ...prev.medicaments, perfusions: e.target.value }
-                }))}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Transfert */}
-        <div className="p-6 bg-blue-50">
-          <h2 className="text-xl font-bold text-blue-800 mb-4">Préparation au Transfert</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Service de destination</label>
-              <select
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.transfert.serviceDestination}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  transfert: { ...prev.transfert, serviceDestination: e.target.value }
-                }))}
-              >
-                <option value="">Sélectionner...</option>
-                <option value="Chirurgie">Service de chirurgie</option>
-                <option value="Médecine">Service de médecine</option>
-                <option value="Réanimation">Réanimation</option>
-                <option value="USC">USC</option>
-                <option value="Domicile">Retour à domicile</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Heure de transfert</label>
-              <div className="flex gap-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Et O₂ (mmHg)
+                </label>
                 <input
-                  type="time"
-                  className="flex-1 px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.transfert.heureTransfert}
+                  type="text"
+                  value={formData.parametresVitaux.etO2}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    transfert: { ...prev.transfert, heureTransfert: e.target.value }
+                    parametresVitaux: { ...prev.parametresVitaux, etO2: e.target.value }
                   }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Valeur"
                 />
-                <button
-                  type="button"
-                  onClick={() => setCurrentTime('heureTransfert')}
-                  className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm"
-                >
-                  <Clock className="w-4 h-4" />
-                </button>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  E.V.A. (/10)
+                </label>
+                <input
+                  type="text"
+                  value={formData.parametresVitaux.eva}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    parametresVitaux: { ...prev.parametresVitaux, eva: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Score douleur"
+                />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-blue-700 mb-1">Médecin responsable</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Médecin du service de destination"
-                value={formData.transfert.medecinTransfert}
+
+            {/* Ventilation */}
+            <div className="mt-6">
+              <h4 className="text-md font-medium text-gray-700 mb-3">Ventilation</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.parametresVitaux.vs}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        parametresVitaux: { ...prev.parametresVitaux, vs: e.target.checked }
+                      }))}
+                      className="rounded"
+                    />
+                    VS
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.parametresVitaux.vi}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      parametresVitaux: { ...prev.parametresVitaux, vi: e.target.value }
+                    }))}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm"
+                    placeholder="Vi:"
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.parametresVitaux.vc}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        parametresVitaux: { ...prev.parametresVitaux, vc: e.target.checked }
+                      }))}
+                      className="rounded"
+                    />
+                    VC
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.parametresVitaux.fr}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      parametresVitaux: { ...prev.parametresVitaux, fr: e.target.value }
+                    }))}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm"
+                    placeholder="FR:"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={formData.parametresVitaux.pi}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      parametresVitaux: { ...prev.parametresVitaux, pi: e.target.value }
+                    }))}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm"
+                    placeholder="Pi:"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Autres paramètres */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  T.O.F./Niveau A.L.R.
+                </label>
+                <input
+                  type="text"
+                  value={formData.parametresVitaux.tof}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    parametresVitaux: { ...prev.parametresVitaux, tof: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hématocrite/Dextro
+                </label>
+                <input
+                  type="text"
+                  value={formData.parametresVitaux.hematocrite}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    parametresVitaux: { ...prev.parametresVitaux, hematocrite: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Score d'Aldrete détaillé */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Score d'ALDRETE détaillé</h3>
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                {[
+                  { key: 'activite', label: 'Activité motrice', options: ['0', '1', '2'] },
+                  { key: 'respiration', label: 'Respiration', options: ['0', '1', '2'] },
+                  { key: 'circulation', label: 'Circulation', options: ['0', '1', '2'] },
+                  { key: 'conscience', label: 'Conscience', options: ['0', '1', '2'] },
+                  { key: 'saturation', label: 'Saturation O₂', options: ['0', '1', '2'] }
+                ].map(({ key, label, options }) => (
+                  <div key={key}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {label}
+                    </label>
+                    <div className="space-y-2">
+                      {options.map((option) => (
+                        <label key={option} className="flex items-center">
+                          <input
+                            type="radio"
+                            name={key}
+                            value={parseInt(option)}
+                            checked={formData.aldrete[key as keyof typeof formData.aldrete] === parseInt(option)}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              aldrete: { ...prev.aldrete, [key]: parseInt(e.target.value) }
+                            }))}
+                            className="mr-2"
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <div className="text-lg font-semibold text-gray-800">
+                  Score total: {formData.aldrete.total}/10
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Médicaments */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Médicaments</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Analgésie
+                </label>
+                <textarea
+                  value={formData.medicaments.analgesie}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    medicaments: { ...prev.medicaments, analgesie: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Médicaments analgésiques administrés..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Médications
+                </label>
+                <textarea
+                  value={formData.medicaments.medications}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    medicaments: { ...prev.medicaments, medications: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Autres médicaments administrés..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Perfusions
+                </label>
+                <textarea
+                  value={formData.medicaments.perfusions}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    medicaments: { ...prev.medicaments, perfusions: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Perfusions en cours, débits..."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Bilans entrées/sorties */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Bilans entrées/sorties</h3>
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Diurèse (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.diurese}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bilans: { ...prev.bilans, diurese: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Saignement (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.saignement}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bilans: { ...prev.bilans, saignement: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    P. Insensibles (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.pertesInsensibles}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bilans: { ...prev.bilans, pertesInsensibles: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total sorties (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.totalSorties}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Redon 1 (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.redon1}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bilans: { ...prev.bilans, redon1: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Redon 2 (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.redon2}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bilans: { ...prev.bilans, redon2: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total entrées (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.totalEntrees}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bilans: { ...prev.bilans, totalEntrees: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bilan H/cumul (ml)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.bilans.bilanCumulatif}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Préparation au transfert */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Préparation au transfert</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Condition de sortie
+                </label>
+                <textarea
+                  value={formData.observations.conditionSortie}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    observations: { ...prev.observations, conditionSortie: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="État du patient à la sortie"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Service de destination
+                </label>
+                <select
+                  value={formData.transfert.serviceDestination}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    transfert: { ...prev.transfert, serviceDestination: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Sélectionner...</option>
+                  <option value="chirurgie">Chirurgie</option>
+                  <option value="medecine">Médecine</option>
+                  <option value="reanimation">Réanimation</option>
+                  <option value="cardiologie">Cardiologie</option>
+                  <option value="neurologie">Neurologie</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Heure de transfert
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    value={formData.transfert.heureTransfert}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      transfert: { ...prev.transfert, heureTransfert: e.target.value }
+                    }))}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTime('heureTransfert')}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                  >
+                    Maintenant
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Médecin responsable
+                </label>
+                <input
+                  type="text"
+                  value={formData.transfert.medecinResponsable}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    transfert: { ...prev.transfert, medecinResponsable: e.target.value }
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Médecin du service de dest"
+                />
+              </div>
+            </div>
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Complications survenues
+              </label>
+              <textarea
+                value={formData.observations.complications}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  transfert: { ...prev.transfert, medecinTransfert: e.target.value }
+                  observations: { ...prev.observations, complications: e.target.value }
                 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={4}
+                placeholder="Complications éventuelles durant le séjour en SSPI..."
               />
             </div>
           </div>
-          <div className="mt-4">
-            <label className="block text-sm font-semibold text-blue-700 mb-2">Complications survenues</label>
-            <textarea
-              className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              placeholder="Complications éventuelles durant le séjour en SSPI..."
-              value={formData.observations.complications}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                observations: { ...prev.observations, complications: e.target.value }
-              }))}
-            />
-          </div>
-        </div>
 
-        {/* Signature */}
-        <div className="p-6 bg-purple-50">
-          <h2 className="text-xl font-bold text-purple-800 mb-4">SIGNATURE</h2>
-          <div className="max-w-md mx-auto">
-            <h3 className="text-lg font-semibold text-purple-700 mb-2">Signature de l'infirmier(e)</h3>
-            <SignaturePad
-              onSignatureChange={(signature) => setFormData(prev => ({
-                ...prev,
-                signature: signature
-              }))}
-              width={400}
-              height={200}
-              placeholder="Signature de l'infirmier(e)"
-            />
+          {/* Signature */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Signature</h3>
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <SignaturePad
+                onSignatureChange={(signatureData) => setFormData(prev => ({
+                  ...prev,
+                  signature: signatureData
+                }))}
+                width={400}
+                height={200}
+                placeholder="Signature de l'infirmier(e)"
+              />
+            </div>
+          </div>
+
+          {/* Boutons d'action */}
+          <div className="flex justify-between items-center pt-6 border-t">
+            <div className="flex gap-3">
+              <button
+                onClick={handleReset}
+                className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
+              >
+                Réinitialiser
+              </button>
+              <label className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition cursor-pointer">
+                <Upload className="w-4 h-4 mr-2" />
+                Importer JSON
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportJSON}
+                  className="hidden"
+                />
+              </label>
+              <button
+                onClick={handleExportJSON}
+                className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Exporter JSON
+              </button>
+            </div>
+            <button
+              onClick={handlePrint}
+              className="flex items-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition"
+            >
+              <Printer className="w-4 h-4 mr-2" />
+              Imprimer
+            </button>
           </div>
         </div>
       </div>
