@@ -5,7 +5,6 @@ import SurveillanceSSPIForm from './forms/SurveillanceSSPIForm';
 import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
 import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
 import PatientList from './forms/PatientList';
-import FormConsultation from './forms/FormConsultation';
 import SSPIConsultation from './forms/SSPIConsultation';
 import CompteRenduConsultation from './forms/CompteRenduConsultation';
 import ConsentementConsultation from './forms/ConsentementConsultation';
@@ -56,7 +55,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'list' | 'form' | 'consultation' | 'sspi-consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('list');
+  const [currentView, setCurrentView] = useState<'list' | 'form' | 'sspi-consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('list');
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -73,10 +72,6 @@ export default function FormManager() {
 
   const handleSelectPatient = (patientNumber: string) => {
     setCurrentView('form');
-  };
-
-  const handleConsultationView = () => {
-    setCurrentView('consultation');
   };
 
   const handleSSPIConsultation = () => {
@@ -100,14 +95,6 @@ export default function FormManager() {
         onBackToList={handleBackToList}
         onCreateNew={handleCreateNew}
         onSelectPatient={handleSelectPatient}
-      />
-    );
-  }
-
-  if (currentView === 'consultation') {
-    return (
-      <FormConsultation 
-        onBackToList={handleBackToList}
       />
     );
   }
@@ -175,15 +162,6 @@ export default function FormManager() {
               <div>
                 <h1 className="text-2xl font-bold text-[#1e3a8a]">Système de gestion des formulaires médicaux</h1>
               </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleConsultationView}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Consultation des Formulaires
-              </button>
             </div>
           </div>
         </div>
