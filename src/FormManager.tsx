@@ -96,7 +96,7 @@ export default function FormManager() {
               className="h-16 w-auto"
             />
             <div>
-              <p className="text-gray-600">Système de gestion des formulaires médicaux</p>
+              <h1 className="text-2xl font-bold text-[#1e3a8a]">Système de gestion des formulaires médicaux</h1>
             </div>
           </div>
         </div>
