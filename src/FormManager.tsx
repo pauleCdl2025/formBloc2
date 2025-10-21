@@ -6,6 +6,9 @@ import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueFo
 import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
 import PatientList from './forms/PatientList';
 import FormConsultation from './forms/FormConsultation';
+import SSPIConsultation from './forms/SSPIConsultation';
+import CompteRenduConsultation from './forms/CompteRenduConsultation';
+import ConsentementConsultation from './forms/ConsentementConsultation';
 
 interface FormConfig {
   id: string;
@@ -53,7 +56,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'list' | 'form' | 'consultation'>('list');
+  const [currentView, setCurrentView] = useState<'list' | 'form' | 'consultation' | 'sspi-consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('list');
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -76,6 +79,18 @@ export default function FormManager() {
     setCurrentView('consultation');
   };
 
+  const handleSSPIConsultation = () => {
+    setCurrentView('sspi-consultation');
+  };
+
+  const handleCompteRenduConsultation = () => {
+    setCurrentView('compte-rendu-consultation');
+  };
+
+  const handleConsentementConsultation = () => {
+    setCurrentView('consentement-consultation');
+  };
+
   const selectedFormConfig = availableForms.find(form => form.id === selectedForm);
   const FormComponent = selectedFormConfig?.component;
 
@@ -93,6 +108,54 @@ export default function FormManager() {
     return (
       <FormConsultation 
         onBackToList={handleBackToList}
+      />
+    );
+  }
+
+  if (currentView === 'sspi-consultation') {
+    return (
+      <SSPIConsultation 
+        onBackToList={handleBackToList}
+        onCreateNew={() => {
+          setSelectedForm('sspi');
+          setCurrentView('form');
+        }}
+        onSelectPatient={(patientNumber) => {
+          setSelectedForm('sspi');
+          setCurrentView('form');
+        }}
+      />
+    );
+  }
+
+  if (currentView === 'compte-rendu-consultation') {
+    return (
+      <CompteRenduConsultation 
+        onBackToList={handleBackToList}
+        onCreateNew={() => {
+          setSelectedForm('compte-rendu');
+          setCurrentView('form');
+        }}
+        onSelectPatient={(patientNumber) => {
+          setSelectedForm('compte-rendu');
+          setCurrentView('form');
+        }}
+      />
+    );
+  }
+
+  if (currentView === 'consentement-consultation') {
+    return (
+      <ConsentementConsultation 
+        onBackToList={handleBackToList}
+        onCreateNew={() => {
+          setSelectedForm('consentement');
+          setCurrentView('form');
+        }}
+        onSelectPatient={(patientNumber) => {
+          setSelectedForm('consentement');
+          setCurrentView('form');
+        }}
       />
     );
   }
@@ -147,11 +210,28 @@ export default function FormManager() {
                 <span className="text-sm text-green-600 font-semibold">
                   Disponible
                 </span>
-                <div className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition">
-                  <span className="text-sm font-medium mr-1">Ouvrir</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (form.id === 'sspi') handleSSPIConsultation();
+                      else if (form.id === 'compte-rendu') handleCompteRenduConsultation();
+                      else if (form.id === 'consentement') handleConsentementConsultation();
+                      else handleFormSelect(form.id);
+                    }}
+                    className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition"
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    <span className="text-sm font-medium">Consulter</span>
+                  </button>
+                  <button
+                    onClick={() => handleFormSelect(form.id)}
+                    className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition"
+                  >
+                    <span className="text-sm font-medium mr-1">Nouveau</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
