@@ -37,9 +37,11 @@ export default function SignaturePad({
     
     ctx.scale(dpr, dpr);
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
 
     // Fonction pour obtenir les coordonnées
     const getCoordinates = (e: MouseEvent | TouchEvent) => {
@@ -66,6 +68,10 @@ export default function SignaturePad({
       const coords = getCoordinates(e);
       setLastX(coords.x);
       setLastY(coords.y);
+      
+      // Commencer un nouveau chemin
+      ctx.beginPath();
+      ctx.moveTo(coords.x, coords.y);
     };
 
     // Fonction de dessin
@@ -76,8 +82,6 @@ export default function SignaturePad({
       
       const coords = getCoordinates(e);
       
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
       ctx.lineTo(coords.x, coords.y);
       ctx.stroke();
       
@@ -129,6 +133,11 @@ export default function SignaturePad({
     
     const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Remplir avec un fond blanc
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    
     setHasSignature(false);
     
     if (onSignatureChange) {
