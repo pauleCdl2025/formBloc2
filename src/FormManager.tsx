@@ -89,6 +89,15 @@ export default function FormManager() {
   const selectedFormConfig = availableForms.find(form => form.id === selectedForm);
   const FormComponent = selectedFormConfig?.component;
 
+  if (currentView === 'list') {
+    return (
+      <PatientList 
+        onCreateNew={handleCreateNew}
+        onSelectPatient={handleSelectPatient}
+      />
+    );
+  }
+
   if (currentView === 'form' && FormComponent) {
     return (
       <FormComponent 
