@@ -46,10 +46,31 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
         .eq('form_type', 'compte_rendu_preanesthesique')
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
-      setForms(data || []);
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        // Si la colonne form_type n'existe pas, on charge tous les formulaires et on filtre côté client
+        const { data: allData, error: allError } = await supabase
+          .from('preanesthesia_forms')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        if (allError) throw allError;
+        
+        // Filtrer côté client pour les comptes-rendus
+        const compteRenduForms = (allData || []).filter(form => 
+          form.data && (
+            form.data.identification?.medecinAnesthesiste ||
+            form.data.intervention?.type ||
+            form.data.antecedents?.allergies !== undefined
+          )
+        );
+        setForms(compteRenduForms);
+      } else {
+        setForms(data || []);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des comptes-rendus:', error);
+      setForms([]); // En cas d'erreur, on affiche une liste vide
     } finally {
       setLoading(false);
     }

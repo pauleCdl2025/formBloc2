@@ -46,10 +46,31 @@ const ConsentementConsultation: React.FC<ConsentementConsultationProps> = ({
         .eq('form_type', 'consentement_anesthesique')
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
-      setForms(data || []);
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        // Si la colonne form_type n'existe pas, on charge tous les formulaires et on filtre côté client
+        const { data: allData, error: allError } = await supabase
+          .from('preanesthesia_forms')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        if (allError) throw allError;
+        
+        // Filtrer côté client pour les consentements
+        const consentementForms = (allData || []).filter(form => 
+          form.data && (
+            form.data.medecin?.nom ||
+            form.data.diagnostic ||
+            form.data.anesthesie?.generale !== undefined
+          )
+        );
+        setForms(consentementForms);
+      } else {
+        setForms(data || []);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des consentements:', error);
+      setForms([]); // En cas d'erreur, on affiche une liste vide
     } finally {
       setLoading(false);
     }

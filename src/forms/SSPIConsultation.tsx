@@ -46,10 +46,32 @@ const SSPIConsultation: React.FC<SSPIConsultationProps> = ({
         .eq('form_type', 'surveillance_sspi')
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
-      setForms(data || []);
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        // Si la colonne form_type n'existe pas ou si c'est une erreur de structure,
+        // on charge tous les formulaires et on filtre côté client
+        const { data: allData, error: allError } = await supabase
+          .from('preanesthesia_forms')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        if (allError) throw allError;
+        
+        // Filtrer côté client pour les formulaires SSPI
+        const sspiForms = (allData || []).filter(form => 
+          form.data && (
+            form.data.patient?.nom || 
+            form.data.equipe?.anesthesiste ||
+            form.data.ventilation?.saO2 !== undefined
+          )
+        );
+        setForms(sspiForms);
+      } else {
+        setForms(data || []);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des formulaires SSPI:', error);
+      setForms([]); // En cas d'erreur, on affiche une liste vide
     } finally {
       setLoading(false);
     }
