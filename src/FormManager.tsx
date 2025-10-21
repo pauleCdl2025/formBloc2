@@ -225,13 +225,25 @@ export default function FormManager() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // Empêche le clic sur la carte
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Bouton Consulter cliqué pour:', form.id);
                       if (form.id === 'preanesthesia') {
-                        setCurrentView('list'); // Va à PatientList
-                      } else if (form.id === 'sspi') handleSSPIConsultation();
-                      else if (form.id === 'compte-rendu') handleCompteRenduConsultation();
-                      else if (form.id === 'consentement') handleConsentementConsultation();
-                      else handleFormSelect(form.id);
+                        console.log('Aller à PatientList');
+                        setCurrentView('list');
+                      } else if (form.id === 'sspi') {
+                        console.log('Aller à SSPI Consultation');
+                        handleSSPIConsultation();
+                      } else if (form.id === 'compte-rendu') {
+                        console.log('Aller à Compte-rendu Consultation');
+                        handleCompteRenduConsultation();
+                      } else if (form.id === 'consentement') {
+                        console.log('Aller à Consentement Consultation');
+                        handleConsentementConsultation();
+                      } else {
+                        console.log('Aller à FormSelect');
+                        handleFormSelect(form.id);
+                      }
                     }}
                     className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
                   >
@@ -240,11 +252,15 @@ export default function FormManager() {
                   </button>
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // Empêche le clic sur la carte
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Bouton Nouveau cliqué pour:', form.id);
                       if (form.id === 'preanesthesia') {
+                        console.log('Aller au formulaire PreAnesthesia');
                         setSelectedForm('preanesthesia');
-                        setCurrentView('form'); // Va au formulaire de création
+                        setCurrentView('form');
                       } else {
+                        console.log('Aller à FormSelect');
                         handleFormSelect(form.id);
                       }
                     }}
