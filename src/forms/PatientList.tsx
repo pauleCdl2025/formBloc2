@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Search, Eye, Edit, Trash2, Plus, Calendar, User } from 'lucide-react';
+import { Search, Eye, Edit, Trash2, Plus, Calendar, User, ArrowLeft } from 'lucide-react';
 
 interface PatientData {
   id: string;
@@ -10,9 +10,10 @@ interface PatientData {
   updated_at: string;
 }
 
-export default function PatientList({ onSelectPatient, onCreateNew }: {
+export default function PatientList({ onSelectPatient, onCreateNew, onBackToList }: {
   onSelectPatient: (patientNumber: string) => void;
   onCreateNew: () => void;
+  onBackToList?: () => void;
 }) {
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,13 +107,24 @@ export default function PatientList({ onSelectPatient, onCreateNew }: {
                 <p className="text-gray-600 mt-2">Gestion des consultations pré-anesthésiques</p>
               </div>
             </div>
-            <button
-              onClick={onCreateNew}
-              className="flex items-center px-6 py-3 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition shadow-md"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Nouveau Formulaire
-            </button>
+            <div className="flex gap-3">
+              {onBackToList && (
+                <button
+                  onClick={onBackToList}
+                  className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition shadow-md"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Retour aux formulaires
+                </button>
+              )}
+              <button
+                onClick={onCreateNew}
+                className="flex items-center px-6 py-3 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition shadow-md"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nouveau Formulaire
+              </button>
+            </div>
           </div>
 
           {/* Search */}

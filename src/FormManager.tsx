@@ -94,6 +94,7 @@ export default function FormManager() {
       <PatientList 
         onCreateNew={handleCreateNew}
         onSelectPatient={handleSelectPatient}
+        onBackToList={handleBackToList}
       />
     );
   }
