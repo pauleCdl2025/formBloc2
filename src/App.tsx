@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import FormManager from './FormManager';
+import InstallButton from './components/InstallButton';
 import { testSupabaseConnection } from './lib/supabaseClient';
 import './index.css';
 
@@ -12,6 +13,7 @@ function App() {
   return (
     <div className="App">
       <FormManager />
+      <InstallButton />
     </div>
   );
 }
