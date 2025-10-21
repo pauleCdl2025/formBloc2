@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { FileText, Stethoscope, ClipboardList, Heart, Brain, Eye, Users } from 'lucide-react';
+import { FileText, Stethoscope, ClipboardList, Heart, Brain, Eye, Users, Shield, FileCheck } from 'lucide-react';
 import PreAnesthesiaForm from './forms/PreAnesthesiaForm';
 import ConsultationGeneraleForm from './forms/ConsultationGeneraleForm';
 import SurveillanceSSPIForm from './forms/SurveillanceSSPIForm';
+import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
+import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
 import PatientList from './forms/PatientList';
 
 interface FormConfig {
@@ -39,6 +41,22 @@ const availableForms: FormConfig[] = [
     icon: <Heart className="w-8 h-8" />,
     component: SurveillanceSSPIForm,
     color: 'bg-purple-500'
+  },
+  {
+    id: 'compte-rendu',
+    name: 'Compte-rendu Pré-anesthésique',
+    description: 'Formulaire de compte-rendu de consultation pré-anesthésique',
+    icon: <FileCheck className="w-8 h-8" />,
+    component: CompteRenduPreAnesthesiqueForm,
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'consentement',
+    name: 'Consentement Anesthésique',
+    description: 'Formulaire de consentement éclairé pour l\'anesthésie',
+    icon: <Shield className="w-8 h-8" />,
+    component: ConsentementAnesthesiqueForm,
+    color: 'bg-slate-500'
   },
   {
     id: 'examen',
@@ -204,7 +222,7 @@ export default function FormManager() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Actifs</p>
-                <p className="text-2xl font-bold text-gray-900">{availableForms.filter(f => f.id === 'preanesthesia' || f.id === 'consultation' || f.id === 'sspi').length}</p>
+                <p className="text-2xl font-bold text-gray-900">{availableForms.filter(f => f.id === 'preanesthesia' || f.id === 'consultation' || f.id === 'sspi' || f.id === 'compte-rendu' || f.id === 'consentement').length}</p>
               </div>
             </div>
           </div>
