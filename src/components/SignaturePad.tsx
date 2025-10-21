@@ -28,9 +28,14 @@ export default function SignaturePad({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Configuration du canvas
-    canvas.width = width;
-    canvas.height = height;
+    // Configuration du canvas avec DPI scaling
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    
+    ctx.scale(dpr, dpr);
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
@@ -39,18 +44,16 @@ export default function SignaturePad({
     // Fonction pour obtenir les coordonnées
     const getCoordinates = (e: MouseEvent | TouchEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
       
       if ('touches' in e) {
         return {
-          x: (e.touches[0].clientX - rect.left) * scaleX,
-          y: (e.touches[0].clientY - rect.top) * scaleY
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
         };
       } else {
         return {
-          x: (e.clientX - rect.left) * scaleX,
-          y: (e.clientY - rect.top) * scaleY
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
         };
       }
     };
@@ -58,6 +61,7 @@ export default function SignaturePad({
     // Fonction de démarrage du dessin
     const startDrawing = (e: MouseEvent | TouchEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsDrawing(true);
       const coords = getCoordinates(e);
       setLastX(coords.x);
@@ -68,6 +72,7 @@ export default function SignaturePad({
     const draw = (e: MouseEvent | TouchEvent) => {
       if (!isDrawing) return;
       e.preventDefault();
+      e.stopPropagation();
       
       const coords = getCoordinates(e);
       
@@ -87,7 +92,9 @@ export default function SignaturePad({
     };
 
     // Fonction d'arrêt du dessin
-    const stopDrawing = () => {
+    const stopDrawing = (e: MouseEvent | TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setIsDrawing(false);
     };
 
@@ -120,6 +127,7 @@ export default function SignaturePad({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
+    const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
     
