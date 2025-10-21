@@ -233,7 +233,7 @@ export default function FormManager() {
                       else if (form.id === 'consentement') handleConsentementConsultation();
                       else handleFormSelect(form.id);
                     }}
-                    className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition"
+                    className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
                   >
                     <Eye className="w-4 h-4 mr-1" />
                     <span className="text-sm font-medium">Consulter</span>
@@ -243,7 +243,7 @@ export default function FormManager() {
                       e.stopPropagation(); // Empêche le clic sur la carte
                       handleFormSelect(form.id);
                     }}
-                    className="flex items-center text-[#0ea5e9] hover:text-[#0284c7] transition"
+                    className="flex items-center px-3 py-1 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-blue-50 rounded transition cursor-pointer"
                   >
                     <span className="text-sm font-medium mr-1">
                       {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
