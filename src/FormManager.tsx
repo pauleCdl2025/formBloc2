@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Stethoscope, Heart, Shield, FileCheck, FileText, Users, ClipboardList } from 'lucide-react';
+import { Stethoscope, Heart, Shield, FileCheck, FileText, Users, ClipboardList, Eye } from 'lucide-react';
 import PreAnesthesiaForm from './forms/PreAnesthesiaForm';
 import SurveillanceSSPIForm from './forms/SurveillanceSSPIForm';
 import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
 import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
 import PatientList from './forms/PatientList';
+import FormConsultation from './forms/FormConsultation';
 
 interface FormConfig {
   id: string;
@@ -52,7 +53,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
+  const [currentView, setCurrentView] = useState<'list' | 'form' | 'consultation'>('list');
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -71,6 +72,10 @@ export default function FormManager() {
     setCurrentView('form');
   };
 
+  const handleConsultationView = () => {
+    setCurrentView('consultation');
+  };
+
   const selectedFormConfig = availableForms.find(form => form.id === selectedForm);
   const FormComponent = selectedFormConfig?.component;
 
@@ -84,19 +89,38 @@ export default function FormManager() {
     );
   }
 
+  if (currentView === 'consultation') {
+    return (
+      <FormConsultation 
+        onBackToList={handleBackToList}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center gap-6">
-            <img 
-              src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
-              alt="Centre Diagnostic de Libreville" 
-              className="h-16 w-auto"
-            />
-            <div>
-              <h1 className="text-2xl font-bold text-[#1e3a8a]">Système de gestion des formulaires médicaux</h1>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <img 
+                src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" 
+                alt="Centre Diagnostic de Libreville" 
+                className="h-16 w-auto"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-[#1e3a8a]">Système de gestion des formulaires médicaux</h1>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleConsultationView}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Consultation des Formulaires
+              </button>
             </div>
           </div>
         </div>
