@@ -188,7 +188,8 @@ export default function SurveillanceSSPIForm({
 
       const payload = { 
         patient_number: patientNumber, 
-        data: formData
+        data: formData,
+        form_type: 'surveillance_sspi'
       };
 
       // Vérifier si l'enregistrement existe déjà
@@ -196,6 +197,7 @@ export default function SurveillanceSSPIForm({
         .from('preanesthesia_forms')
         .select('id')
         .eq('patient_number', patientNumber)
+        .eq('form_type', 'surveillance_sspi')
         .single();
       
       if (existingRecord) {
@@ -203,7 +205,8 @@ export default function SurveillanceSSPIForm({
         const { error } = await supabase
           .from('preanesthesia_forms')
           .update({ data: formData })
-          .eq('patient_number', patientNumber);
+          .eq('patient_number', patientNumber)
+          .eq('form_type', 'surveillance_sspi');
         
         if (error) throw error;
       } else {

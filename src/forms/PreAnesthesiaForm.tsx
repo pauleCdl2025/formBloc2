@@ -593,7 +593,11 @@ export default function PreAnesthesiaForm({
           if (error) throw error;
         } else {
           // Créer un nouvel enregistrement
-          const payload = { patient_number: patientNumber, data: formData };
+          const payload = { 
+        patient_number: patientNumber, 
+        data: formData,
+        form_type: 'preanesthesia'
+      };
           const { error } = await supabase
             .from('preanesthesia_forms')
             .insert(payload);
@@ -722,7 +726,11 @@ export default function PreAnesthesiaForm({
       console.log('Connexion Supabase OK, testData:', testData);
       
       console.log('Tentative de sauvegarde vers Supabase...');
-      const payload = { patient_number: patientNumber, data: formData };
+      const payload = { 
+        patient_number: patientNumber, 
+        data: formData,
+        form_type: 'preanesthesia'
+      };
       console.log('Payload:', payload);
       
       // Vérifier si l'enregistrement existe déjà
