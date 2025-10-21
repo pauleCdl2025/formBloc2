@@ -214,8 +214,7 @@ export default function CompteRenduPreAnesthesiqueForm({
 
       const payload = { 
         patient_number: patientNumber, 
-        data: formData,
-        form_type: 'compte_rendu_preanesthesique'
+        data: formData
       };
 
       // Vérifier si l'enregistrement existe déjà
@@ -223,7 +222,6 @@ export default function CompteRenduPreAnesthesiqueForm({
         .from('preanesthesia_forms')
         .select('id')
         .eq('patient_number', patientNumber)
-        .eq('form_type', 'compte_rendu_preanesthesique')
         .single();
       
       if (existingRecord) {
@@ -231,8 +229,7 @@ export default function CompteRenduPreAnesthesiqueForm({
         const { error } = await supabase
           .from('preanesthesia_forms')
           .update({ data: formData })
-          .eq('patient_number', patientNumber)
-          .eq('form_type', 'compte_rendu_preanesthesique');
+          .eq('patient_number', patientNumber);
         
         if (error) throw error;
       } else {
