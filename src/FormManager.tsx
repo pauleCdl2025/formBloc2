@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { FileText, Stethoscope, ClipboardList, Heart, Brain, Eye, Users, Shield, FileCheck } from 'lucide-react';
+import { Stethoscope, Heart, Shield, FileCheck } from 'lucide-react';
 import PreAnesthesiaForm from './forms/PreAnesthesiaForm';
-import ConsultationGeneraleForm from './forms/ConsultationGeneraleForm';
 import SurveillanceSSPIForm from './forms/SurveillanceSSPIForm';
 import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
 import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
@@ -25,15 +24,6 @@ const availableForms: FormConfig[] = [
     component: PreAnesthesiaForm,
     color: 'bg-blue-500'
   },
-  // Ajoutez d'autres formulaires ici
-  {
-    id: 'consultation',
-    name: 'Consultation Générale',
-    description: 'Formulaire de consultation médicale générale',
-    icon: <FileText className="w-8 h-8" />,
-    component: ConsultationGeneraleForm,
-    color: 'bg-green-500'
-  },
   {
     id: 'sspi',
     name: 'Surveillance SSPI',
@@ -48,7 +38,7 @@ const availableForms: FormConfig[] = [
     description: 'Formulaire de compte-rendu de consultation pré-anesthésique',
     icon: <FileCheck className="w-8 h-8" />,
     component: CompteRenduPreAnesthesiqueForm,
-    color: 'bg-blue-500'
+    color: 'bg-blue-600'
   },
   {
     id: 'consentement',
@@ -57,38 +47,6 @@ const availableForms: FormConfig[] = [
     icon: <Shield className="w-8 h-8" />,
     component: ConsentementAnesthesiqueForm,
     color: 'bg-slate-500'
-  },
-  {
-    id: 'examen',
-    name: 'Examen Clinique',
-    description: 'Formulaire d\'examen clinique détaillé',
-    icon: <ClipboardList className="w-8 h-8" />,
-    component: () => <div className="p-8 text-center text-gray-500">Formulaire en cours de développement</div>,
-    color: 'bg-orange-500'
-  },
-  {
-    id: 'cardiologie',
-    name: 'Consultation Cardiologique',
-    description: 'Formulaire spécialisé en cardiologie',
-    icon: <Heart className="w-8 h-8" />,
-    component: () => <div className="p-8 text-center text-gray-500">Formulaire en cours de développement</div>,
-    color: 'bg-red-500'
-  },
-  {
-    id: 'neurologie',
-    name: 'Consultation Neurologique',
-    description: 'Formulaire spécialisé en neurologie',
-    icon: <Brain className="w-8 h-8" />,
-    component: () => <div className="p-8 text-center text-gray-500">Formulaire en cours de développement</div>,
-    color: 'bg-indigo-500'
-  },
-  {
-    id: 'ophtalmologie',
-    name: 'Consultation Ophtalmologique',
-    description: 'Formulaire spécialisé en ophtalmologie',
-    icon: <Eye className="w-8 h-8" />,
-    component: () => <div className="p-8 text-center text-gray-500">Formulaire en cours de développement</div>,
-    color: 'bg-yellow-500'
   }
 ];
 
@@ -222,7 +180,7 @@ export default function FormManager() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Actifs</p>
-                <p className="text-2xl font-bold text-gray-900">{availableForms.filter(f => f.id === 'preanesthesia' || f.id === 'consultation' || f.id === 'sspi' || f.id === 'compte-rendu' || f.id === 'consentement').length}</p>
+                <p className="text-2xl font-bold text-gray-900">{availableForms.length}</p>
               </div>
             </div>
           </div>
