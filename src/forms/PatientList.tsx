@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Search, Eye, Edit, Trash2, Plus, Calendar, User, ArrowLeft } from 'lucide-react';
+import { Search, Eye, Edit, Trash2, Plus, Calendar, User, ArrowLeft, Download } from 'lucide-react';
 
 interface PatientData {
   id: string;
@@ -58,6 +58,43 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
     } catch (err: any) {
       alert('Erreur lors de la suppression: ' + err.message);
     }
+  };
+
+  const handleDownload = (patient: PatientData) => {
+    const dataStr = JSON.stringify(patient.data, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `consultation_preanesthesique_${patient.patient_number}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadAll = () => {
+    const allData = {
+      export_date: new Date().toISOString(),
+      total_patients: patients.length,
+      patients: patients.map(p => ({
+        id: p.id,
+        patient_number: p.patient_number,
+        created_at: p.created_at,
+        data: p.data
+      }))
+    };
+    
+    const dataStr = JSON.stringify(allData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tous_les_formulaires_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const filteredPatients = patients.filter(patient => {
@@ -121,6 +158,13 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
                   Retour aux formulaires
                 </button>
               )}
+              <button
+                onClick={handleDownloadAll}
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition shadow-md font-medium"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Télécharger Tout
+              </button>
               <button
                 onClick={onCreateNew}
                 className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-md font-medium"
@@ -289,10 +333,17 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => onSelectPatient(patient.patient_number)}
-                            className="text-[#0ea5e9] hover:text-[#0284c7] transition"
+                            className="text-blue-600 hover:text-blue-800 transition"
                             title="Consulter/Modifier"
                           >
                             <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDownload(patient)}
+                            className="text-emerald-600 hover:text-emerald-800 transition"
+                            title="Télécharger"
+                          >
+                            <Download className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => deletePatient(patient.id, patient.patient_number)}

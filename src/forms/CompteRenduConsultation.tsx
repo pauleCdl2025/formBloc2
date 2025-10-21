@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { ArrowLeft, Search, Eye, Trash2, Plus, FileText, Calendar } from 'lucide-react';
+import { ArrowLeft, Search, Eye, Trash2, Plus, FileText, Calendar, Download } from 'lucide-react';
 
 interface CompteRenduFormData {
   id: string;
@@ -133,6 +133,43 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
     }
   };
 
+  const handleDownload = (form: CompteRenduFormData) => {
+    const dataStr = JSON.stringify(form.data, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `compte_rendu_preanesthesique_${form.patient_number}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadAll = () => {
+    const allData = {
+      export_date: new Date().toISOString(),
+      total_forms: forms.length,
+      forms: forms.map(f => ({
+        id: f.id,
+        patient_number: f.patient_number,
+        created_at: f.created_at,
+        data: f.data
+      }))
+    };
+    
+    const dataStr = JSON.stringify(allData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tous_les_comptes_rendus_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const getFilteredForms = () => {
     if (!searchTerm) return forms;
 
@@ -215,8 +252,15 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
                 Retour aux formulaires
               </button>
               <button
+                onClick={handleDownloadAll}
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition shadow-md font-medium"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Télécharger Tout
+              </button>
+              <button
                 onClick={onCreateNew}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow-md"
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-md font-medium"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Nouveau Compte-rendu
@@ -354,6 +398,13 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
                             title="Consulter le formulaire"
                           >
                             <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDownload(form)}
+                            className="text-emerald-600 hover:text-emerald-900 p-1 rounded hover:bg-emerald-50"
+                            title="Télécharger le formulaire"
+                          >
+                            <Download className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => deleteForm(form.id, form.patient_number)}
