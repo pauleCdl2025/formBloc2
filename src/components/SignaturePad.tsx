@@ -37,11 +37,15 @@ export default function SignaturePad({
     
     ctx.scale(dpr, dpr);
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
+    
+    // Test de visibilité - dessiner un point de test rouge
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(10, 10, 5, 5);
 
     // Fonction pour obtenir les coordonnées
     const getCoordinates = (e: MouseEvent | TouchEvent) => {
@@ -81,6 +85,10 @@ export default function SignaturePad({
       e.stopPropagation();
       
       const coords = getCoordinates(e);
+      
+      // S'assurer que la couleur est bien noire
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 4;
       
       ctx.lineTo(coords.x, coords.y);
       ctx.stroke();
