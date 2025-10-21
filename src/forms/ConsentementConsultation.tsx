@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { ArrowLeft, Search, Eye, Trash2, Plus, Shield, Calendar } from 'lucide-react';
 
 interface ConsentementFormData {
+  id: string;
   patient_number: string;
   data: any;
   form_type: string;
@@ -111,6 +112,25 @@ const ConsentementConsultation: React.FC<ConsentementConsultationProps> = ({
       thisMonth: thisMonthForms.length,
       results: filteredForms.length
     });
+  };
+
+  const deleteForm = async (id: string, patientNumber: string) => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le consentement du patient ${patientNumber} ?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('consentement_anesthesique')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setForms(forms.filter(f => f.id !== id));
+    } catch (err: any) {
+      alert('Erreur lors de la suppression: ' + err.message);
+    }
   };
 
   const getFilteredForms = () => {
@@ -336,7 +356,7 @@ const ConsentementConsultation: React.FC<ConsentementConsultationProps> = ({
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteForm(form.patient_number)}
+                            onClick={() => deleteForm(form.id, form.patient_number)}
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                             title="Supprimer le formulaire"
                           >
