@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import { Plus, Trash2, Save, Printer, FileText, Upload, List, ArrowLeft } from 'lucide-react';
 import PatientList from './PatientList';
 
@@ -220,7 +220,15 @@ interface FormData {
   };
 }
 
-export default function PreAnesthesiaForm() {
+export default function PreAnesthesiaForm({ 
+  onBackToList, 
+  onCreateNew, 
+  onSelectPatient 
+}: {
+  onBackToList?: () => void;
+  onCreateNew?: () => void;
+  onSelectPatient?: (patientNumber: string) => void;
+}) {
   const [savedMessage, setSavedMessage] = useState<string>('');
   const [currentView, setCurrentView] = useState<'form' | 'list'>('list');
   const [selectedPatientNumber, setSelectedPatientNumber] = useState<string>('');
@@ -760,17 +768,20 @@ export default function PreAnesthesiaForm() {
   const handleSelectPatient = (patientNumber: string) => {
     setSelectedPatientNumber(patientNumber);
     setCurrentView('form');
+    onSelectPatient?.(patientNumber);
   };
 
   const handleCreateNew = () => {
     setSelectedPatientNumber('');
     setFormData(initialFormData);
     setCurrentView('form');
+    onCreateNew?.();
   };
 
   const handleBackToList = () => {
     setCurrentView('list');
     setSelectedPatientNumber('');
+    onBackToList?.();
   };
 
   // Si on est en mode liste, afficher la liste des patients
@@ -803,7 +814,7 @@ export default function PreAnesthesiaForm() {
               className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition shadow-md"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour à la liste
+              Retour aux formulaires
             </button>
             <input
               type="file"

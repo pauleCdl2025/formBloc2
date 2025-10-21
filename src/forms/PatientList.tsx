@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import { Search, Eye, Edit, Trash2, Plus, Calendar, User } from 'lucide-react';
 
 interface PatientData {
