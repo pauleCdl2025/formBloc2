@@ -40,6 +40,7 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
 
   const loadForms = async () => {
     try {
+      // Essayer d'abord avec le filtre form_type
       const { data, error } = await supabase
         .from('preanesthesia_forms')
         .select('*')
@@ -48,7 +49,7 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
 
       if (error) {
         console.error('Erreur Supabase:', error);
-        // Si la colonne form_type n'existe pas, on charge tous les formulaires et on filtre côté client
+        // Si la colonne form_type n'existe pas (erreur 400), on charge tous les formulaires et on filtre côté client
         const { data: allData, error: allError } = await supabase
           .from('preanesthesia_forms')
           .select('*')
@@ -70,7 +71,28 @@ const CompteRenduConsultation: React.FC<CompteRenduConsultationProps> = ({
       }
     } catch (error) {
       console.error('Erreur lors du chargement des comptes-rendus:', error);
-      setForms([]); // En cas d'erreur, on affiche une liste vide
+      // En cas d'erreur, essayer de charger tous les formulaires
+      try {
+        const { data: allData, error: allError } = await supabase
+          .from('preanesthesia_forms')
+          .select('*')
+          .order('updated_at', { ascending: false });
+        
+        if (allError) throw allError;
+        
+        // Filtrer côté client pour les comptes-rendus
+        const compteRenduForms = (allData || []).filter(form => 
+          form.data && (
+            form.data.identification?.medecinAnesthesiste ||
+            form.data.intervention?.type ||
+            form.data.antecedents?.allergies !== undefined
+          )
+        );
+        setForms(compteRenduForms);
+      } catch (fallbackError) {
+        console.error('Erreur fallback:', fallbackError);
+        setForms([]);
+      }
     } finally {
       setLoading(false);
     }
