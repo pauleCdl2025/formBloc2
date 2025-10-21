@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Save, Printer, FileText, Upload, ArrowLeft, Stethoscope, ClipboardList, Heart, Activity } from 'lucide-react';
+import SignaturePad from '../components/SignaturePad';
 
 interface CompteRenduData {
   identification: {
@@ -1207,15 +1208,27 @@ export default function CompteRenduPreAnesthesiqueForm({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-semibold text-blue-700 mb-2">Signature du médecin anesthésiste</h3>
-              <div className="border-2 border-dashed border-blue-300 h-48 rounded-lg bg-white flex items-center justify-center">
-                <span className="text-gray-500 italic">Zone de signature médecin</span>
-              </div>
+              <SignaturePad
+                onSignatureChange={(signature) => setFormData(prev => ({
+                  ...prev,
+                  signatures: { ...prev.signatures, doctorSignature: signature }
+                }))}
+                width={400}
+                height={200}
+                placeholder="Signature du médecin"
+              />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-blue-700 mb-2">Signature du patient</h3>
-              <div className="border-2 border-dashed border-blue-300 h-48 rounded-lg bg-white flex items-center justify-center">
-                <span className="text-gray-500 italic">Zone de signature patient</span>
-              </div>
+              <SignaturePad
+                onSignatureChange={(signature) => setFormData(prev => ({
+                  ...prev,
+                  signatures: { ...prev.signatures, patientSignature: signature }
+                }))}
+                width={400}
+                height={200}
+                placeholder="Signature du patient"
+              />
             </div>
           </div>
         </div>

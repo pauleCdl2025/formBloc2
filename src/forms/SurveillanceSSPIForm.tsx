@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Save, Printer, FileText, Upload, ArrowLeft, Heart, Clock, Activity } from 'lucide-react';
+import SignaturePad from '../components/SignaturePad';
 
 interface SSPIData {
   patient: {
@@ -780,6 +781,23 @@ export default function SurveillanceSSPIForm({
                 ...prev,
                 observations: { ...prev.observations, complications: e.target.value }
               }))}
+            />
+          </div>
+        </div>
+
+        {/* Signature */}
+        <div className="p-6 bg-purple-50">
+          <h2 className="text-xl font-bold text-purple-800 mb-4">SIGNATURE</h2>
+          <div className="max-w-md mx-auto">
+            <h3 className="text-lg font-semibold text-purple-700 mb-2">Signature de l'infirmier(e)</h3>
+            <SignaturePad
+              onSignatureChange={(signature) => setFormData(prev => ({
+                ...prev,
+                signature: signature
+              }))}
+              width={400}
+              height={200}
+              placeholder="Signature de l'infirmier(e)"
             />
           </div>
         </div>

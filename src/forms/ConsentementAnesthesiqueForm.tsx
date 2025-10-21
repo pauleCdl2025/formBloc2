@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Save, Printer, FileText, Upload, ArrowLeft, FileCheck, Shield, AlertTriangle } from 'lucide-react';
+import SignaturePad from '../components/SignaturePad';
 
 interface ConsentementData {
   patient: {
@@ -702,37 +703,20 @@ export default function ConsentementAnesthesiqueForm({
         {/* Signature */}
         <div className="p-6 bg-slate-50">
           <h3 className="text-lg font-semibold text-slate-700 mb-4">Signature du patient ou de son représentant légal</h3>
-          <div className="border-2 border-dashed border-slate-300 h-64 rounded-lg bg-white flex items-center justify-center mb-4">
-            <div className="text-center">
-              <div className="text-gray-500 text-lg mb-2">✍️</div>
-              <span className="text-gray-500 italic">Zone de signature patient</span>
-              <p className="text-sm text-gray-400 mt-2">Cliquez pour signer</p>
-            </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-slate-600">
-              <span className={hasSignature ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                {hasSignature ? "Document signé" : "Document non signé"}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-                Effacer
-              </button>
-              <button 
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                onClick={() => {
-                  setHasSignature(true);
-                  setFormData(prev => ({
-                    ...prev,
-                    documentSigne: true
-                  }));
-                }}
-              >
-                Confirmer signature
-              </button>
-            </div>
-          </div>
+          <SignaturePad
+            onSignatureChange={(signature) => {
+              setFormData(prev => ({
+                ...prev,
+                signaturePatient: signature,
+                documentSigne: signature !== ''
+              }));
+              setHasSignature(signature !== '');
+            }}
+            width={500}
+            height={250}
+            placeholder="Signature du patient ou représentant légal"
+            className="mx-auto"
+          />
         </div>
 
         {/* Bouton de sauvegarde */}
