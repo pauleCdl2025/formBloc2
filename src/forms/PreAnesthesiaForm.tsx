@@ -885,7 +885,7 @@ export default function PreAnesthesiaForm({
               <h1 className="text-3xl font-bold text-[#1e3a8a]">Formulaire de Consultation Pré-Anesthésique</h1>
               {selectedPatientNumber && (
                 <p className="text-sm text-gray-600 mt-1">
-                  Patient: {selectedPatientNumber}
+                  Patient: {String(selectedPatientNumber)}
                 </p>
               )}
             </div>
