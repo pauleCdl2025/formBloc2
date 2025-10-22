@@ -59,10 +59,16 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
   };
 
   const handlePrint = () => {
+    console.log('handlePrint appelé');
     const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    if (!printWindow) {
+      console.error('Impossible d\'ouvrir la fenêtre d\'impression');
+      return;
+    }
 
+    console.log('Fenêtre d\'impression ouverte');
     const printContent = generatePrintContent();
+    console.log('Contenu généré:', printContent.substring(0, 200) + '...');
     
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -101,9 +107,11 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
     `);
     
     printWindow.document.close();
+    console.log('Document fermé, lancement de l\'impression');
     printWindow.focus();
     printWindow.print();
     printWindow.close();
+    console.log('Impression lancée');
   };
 
   const generatePrintContent = () => {
@@ -355,7 +363,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
             </button>
             {onPrint && (
               <button
-                onClick={onPrint}
+                onClick={handlePrint}
                 className="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition shadow-md"
               >
                 <Printer className="w-4 h-4 mr-2" />
