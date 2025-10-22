@@ -224,12 +224,14 @@ export default function PreAnesthesiaForm({
   onBackToList, 
   onCreateNew, 
   onSelectPatient,
-  patientData
+  patientData,
+  editMode = true
 }: {
   onBackToList?: () => void;
   onCreateNew?: () => void;
   onSelectPatient?: (patientNumber: string) => void;
   patientData?: any;
+  editMode?: boolean;
 }) {
   const [savedMessage, setSavedMessage] = useState<string>('');
   const [currentView, setCurrentView] = useState<'form' | 'list'>('list');
@@ -243,6 +245,16 @@ export default function PreAnesthesiaForm({
       setCurrentView('form');
     }
   }, [patientData]);
+
+  // Fonction utilitaire pour les propriétés des champs selon le mode
+  const getFieldProps = () => ({
+    readOnly: !editMode,
+    className: `w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none ${
+      editMode 
+        ? 'focus:ring-2 focus:ring-[#0ea5e9] bg-white' 
+        : 'bg-gray-50 cursor-not-allowed'
+    }`
+  });
   
   const initialFormData: FormData = {
     patient: {
@@ -921,7 +933,7 @@ export default function PreAnesthesiaForm({
               <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                {...getFieldProps()}
                 value={formData.patient?.nom || ''}
                 onChange={(e) => setFormData({ ...formData, patient: { ...(formData.patient || {}), nom: e.target.value } })}
               />
@@ -930,7 +942,7 @@ export default function PreAnesthesiaForm({
               <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                {...getFieldProps()}
                 value={formData.patient?.prenom || ''}
                 onChange={(e) => setFormData({ ...formData, patient: { ...(formData.patient || {}), prenom: e.target.value } })}
               />
@@ -4623,20 +4635,24 @@ export default function PreAnesthesiaForm({
 
         {/* Boutons d'action */}
         <div className="no-print flex justify-end space-x-4 pt-6 border-t-2 border-gray-200">
-          <button 
-            onClick={handleReset}
-            className="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition flex items-center shadow-md"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Réinitialiser
-          </button>
-          <button 
-            onClick={handleSave}
-            className="px-6 py-3 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition flex items-center shadow-md"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Sauvegarder
-          </button>
+          {editMode && (
+            <button 
+              onClick={handleReset}
+              className="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition flex items-center shadow-md"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Réinitialiser
+            </button>
+          )}
+          {editMode && (
+            <button 
+              onClick={handleSave}
+              className="px-6 py-3 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition flex items-center shadow-md"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Sauvegarder
+            </button>
+          )}
           <button 
             onClick={handlePrint}
             className="px-6 py-3 bg-[#10b981] text-white rounded-md hover:bg-[#059669] transition flex items-center shadow-md"

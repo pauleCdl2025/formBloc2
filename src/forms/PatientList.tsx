@@ -11,7 +11,7 @@ interface PatientData {
 }
 
 export default function PatientList({ onSelectPatient, onCreateNew, onBackToList }: {
-  onSelectPatient: (patientData: any) => void;
+  onSelectPatient: (patientData: any, mode: 'view' | 'edit') => void;
   onCreateNew: () => void;
   onBackToList?: () => void;
 }) {
@@ -332,9 +332,16 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => onSelectPatient(patient)}
+                            onClick={() => onSelectPatient(patient, 'view')}
                             className="text-blue-600 hover:text-blue-800 transition"
-                            title="Consulter/Modifier"
+                            title="Consulter"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => onSelectPatient(patient, 'edit')}
+                            className="text-orange-600 hover:text-orange-800 transition"
+                            title="Modifier"
                           >
                             <Edit className="w-4 h-4" />
                           </button>

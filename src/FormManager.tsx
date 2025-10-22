@@ -47,6 +47,7 @@ export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
   const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
   const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
+  const [editMode, setEditMode] = useState<boolean>(false);
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -59,11 +60,13 @@ export default function FormManager() {
 
   const handleCreateNew = () => {
     setSelectedPatientData(null);
+    setEditMode(true);
     setCurrentView('form');
   };
 
-  const handleSelectPatient = (patientData: any) => {
+  const handleSelectPatient = (patientData: any, mode: 'view' | 'edit') => {
     setSelectedPatientData(patientData);
+    setEditMode(mode === 'edit');
     setCurrentView('form');
   };
 
@@ -96,6 +99,7 @@ export default function FormManager() {
         onCreateNew={handleCreateNew}
         onSelectPatient={handleSelectPatient}
         patientData={selectedPatientData}
+        editMode={editMode}
       />
     );
   }
