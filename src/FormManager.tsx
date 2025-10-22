@@ -118,6 +118,10 @@ export default function FormManager() {
           setEditMode(true);
           setCurrentView('form');
         }}
+        onPrint={() => {
+          // Fonction d'impression - peut être implémentée plus tard
+          window.print();
+        }}
       />
     );
   }

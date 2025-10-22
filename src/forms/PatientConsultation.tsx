@@ -1,13 +1,14 @@
 import React from 'react';
-import { ArrowLeft, User, Calendar, FileText, Stethoscope, Edit, Heart, Activity, AlertTriangle, ClipboardList, Microscope, Shield, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, User, Calendar, FileText, Stethoscope, Edit, Heart, Activity, AlertTriangle, ClipboardList, Microscope, Shield, Clock, MapPin, Printer, Cigarette, Droplets, Zap, Brain, Pill, Thermometer, Scale, Eye } from 'lucide-react';
 
 interface PatientConsultationProps {
   patientData: any;
   onBackToList: () => void;
   onEdit: () => void;
+  onPrint?: () => void;
 }
 
-export default function PatientConsultation({ patientData, onBackToList, onEdit }: PatientConsultationProps) {
+export default function PatientConsultation({ patientData, onBackToList, onEdit, onPrint }: PatientConsultationProps) {
   if (!patientData || !patientData.data) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -45,7 +46,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit 
     );
   }
 
-  const { patient, intervention, anamnese, allergies, examenPhysique, examensParacliniques } = data;
+  const { patient, intervention, anamnese, allergies, examenPhysique, examensParacliniques, pyrosis, rgo, tabac, tabagismePassif, hepatite, alcool, activitesPhysiques, cardiaques, stimulateur, hta, diabete, reins, hemostase, stopBang, hasAntecedentsChirurgicaux, antecedentsChirurgicaux, parametresPhysiques, avisSpecialises, checklistHDJ, douleursPostop, scoreApfel, scoreLee, autres, signature } = data;
 
   const formatValue = (value: any) => {
     if (value === null || value === undefined || value === '') return 'Non renseigné';
@@ -77,6 +78,15 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit 
               <Edit className="w-4 h-4 mr-2" />
               Modifier
             </button>
+            {onPrint && (
+              <button
+                onClick={onPrint}
+                className="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition shadow-md"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Imprimer
+              </button>
+            )}
           </div>
           
           <div className="flex flex-col md:flex-row items-start md:items-center mb-6">
@@ -475,6 +485,394 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit 
             </h2>
             <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-6 rounded-lg border border-teal-200">
               <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{examensParacliniques.commentaires}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Antécédents chirurgicaux */}
+        {hasAntecedentsChirurgicaux && antecedentsChirurgicaux && antecedentsChirurgicaux.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-orange-100 to-red-100 p-2 rounded-lg mr-3">
+                <Stethoscope className="w-6 h-6 text-orange-600" />
+              </div>
+              Antécédents chirurgicaux
+            </h2>
+            <div className="space-y-4">
+              {antecedentsChirurgicaux.map((antecedent: any, index: number) => (
+                <div key={index} className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-orange-800">Année:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{formatValue(antecedent.annee)}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-orange-800">Intervention:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{formatValue(antecedent.intervention)}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-orange-800">Type d'anesthésie:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{formatValue(antecedent.typeAnesthesie)}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-orange-800">Difficultés:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{formatValue(antecedent.difficultes)}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-orange-800">Cormack:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{formatValue(antecedent.cormack)}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-orange-800">Technique:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{formatValue(antecedent.technique)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Antécédents médicaux */}
+        {(pyrosis || rgo || tabac || hepatite || alcool || hta || diabete || reins) && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 rounded-lg mr-3">
+                <Heart className="w-6 h-6 text-purple-600" />
+              </div>
+              Antécédents médicaux
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Pyrosis */}
+              {pyrosis && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">Pyrosis</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      pyrosis.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {pyrosis.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {pyrosis.presente && pyrosis.details && (
+                    <p className="text-sm text-gray-600 italic">{pyrosis.details}</p>
+                  )}
+                </div>
+              )}
+
+              {/* RGO */}
+              {rgo && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">RGO</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      rgo.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {rgo.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {rgo.presente && rgo.details && (
+                    <p className="text-sm text-gray-600 italic">{rgo.details}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Tabac */}
+              {tabac && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">Tabac</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      tabac.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {tabac.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {tabac.presente && tabac.paquetsAnnees && (
+                    <p className="text-sm text-gray-600 italic">{tabac.paquetsAnnees}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Hépatite */}
+              {hepatite && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">Hépatite</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      hepatite.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {hepatite.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {hepatite.presente && (
+                    <div className="mt-2 space-y-1">
+                      {hepatite.type && <p className="text-sm text-gray-600">Type: {hepatite.type}</p>}
+                      {hepatite.dateDecouverte && <p className="text-sm text-gray-600">Date: {hepatite.dateDecouverte}</p>}
+                      {hepatite.statut && <p className="text-sm text-gray-600">Statut: {hepatite.statut}</p>}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Alcool */}
+              {alcool && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">Alcool</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      alcool.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {alcool.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {alcool.presente && alcool.details && (
+                    <p className="text-sm text-gray-600 italic">{alcool.details}</p>
+                  )}
+                </div>
+              )}
+
+              {/* HTA */}
+              {hta && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">HTA</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      hta.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {hta.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {hta.presente && hta.details && (
+                    <p className="text-sm text-gray-600 italic">{hta.details}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Diabète */}
+              {diabete && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">Diabète</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      diabete.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {diabete.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {diabete.presente && diabete.details && (
+                    <p className="text-sm text-gray-600 italic">{diabete.details}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Reins */}
+              {reins && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-800">Reins</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      reins.presente ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {reins.presente ? 'Oui' : 'Non'}
+                    </span>
+                  </div>
+                  {reins.presente && reins.details && (
+                    <p className="text-sm text-gray-600 italic">{reins.details}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Score STOP-BANG */}
+        {stopBang && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-yellow-100 to-orange-100 p-2 rounded-lg mr-3">
+                <Brain className="w-6 h-6 text-yellow-600" />
+              </div>
+              Score STOP-BANG
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Ronflement</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.ronflement ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.ronflement ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Fatigue</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.fatigue ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.fatigue ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Apnée</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.apnee ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.apnee ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Pression artérielle</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.pressionArterielle ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.pressionArterielle ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">IMC</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.imc ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.imc ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Âge</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.age ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.age ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Tour de cou</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.tourCou ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.tourCou ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-yellow-800">Sexe</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    stopBang.sexe ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stopBang.sexe ? 'Oui' : 'Non'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Paramètres physiques */}
+        {parametresPhysiques && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-indigo-100 to-purple-100 p-2 rounded-lg mr-3">
+                <Scale className="w-6 h-6 text-indigo-600" />
+              </div>
+              Paramètres physiques détaillés
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Scale className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">Poids</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.poids)} kg</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Activity className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">Taille</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.taille)} cm</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Activity className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">BMI</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.bmi)}</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Heart className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">TA Systolique</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.taSystolique)} mmHg</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Heart className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">TA Diastolique</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.taDiastolique)} mmHg</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Heart className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">Pouls</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.pouls)} bpm</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Activity className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">Fréquence respiratoire</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.frequenceRespiratoire)} /min</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Activity className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">Perte de poids récente</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.pertePoidsRecente)}</span>
+              </div>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center mb-2">
+                  <Activity className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-indigo-800">Perte d'appétit</span>
+                </div>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques.perteAppetit)}</span>
+              </div>
+            </div>
+            {parametresPhysiques.commentaires && (
+              <div className="mt-4 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                <p className="text-sm text-gray-600 italic">{parametresPhysiques.commentaires}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Autres informations */}
+        {autres && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-gray-100 to-blue-100 p-2 rounded-lg mr-3">
+                <FileText className="w-6 h-6 text-gray-600" />
+              </div>
+              Autres informations
+            </h2>
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
+              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{autres}</p>
             </div>
           </div>
         )}
