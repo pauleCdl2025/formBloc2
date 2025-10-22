@@ -223,15 +223,26 @@ interface FormData {
 export default function PreAnesthesiaForm({ 
   onBackToList, 
   onCreateNew, 
-  onSelectPatient 
+  onSelectPatient,
+  patientData
 }: {
   onBackToList?: () => void;
   onCreateNew?: () => void;
   onSelectPatient?: (patientNumber: string) => void;
+  patientData?: any;
 }) {
   const [savedMessage, setSavedMessage] = useState<string>('');
   const [currentView, setCurrentView] = useState<'form' | 'list'>('list');
   const [selectedPatientNumber, setSelectedPatientNumber] = useState<string>('');
+  
+  // Charger les données du patient si fournies
+  useEffect(() => {
+    if (patientData && patientData.data) {
+      setFormData(patientData.data);
+      setSelectedPatientNumber(patientData.patient_number);
+      setCurrentView('form');
+    }
+  }, [patientData]);
   
   const initialFormData: FormData = {
     patient: {

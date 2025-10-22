@@ -46,6 +46,7 @@ const availableForms: FormConfig[] = [
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
   const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
+  const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
 
   const handleFormSelect = (formId: string) => {
     setSelectedForm(formId);
@@ -57,10 +58,12 @@ export default function FormManager() {
   };
 
   const handleCreateNew = () => {
+    setSelectedPatientData(null);
     setCurrentView('form');
   };
 
-  const handleSelectPatient = (patientNumber: string) => {
+  const handleSelectPatient = (patientData: any) => {
+    setSelectedPatientData(patientData);
     setCurrentView('form');
   };
 
@@ -92,6 +95,7 @@ export default function FormManager() {
         onBackToList={handleBackToList}
         onCreateNew={handleCreateNew}
         onSelectPatient={handleSelectPatient}
+        patientData={selectedPatientData}
       />
     );
   }
