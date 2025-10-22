@@ -6,6 +6,7 @@ import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
 import PatientList from './forms/PatientList';
 import CompteRenduConsultation from './forms/CompteRenduConsultation';
 import ConsentementConsultation from './forms/ConsentementConsultation';
+import PatientConsultation from './forms/PatientConsultation';
 
 interface FormConfig {
   id: string;
@@ -45,7 +46,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
   const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
 
@@ -67,7 +68,11 @@ export default function FormManager() {
   const handleSelectPatient = (patientData: any, mode: 'view' | 'edit') => {
     setSelectedPatientData(patientData);
     setEditMode(mode === 'edit');
-    setCurrentView('form');
+    if (mode === 'view') {
+      setCurrentView('consultation');
+    } else {
+      setCurrentView('form');
+    }
   };
 
 
@@ -100,6 +105,19 @@ export default function FormManager() {
         onSelectPatient={handleSelectPatient}
         patientData={selectedPatientData}
         editMode={editMode}
+      />
+    );
+  }
+
+  if (currentView === 'consultation') {
+    return (
+      <PatientConsultation 
+        patientData={selectedPatientData}
+        onBackToList={handleBackToList}
+        onEdit={() => {
+          setEditMode(true);
+          setCurrentView('form');
+        }}
       />
     );
   }
