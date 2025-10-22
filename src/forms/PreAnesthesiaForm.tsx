@@ -248,7 +248,10 @@ export default function PreAnesthesiaForm({
   
   // Charger les données du patient si fournies
   useEffect(() => {
+    console.log('PreAnesthesiaForm useEffect - patientData:', patientData);
+    console.log('PreAnesthesiaForm useEffect - editMode:', editMode);
     if (patientData && patientData.data) {
+      console.log('PreAnesthesiaForm useEffect - patientData.data:', patientData.data);
       setFormData(patientData.data);
       setSelectedPatientNumber(String(patientData.patient_number || ''));
       setCurrentView('form');
