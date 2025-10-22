@@ -76,8 +76,8 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
             body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; line-height: 1.4; }
             .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
             .logo { max-width: 200px; height: auto; margin-bottom: 15px; }
-            .logo-container { margin-bottom: 15px; }
-            .logo-text { font-size: 18px; font-weight: bold; color: #1e3a8a; margin-bottom: 10px; }
+            .logo-container { margin-bottom: 15px; text-align: center; }
+            .logo-text { font-size: 20px; font-weight: bold; color: #1e3a8a; margin-bottom: 5px; letter-spacing: 1px; }
             .patient-info { margin-bottom: 20px; }
             .section { margin-bottom: 25px; page-break-inside: avoid; }
             .section-title { font-weight: bold; font-size: 14px; color: #1e3a8a; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
@@ -117,8 +117,8 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
     return `
       <div class="header">
         <div class="logo-container">
-          <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" alt="Centre Diagnostic de Libreville" class="logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-          <div class="logo-text" style="display: none;">🏥 CENTRE DIAGNOSTIC DE LIBREVILLE</div>
+          <div class="logo-text">🏥 CENTRE DIAGNOSTIC DE LIBREVILLE</div>
+          <div style="font-size: 12px; color: #666; margin-top: 5px;">Centre Médical Spécialisé</div>
         </div>
         <h1>CONSULTATION PRÉ-ANESTHÉSIQUE</h1>
         <h2>Centre Diagnostic de Libreville</h2>

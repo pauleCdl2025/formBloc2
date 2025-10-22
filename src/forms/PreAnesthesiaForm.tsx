@@ -250,11 +250,15 @@ export default function PreAnesthesiaForm({
   useEffect(() => {
     console.log('PreAnesthesiaForm useEffect - patientData:', patientData);
     console.log('PreAnesthesiaForm useEffect - editMode:', editMode);
-    if (patientData && patientData.data) {
+    if (patientData) {
       console.log('PreAnesthesiaForm useEffect - patientData.data:', patientData.data);
-      setFormData(patientData.data);
-      setSelectedPatientNumber(String(patientData.patient_number || ''));
-      setCurrentView('form');
+      if (patientData.data) {
+        setFormData(patientData.data);
+        setSelectedPatientNumber(String(patientData.patient_number || ''));
+        setCurrentView('form');
+      } else {
+        console.error('patientData.data is undefined or null');
+      }
     }
   }, [patientData]);
 
