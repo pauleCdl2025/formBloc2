@@ -250,7 +250,7 @@ export default function PreAnesthesiaForm({
   useEffect(() => {
     if (patientData && patientData.data) {
       setFormData(patientData.data);
-      setSelectedPatientNumber(patientData.patient_number);
+      setSelectedPatientNumber(String(patientData.patient_number || ''));
       setCurrentView('form');
     }
   }, [patientData]);
