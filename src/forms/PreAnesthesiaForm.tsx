@@ -248,7 +248,6 @@ export default function PreAnesthesiaForm({
   
   // Charger les données du patient si fournies
   useEffect(() => {
-    console.log('PreAnesthesiaForm - patientData:', patientData);
     if (patientData && patientData.data) {
       setFormData(patientData.data);
       setSelectedPatientNumber(String(patientData.patient_number || ''));
