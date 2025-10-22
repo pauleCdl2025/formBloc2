@@ -46,7 +46,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
     );
   }
 
-  const { patient, intervention, anamnese, allergies, examenPhysique, examensParacliniques, pyrosis, rgo, tabac, tabagismePassif, hepatite, alcool, activitesPhysiques, cardiaques, stimulateur, hta, diabete, reins, hemostase, stopBang, hasAntecedentsChirurgicaux, antecedentsChirurgicaux, parametresPhysiques, avisSpecialises, checklistHDJ, douleursPostop, scoreApfel, scoreLee, autres, signature } = data;
+  const { patient, intervention, anamnese, allergies, examenPhysique, examensParacliniques, pyrosis, rgo, tabac, tabagismePassif, hepatite, alcool, activitesPhysiques, cardiaques, stimulateur, hta, diabete, reins, hemostase, stopBang, hasAntecedentsChirurgicaux, antecedentsChirurgicaux, parametresPhysiques, avisSpecialises, checklistHDJ, douleursPostop, scoreApfel, scoreLee, autres, conclusion, signature } = data;
 
   const formatValue = (value: any) => {
     if (value === null || value === undefined || value === '') return 'Non renseigné';
@@ -56,6 +56,281 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
       if (value.details) return value.details;
     }
     return String(value);
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const printContent = generatePrintContent();
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Consultation Pré-Anesthésique - ${patient?.nom || ''} ${patient?.prenom || ''}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; line-height: 1.4; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
+            .patient-info { margin-bottom: 20px; }
+            .section { margin-bottom: 25px; page-break-inside: avoid; }
+            .section-title { font-weight: bold; font-size: 14px; color: #1e3a8a; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+            .field { margin-bottom: 8px; }
+            .field-label { font-weight: bold; display: inline-block; width: 150px; }
+            .field-value { display: inline-block; }
+            .checkbox-group { margin-left: 20px; }
+            .checkbox-item { margin-bottom: 5px; }
+            .signature-section { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+            .signature-line { margin-top: 30px; }
+            .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+            .score-box { border: 1px solid #ccc; padding: 10px; margin: 5px 0; }
+            .score-title { font-weight: bold; margin-bottom: 5px; }
+            .score-item { display: flex; justify-content: space-between; margin-bottom: 3px; }
+            .score-total { border-top: 1px solid #ccc; padding-top: 5px; margin-top: 5px; font-weight: bold; }
+            @media print { 
+              body { margin: 0; } 
+              .page-break { page-break-before: always; }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+
+  const generatePrintContent = () => {
+    return `
+      <div class="header">
+        <h1>CONSULTATION PRÉ-ANESTHÉSIQUE</h1>
+        <h2>Centre Diagnostic de Libreville</h2>
+        <p>Date: ${patient?.dateConsultation || new Date().toLocaleDateString('fr-FR')}</p>
+      </div>
+
+      <div class="patient-info">
+        <div class="section-title">INFORMATIONS PATIENT</div>
+        <div class="field"><span class="field-label">Nom:</span> <span class="field-value">${patient?.nom || ''}</span></div>
+        <div class="field"><span class="field-label">Prénom:</span> <span class="field-value">${patient?.prenom || ''}</span></div>
+        <div class="field"><span class="field-label">Date de naissance:</span> <span class="field-value">${formatValue(patient?.dateNaissance)}</span></div>
+        <div class="field"><span class="field-label">Âge:</span> <span class="field-value">${patient?.age || ''} ans</span></div>
+        <div class="field"><span class="field-label">N° Identification:</span> <span class="field-value">${patient?.numeroIdentification || ''}</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">INTERVENTION PRÉVUE</div>
+        <div class="field"><span class="field-label">Libellé:</span> <span class="field-value">${intervention?.libelle || ''}</span></div>
+        <div class="field"><span class="field-label">Date:</span> <span class="field-value">${intervention?.dateIntervention || ''}</span></div>
+        <div class="field"><span class="field-label">Ambulatoire:</span> <span class="field-value">${intervention?.ambulatoire ? 'Oui' : 'Non'}</span></div>
+        <div class="field"><span class="field-label">Date entrée prévue:</span> <span class="field-value">${intervention?.dateEntreePrevue || ''}</span></div>
+        ${intervention?.commentaires ? `<div class="field"><span class="field-label">Commentaires:</span> <span class="field-value">${intervention.commentaires}</span></div>` : ''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">ANAMNÈSE</div>
+        <p>${formatValue(anamnese)}</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">ALLERGIES</div>
+        <div class="grid-2">
+          <div class="field"><span class="field-label">Antibiotiques:</span> <span class="field-value">${formatValue(allergies?.antibiotiques)}</span></div>
+          <div class="field"><span class="field-label">Aspirine/AINS:</span> <span class="field-value">${formatValue(allergies?.aspirineAINS)}</span></div>
+          <div class="field"><span class="field-label">Autres médicaments:</span> <span class="field-value">${formatValue(allergies?.autresMedicaments)}</span></div>
+          <div class="field"><span class="field-label">Produits de contraste:</span> <span class="field-value">${formatValue(allergies?.produitsContraste)}</span></div>
+          <div class="field"><span class="field-label">Alimentaires:</span> <span class="field-value">${formatValue(allergies?.alimentaires)}</span></div>
+          <div class="field"><span class="field-label">Latex:</span> <span class="field-value">${formatValue(allergies?.latex)}</span></div>
+        </div>
+      </div>
+
+      ${hasAntecedentsChirurgicaux && antecedentsChirurgicaux && antecedentsChirurgicaux.length > 0 ? `
+      <div class="section">
+        <div class="section-title">ANTÉCÉDENTS CHIRURGICAUX</div>
+        ${antecedentsChirurgicaux.map((antecedent: any, index: number) => `
+          <div class="score-box">
+            <div class="score-title">Antécédent ${index + 1}</div>
+            <div class="field"><span class="field-label">Année:</span> <span class="field-value">${formatValue(antecedent.annee)}</span></div>
+            <div class="field"><span class="field-label">Intervention:</span> <span class="field-value">${formatValue(antecedent.intervention)}</span></div>
+            <div class="field"><span class="field-label">Type d'anesthésie:</span> <span class="field-value">${formatValue(antecedent.typeAnesthesie)}</span></div>
+            <div class="field"><span class="field-label">Difficultés:</span> <span class="field-value">${formatValue(antecedent.difficultes)}</span></div>
+            <div class="field"><span class="field-label">Cormack:</span> <span class="field-value">${formatValue(antecedent.cormack)}</span></div>
+            <div class="field"><span class="field-label">Technique:</span> <span class="field-value">${formatValue(antecedent.technique)}</span></div>
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      ${(pyrosis || rgo || tabac || hepatite || alcool || hta || diabete || reins) ? `
+      <div class="section">
+        <div class="section-title">ANTÉCÉDENTS MÉDICAUX</div>
+        <div class="grid-2">
+          ${pyrosis ? `<div class="field"><span class="field-label">Pyrosis:</span> <span class="field-value">${pyrosis.presente ? 'Oui' : 'Non'} ${pyrosis.presente && pyrosis.details ? '- ' + pyrosis.details : ''}</span></div>` : ''}
+          ${rgo ? `<div class="field"><span class="field-label">RGO:</span> <span class="field-value">${rgo.presente ? 'Oui' : 'Non'} ${rgo.presente && rgo.details ? '- ' + rgo.details : ''}</span></div>` : ''}
+          ${tabac ? `<div class="field"><span class="field-label">Tabac:</span> <span class="field-value">${tabac.presente ? 'Oui' : 'Non'} ${tabac.presente && tabac.paquetsAnnees ? '- ' + tabac.paquetsAnnees : ''}</span></div>` : ''}
+          ${hepatite ? `<div class="field"><span class="field-label">Hépatite:</span> <span class="field-value">${hepatite.presente ? 'Oui' : 'Non'} ${hepatite.presente ? `- ${hepatite.type || ''} ${hepatite.dateDecouverte || ''} ${hepatite.statut || ''}` : ''}</span></div>` : ''}
+          ${alcool ? `<div class="field"><span class="field-label">Alcool:</span> <span class="field-value">${alcool.presente ? 'Oui' : 'Non'} ${alcool.presente && alcool.details ? '- ' + alcool.details : ''}</span></div>` : ''}
+          ${hta ? `<div class="field"><span class="field-label">HTA:</span> <span class="field-value">${hta.presente ? 'Oui' : 'Non'} ${hta.presente && hta.details ? '- ' + hta.details : ''}</span></div>` : ''}
+          ${diabete ? `<div class="field"><span class="field-label">Diabète:</span> <span class="field-value">${diabete.presente ? 'Oui' : 'Non'} ${diabete.presente && diabete.details ? '- ' + diabete.details : ''}</span></div>` : ''}
+          ${reins ? `<div class="field"><span class="field-label">Reins:</span> <span class="field-value">${reins.presente ? 'Oui' : 'Non'} ${reins.presente && reins.details ? '- ' + reins.details : ''}</span></div>` : ''}
+        </div>
+      </div>
+      ` : ''}
+
+      <div class="section">
+        <div class="section-title">EXAMEN PHYSIQUE</div>
+        <div class="grid-3">
+          <div class="field"><span class="field-label">Poids:</span> <span class="field-value">${formatValue(examenPhysique?.poids)} kg</span></div>
+          <div class="field"><span class="field-label">Taille:</span> <span class="field-value">${formatValue(examenPhysique?.taille)} cm</span></div>
+          <div class="field"><span class="field-label">IMC:</span> <span class="field-value">${formatValue(examenPhysique?.imc)}</span></div>
+          <div class="field"><span class="field-label">FC:</span> <span class="field-value">${formatValue(examenPhysique?.fc)} bpm</span></div>
+          <div class="field"><span class="field-label">PA:</span> <span class="field-value">${formatValue(examenPhysique?.pa)} mmHg</span></div>
+          <div class="field"><span class="field-label">SpO2:</span> <span class="field-value">${formatValue(examenPhysique?.spo2)}%</span></div>
+          <div class="field"><span class="field-label">Température:</span> <span class="field-value">${formatValue(examenPhysique?.temperature)}°C</span></div>
+        </div>
+        ${examenPhysique?.examen ? `<div class="field"><span class="field-label">Examen:</span> <span class="field-value">${examenPhysique.examen}</span></div>` : ''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">EXAMENS PARA-CLINIQUES</div>
+        <div class="grid-2">
+          <div class="field"><span class="field-label">Biologie:</span> <span class="field-value">${formatValue(examensParacliniques?.biologie)} ${examensParacliniques?.biologie === 'Oui' && examensParacliniques?.biologieCommentaire ? '- ' + examensParacliniques.biologieCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">Hémostase:</span> <span class="field-value">${formatValue(examensParacliniques?.hemostase)} ${examensParacliniques?.hemostase === 'Oui' && examensParacliniques?.hemostaseCommentaire ? '- ' + examensParacliniques.hemostaseCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">Groupe sanguin:</span> <span class="field-value">${formatValue(examensParacliniques?.groupeSanguin)} ${examensParacliniques?.groupeSanguin === 'Oui' && examensParacliniques?.groupeSanguinCommentaire ? '- ' + examensParacliniques.groupeSanguinCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">ECG repos:</span> <span class="field-value">${formatValue(examensParacliniques?.ecgRepos)} ${examensParacliniques?.ecgRepos === 'Oui' && examensParacliniques?.ecgReposCommentaire ? '- ' + examensParacliniques.ecgReposCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">RX thorax:</span> <span class="field-value">${formatValue(examensParacliniques?.rxThorax)} ${examensParacliniques?.rxThorax === 'Oui' && examensParacliniques?.rxThoraxCommentaire ? '- ' + examensParacliniques.rxThoraxCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">EFR:</span> <span class="field-value">${formatValue(examensParacliniques?.efr)} ${examensParacliniques?.efr === 'Oui' && examensParacliniques?.efrCommentaire ? '- ' + examensParacliniques.efrCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">Test effort:</span> <span class="field-value">${formatValue(examensParacliniques?.testEffort)} ${examensParacliniques?.testEffort === 'Oui' && examensParacliniques?.testEffortCommentaire ? '- ' + examensParacliniques.testEffortCommentaire : ''}</span></div>
+          <div class="field"><span class="field-label">Autres:</span> <span class="field-value">${formatValue(examensParacliniques?.autres)} ${examensParacliniques?.autres === 'Oui' && examensParacliniques?.autresCommentaire ? '- ' + examensParacliniques.autresCommentaire : ''}</span></div>
+        </div>
+        ${examensParacliniques?.commentaires ? `<div class="field"><span class="field-label">Commentaires:</span> <span class="field-value">${examensParacliniques.commentaires}</span></div>` : ''}
+      </div>
+
+      ${stopBang ? `
+      <div class="section">
+        <div class="section-title">SCORE STOP-BANG</div>
+        <div class="grid-3">
+          <div class="field"><span class="field-label">Ronflement:</span> <span class="field-value">${stopBang.ronflement ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">Fatigue:</span> <span class="field-value">${stopBang.fatigue ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">Apnée:</span> <span class="field-value">${stopBang.apnee ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">Pression artérielle:</span> <span class="field-value">${stopBang.pressionArterielle ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">IMC:</span> <span class="field-value">${stopBang.imc ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">Âge:</span> <span class="field-value">${stopBang.age ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">Tour de cou:</span> <span class="field-value">${stopBang.tourCou ? 'Oui' : 'Non'}</span></div>
+          <div class="field"><span class="field-label">Sexe:</span> <span class="field-value">${stopBang.sexe ? 'Oui' : 'Non'}</span></div>
+        </div>
+        <div class="field"><span class="field-label">Score total:</span> <span class="field-value">${Object.values(stopBang).filter(v => v).length}/8</span></div>
+      </div>
+      ` : ''}
+
+      ${(scoreApfel || scoreLee || douleursPostop) ? `
+      <div class="section">
+        <div class="section-title">SCORES DE RISQUE</div>
+        <div class="grid-3">
+          ${scoreApfel ? `
+          <div class="score-box">
+            <div class="score-title">Score Apfel</div>
+            <div class="score-item"><span>Femme:</span> <span>${scoreApfel.femme ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>Non fumeur:</span> <span>${scoreApfel.nonFumeur ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>ATCD NVPO:</span> <span>${scoreApfel.atcdNVPO ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>ATCD cinétose:</span> <span>${scoreApfel.atcdCinetose ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>Opioïdes postop:</span> <span>${scoreApfel.opioidesPostop ? 'Oui' : 'Non'}</span></div>
+            <div class="score-total">Total: ${Object.values(scoreApfel).filter(v => v).length}/5</div>
+          </div>
+          ` : ''}
+          ${scoreLee ? `
+          <div class="score-box">
+            <div class="score-title">Score Lee</div>
+            <div class="score-item"><span>Chirurgie risque élevé:</span> <span>${scoreLee.chirurgieRisqueEleve ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>Cardiopathie ischémique:</span> <span>${scoreLee.cardiopathieIschemique ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>Insuffisance cardiaque:</span> <span>${scoreLee.insuffisanceCardiaque ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>ATCD AVC:</span> <span>${scoreLee.atcdAVC ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>Insulinothérapie:</span> <span>${scoreLee.insulinotherapie ? 'Oui' : 'Non'}</span></div>
+            <div class="score-item"><span>Créatinine élevée:</span> <span>${scoreLee.creatinine ? 'Oui' : 'Non'}</span></div>
+            <div class="score-total">Total: ${Object.values(scoreLee).filter(v => v).length}/6</div>
+          </div>
+          ` : ''}
+          ${douleursPostop ? `
+          <div class="score-box">
+            <div class="score-title">Douleurs postopératoires</div>
+            <div class="score-item"><span>Sexe féminin:</span> <span>${formatValue(douleursPostop.sexeFeminin)}</span></div>
+            <div class="score-item"><span>Âge:</span> <span>${formatValue(douleursPostop.age)}</span></div>
+            <div class="score-item"><span>Douleur préop site:</span> <span>${formatValue(douleursPostop.douleurPreopSite)}</span></div>
+            <div class="score-item"><span>Usage opiacés:</span> <span>${formatValue(douleursPostop.usageOpiaces)}</span></div>
+            <div class="score-item"><span>Usage antidépresseurs:</span> <span>${formatValue(douleursPostop.usageAntidepresseurs)}</span></div>
+            <div class="score-item"><span>Chirurgie tomie:</span> <span>${formatValue(douleursPostop.chirurgieTomie)}</span></div>
+            <div class="score-item"><span>Type chirurgie:</span> <span>${formatValue(douleursPostop.typeChirurgie)}</span></div>
+            <div class="score-item"><span>Chirurgie longue durée:</span> <span>${formatValue(douleursPostop.chirurgieLongueDuree)}</span></div>
+            <div class="score-item"><span>Obésité importante:</span> <span>${formatValue(douleursPostop.obesiteImportante)}</span></div>
+            <div class="score-item"><span>Patient très anxieux:</span> <span>${formatValue(douleursPostop.patientTresAnxieux)}</span></div>
+            <div class="score-total">Risque douleurs sévères: ${formatValue(douleursPostop.risqueDouleursSeveres)} (Score: ${douleursPostop.totalScore || 'N/A'})</div>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+      ` : ''}
+
+      ${avisSpecialises ? `
+      <div class="section">
+        <div class="section-title">AVIS SPÉCIALISÉS</div>
+        ${avisSpecialises.avisDemandes ? `<div class="field"><span class="field-label">Avis demandés:</span> <span class="field-value">${avisSpecialises.avisDemandes}</span></div>` : ''}
+        ${avisSpecialises.commentaires ? `<div class="field"><span class="field-label">Commentaires:</span> <span class="field-value">${avisSpecialises.commentaires}</span></div>` : ''}
+      </div>
+      ` : ''}
+
+      ${checklistHDJ ? `
+      <div class="section">
+        <div class="section-title">CHECKLIST HOSPITALISATION DE JOUR</div>
+        <div class="grid-2">
+          <div class="field"><span class="field-label">ASA 3 mal équilibré:</span> <span class="field-value">${formatValue(checklistHDJ.asa3MalEquilibre)}</span></div>
+          <div class="field"><span class="field-label">Conduit véhicule:</span> <span class="field-value">${formatValue(checklistHDJ.conduitVehicule)}</span></div>
+          <div class="field"><span class="field-label">Rentre seul:</span> <span class="field-value">${formatValue(checklistHDJ.rentreSeul)}</span></div>
+          <div class="field"><span class="field-label">Non accompagné nuit:</span> <span class="field-value">${formatValue(checklistHDJ.nonAccompagneNuit)}</span></div>
+          <div class="field"><span class="field-label">Plus de 75 ans:</span> <span class="field-value">${formatValue(checklistHDJ.plus75Ans)}</span></div>
+          <div class="field"><span class="field-label">Douleur non contrôlable:</span> <span class="field-value">${formatValue(checklistHDJ.douleurNonControllable)}</span></div>
+          <div class="field"><span class="field-label">Saignement important:</span> <span class="field-value">${formatValue(checklistHDJ.saignementImportant)}</span></div>
+          <div class="field"><span class="field-label">Admission HDJ:</span> <span class="field-value">${formatValue(checklistHDJ.admissionHospiDay)}</span></div>
+        </div>
+        ${checklistHDJ.commentaire ? `<div class="field"><span class="field-label">Commentaire:</span> <span class="field-value">${checklistHDJ.commentaire}</span></div>` : ''}
+      </div>
+      ` : ''}
+
+      ${conclusion ? `
+      <div class="section">
+        <div class="section-title">CONCLUSION</div>
+        <div class="grid-2">
+          <div class="field"><span class="field-label">Score ASA:</span> <span class="field-value">${formatValue(conclusion.scoreASA)}</span></div>
+          <div class="field"><span class="field-label">Type d'anesthésie:</span> <span class="field-value">${formatValue(conclusion.typeAnesthesie)}</span></div>
+          <div class="field"><span class="field-label">Adaptation traitement:</span> <span class="field-value">${formatValue(conclusion.adaptationTraitement)}</span></div>
+          <div class="field"><span class="field-label">Consentement:</span> <span class="field-value">${formatValue(conclusion.consentement)}</span></div>
+          <div class="field"><span class="field-label">Validation:</span> <span class="field-value">${formatValue(conclusion.validation)}</span></div>
+          <div class="field"><span class="field-label">Compléments:</span> <span class="field-value">${formatValue(conclusion.complements)}</span></div>
+        </div>
+        ${conclusion.texte ? `<div class="field"><span class="field-label">Texte de conclusion:</span> <span class="field-value">${conclusion.texte}</span></div>` : ''}
+      </div>
+      ` : ''}
+
+      ${autres ? `
+      <div class="section">
+        <div class="section-title">AUTRES INFORMATIONS</div>
+        <p>${autres}</p>
+      </div>
+      ` : ''}
+
+      <div class="signature-section">
+        <div class="section-title">SIGNATURE</div>
+        <div class="signature-line">
+          <div class="field"><span class="field-label">Nom du médecin:</span> <span class="field-value">_______________________</span></div>
+          <div class="field"><span class="field-label">Date:</span> <span class="field-value">_______________________</span></div>
+          <div class="field"><span class="field-label">Signature:</span> <span class="field-value">_______________________</span></div>
+        </div>
+      </div>
+    `;
   };
 
   return (
@@ -873,6 +1148,384 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
             </h2>
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
               <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{autres}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Avis spécialisés */}
+        {avisSpecialises && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-cyan-100 to-blue-100 p-2 rounded-lg mr-3">
+                <Eye className="w-6 h-6 text-cyan-600" />
+              </div>
+              Avis spécialisés
+            </h2>
+            <div className="space-y-4">
+              {avisSpecialises.avisDemandes && (
+                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-4 rounded-lg border border-cyan-200">
+                  <div className="flex items-center mb-2">
+                    <Eye className="w-5 h-5 text-cyan-600 mr-2" />
+                    <span className="text-sm font-medium text-cyan-800">Avis demandés</span>
+                  </div>
+                  <p className="text-gray-700">{avisSpecialises.avisDemandes}</p>
+                </div>
+              )}
+              {avisSpecialises.commentaires && (
+                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-4 rounded-lg border border-cyan-200">
+                  <div className="flex items-center mb-2">
+                    <FileText className="w-5 h-5 text-cyan-600 mr-2" />
+                    <span className="text-sm font-medium text-cyan-800">Commentaires</span>
+                  </div>
+                  <p className="text-gray-700">{avisSpecialises.commentaires}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Checklist HDJ */}
+        {checklistHDJ && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-2 rounded-lg mr-3">
+                <ClipboardList className="w-6 h-6 text-green-600" />
+              </div>
+              Checklist Hospitalisation de Jour
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">ASA 3 mal équilibré</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.asa3MalEquilibre === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.asa3MalEquilibre)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Conduit véhicule</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.conduitVehicule === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.conduitVehicule)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Rentre seul</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.rentreSeul === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.rentreSeul)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Non accompagné nuit</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.nonAccompagneNuit === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.nonAccompagneNuit)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Plus de 75 ans</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.plus75Ans === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.plus75Ans)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Douleur non contrôlable</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.douleurNonControllable === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.douleurNonControllable)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Saignement important</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.saignementImportant === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.saignementImportant)}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-800">Admission HDJ</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    checklistHDJ.admissionHospiDay === 'Oui' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {formatValue(checklistHDJ.admissionHospiDay)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {checklistHDJ.commentaire && (
+              <div className="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <p className="text-sm text-gray-600 italic">{checklistHDJ.commentaire}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Scores de risque */}
+        {(scoreApfel || scoreLee || douleursPostop) && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-red-100 to-pink-100 p-2 rounded-lg mr-3">
+                <Activity className="w-6 h-6 text-red-600" />
+              </div>
+              Scores de risque
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Score Apfel */}
+              {scoreApfel && (
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-lg border border-red-200">
+                  <div className="flex items-center mb-3">
+                    <Activity className="w-5 h-5 text-red-600 mr-2" />
+                    <span className="text-sm font-medium text-red-800">Score Apfel</span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Femme:</span>
+                      <span className={scoreApfel.femme ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreApfel.femme ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Non fumeur:</span>
+                      <span className={scoreApfel.nonFumeur ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreApfel.nonFumeur ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>ATCD NVPO:</span>
+                      <span className={scoreApfel.atcdNVPO ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreApfel.atcdNVPO ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>ATCD cinétose:</span>
+                      <span className={scoreApfel.atcdCinetose ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreApfel.atcdCinetose ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Opioïdes postop:</span>
+                      <span className={scoreApfel.opioidesPostop ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreApfel.opioidesPostop ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-red-200">
+                      <div className="flex justify-between font-semibold">
+                        <span>Total:</span>
+                        <span className="text-red-600">{Object.values(scoreApfel).filter(v => v).length}/5</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Score Lee */}
+              {scoreLee && (
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-lg border border-red-200">
+                  <div className="flex items-center mb-3">
+                    <Heart className="w-5 h-5 text-red-600 mr-2" />
+                    <span className="text-sm font-medium text-red-800">Score Lee</span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Chirurgie risque élevé:</span>
+                      <span className={scoreLee.chirurgieRisqueEleve ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreLee.chirurgieRisqueEleve ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Cardiopathie ischémique:</span>
+                      <span className={scoreLee.cardiopathieIschemique ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreLee.cardiopathieIschemique ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Insuffisance cardiaque:</span>
+                      <span className={scoreLee.insuffisanceCardiaque ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreLee.insuffisanceCardiaque ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>ATCD AVC:</span>
+                      <span className={scoreLee.atcdAVC ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreLee.atcdAVC ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Insulinothérapie:</span>
+                      <span className={scoreLee.insulinotherapie ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreLee.insulinotherapie ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Créatinine élevée:</span>
+                      <span className={scoreLee.creatinine ? 'text-red-600 font-semibold' : 'text-gray-600'}>{scoreLee.creatinine ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-red-200">
+                      <div className="flex justify-between font-semibold">
+                        <span>Total:</span>
+                        <span className="text-red-600">{Object.values(scoreLee).filter(v => v).length}/6</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Douleurs postopératoires */}
+              {douleursPostop && (
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-lg border border-red-200">
+                  <div className="flex items-center mb-3">
+                    <Pill className="w-5 h-5 text-red-600 mr-2" />
+                    <span className="text-sm font-medium text-red-800">Douleurs postopératoires</span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Sexe féminin:</span>
+                      <span className={douleursPostop.sexeFeminin === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.sexeFeminin)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Âge:</span>
+                      <span className="text-gray-600">{formatValue(douleursPostop.age)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Douleur préop site:</span>
+                      <span className={douleursPostop.douleurPreopSite === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.douleurPreopSite)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Usage opiacés:</span>
+                      <span className={douleursPostop.usageOpiaces === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.usageOpiaces)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Usage antidépresseurs:</span>
+                      <span className={douleursPostop.usageAntidepresseurs === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.usageAntidepresseurs)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Chirurgie tomie:</span>
+                      <span className={douleursPostop.chirurgieTomie === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.chirurgieTomie)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Type chirurgie:</span>
+                      <span className="text-gray-600">{formatValue(douleursPostop.typeChirurgie)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Chirurgie longue durée:</span>
+                      <span className={douleursPostop.chirurgieLongueDuree === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.chirurgieLongueDuree)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Obésité importante:</span>
+                      <span className={douleursPostop.obesiteImportante === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.obesiteImportante)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Patient très anxieux:</span>
+                      <span className={douleursPostop.patientTresAnxieux === 'Oui' ? 'text-red-600 font-semibold' : 'text-gray-600'}>{formatValue(douleursPostop.patientTresAnxieux)}</span>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-red-200">
+                      <div className="flex justify-between font-semibold">
+                        <span>Risque douleurs sévères:</span>
+                        <span className={douleursPostop.risqueDouleursSeveres === 'Oui' ? 'text-red-600' : 'text-green-600'}>{formatValue(douleursPostop.risqueDouleursSeveres)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Score total:</span>
+                        <span>{douleursPostop.totalScore || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Conclusion */}
+        {conclusion && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-2 rounded-lg mr-3">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              Conclusion
+            </h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <Activity className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Score ASA</span>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-900">{formatValue(conclusion.scoreASA)}</span>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <Stethoscope className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Type d'anesthésie</span>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-900">{formatValue(conclusion.typeAnesthesie)}</span>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <Pill className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Adaptation traitement</span>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-900">{formatValue(conclusion.adaptationTraitement)}</span>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <Shield className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Consentement</span>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-900">{formatValue(conclusion.consentement)}</span>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Validation</span>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-900">{formatValue(conclusion.validation)}</span>
+                </div>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Compléments</span>
+                  </div>
+                  <span className="text-lg font-semibold text-gray-900">{formatValue(conclusion.complements)}</span>
+                </div>
+              </div>
+              {conclusion.texte && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-3">
+                    <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Texte de conclusion</span>
+                  </div>
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{conclusion.texte}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Signature */}
+        {signature && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="bg-gradient-to-br from-gray-100 to-blue-100 p-2 rounded-lg mr-3">
+                <FileText className="w-6 h-6 text-gray-600" />
+              </div>
+              Signature
+            </h2>
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
+              <div className="text-center">
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-gray-700">Signature du médecin:</span>
+                </div>
+                <div className="border-2 border-dashed border-gray-300 h-24 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">Signature</span>
+                </div>
+                <div className="mt-4">
+                  <span className="text-sm text-gray-600">Date: _______________________</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

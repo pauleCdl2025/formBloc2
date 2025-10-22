@@ -119,8 +119,8 @@ export default function FormManager() {
           setCurrentView('form');
         }}
         onPrint={() => {
-          // Fonction d'impression - peut être implémentée plus tard
-          window.print();
+          // La fonction d'impression est maintenant gérée directement dans PatientConsultation
+          // Pas besoin d'implémenter quoi que ce soit ici
         }}
       />
     );
