@@ -1,6 +1,11 @@
 [build]
-  command = "npm run build"
   publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
 
 [[redirects]]
   from = "/*"

@@ -1,0 +1,51 @@
+/assets/*
+  Content-Type: text/css
+  Cache-Control: public, max-age=31536000
+
+/assets/*.js
+  Content-Type: application/javascript
+  Cache-Control: public, max-age=31536000
+
+/assets/*.css
+  Content-Type: text/css
+  Cache-Control: public, max-age=31536000
+
+/assets/*.woff2
+  Content-Type: font/woff2
+  Cache-Control: public, max-age=31536000
+
+/assets/*.woff
+  Content-Type: font/woff
+  Cache-Control: public, max-age=31536000
+
+/assets/*.ttf
+  Content-Type: font/ttf
+  Cache-Control: public, max-age=31536000
+
+/assets/*.eot
+  Content-Type: application/vnd.ms-fontobject
+  Cache-Control: public, max-age=31536000
+
+/assets/*.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=31536000
+
+/assets/*.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000
+
+/assets/*.jpg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=31536000
+
+/assets/*.jpeg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=31536000
+
+/assets/*.gif
+  Content-Type: image/gif
+  Cache-Control: public, max-age=31536000
+
+/assets/*.ico
+  Content-Type: image/x-icon
+  Cache-Control: public, max-age=31536000
