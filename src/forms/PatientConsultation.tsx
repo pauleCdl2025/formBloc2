@@ -59,16 +59,13 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
   };
 
   const handlePrint = () => {
-    console.log('handlePrint appelé');
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       console.error('Impossible d\'ouvrir la fenêtre d\'impression');
       return;
     }
 
-    console.log('Fenêtre d\'impression ouverte');
     const printContent = generatePrintContent();
-    console.log('Contenu généré:', printContent.substring(0, 200) + '...');
     
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -78,6 +75,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; line-height: 1.4; }
             .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
+            .logo { max-width: 200px; height: auto; margin-bottom: 15px; }
             .patient-info { margin-bottom: 20px; }
             .section { margin-bottom: 25px; page-break-inside: avoid; }
             .section-title { font-weight: bold; font-size: 14px; color: #1e3a8a; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
@@ -97,6 +95,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
             @media print { 
               body { margin: 0; } 
               .page-break { page-break-before: always; }
+              .logo { max-width: 150px; }
             }
           </style>
         </head>
@@ -107,16 +106,15 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
     `);
     
     printWindow.document.close();
-    console.log('Document fermé, lancement de l\'impression');
     printWindow.focus();
     printWindow.print();
     printWindow.close();
-    console.log('Impression lancée');
   };
 
   const generatePrintContent = () => {
     return `
       <div class="header">
+        <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1758286702/Centre_Diagnostic-Logo_xhxxpv.png" alt="Centre Diagnostic de Libreville" class="logo">
         <h1>CONSULTATION PRÉ-ANESTHÉSIQUE</h1>
         <h2>Centre Diagnostic de Libreville</h2>
         <p>Date: ${patient?.dateConsultation || new Date().toLocaleDateString('fr-FR')}</p>
