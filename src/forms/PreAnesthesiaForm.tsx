@@ -248,18 +248,30 @@ export default function PreAnesthesiaForm({
   
   // Charger les données du patient si fournies
   useEffect(() => {
-    console.log('PreAnesthesiaForm useEffect - patientData:', patientData);
-    console.log('PreAnesthesiaForm useEffect - editMode:', editMode);
+    console.log('=== PreAnesthesiaForm useEffect DEBUG ===');
+    console.log('patientData:', patientData);
+    console.log('patientData type:', typeof patientData);
+    console.log('patientData keys:', patientData ? Object.keys(patientData) : 'patientData is null/undefined');
+    console.log('editMode:', editMode);
+    
     if (patientData) {
-      console.log('PreAnesthesiaForm useEffect - patientData.data:', patientData.data);
+      console.log('patientData.data:', patientData.data);
+      console.log('patientData.data type:', typeof patientData.data);
+      console.log('patientData.patient_number:', patientData.patient_number);
+      
       if (patientData.data) {
+        console.log('Setting formData with patientData.data');
         setFormData(patientData.data);
         setSelectedPatientNumber(String(patientData.patient_number || ''));
         setCurrentView('form');
       } else {
-        console.error('patientData.data is undefined or null');
+        console.error('❌ patientData.data is undefined or null');
+        console.log('Available keys in patientData:', Object.keys(patientData));
       }
+    } else {
+      console.log('❌ patientData is null or undefined');
     }
+    console.log('=== END DEBUG ===');
   }, [patientData]);
 
   // Fonction utilitaire pour les propriétés des champs selon le mode

@@ -339,7 +339,13 @@ export default function PatientList({ onSelectPatient, onCreateNew, onBackToList
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => onSelectPatient(patient, 'edit')}
+                            onClick={() => {
+                              console.log('=== PatientList onClick edit ===');
+                              console.log('patient object:', patient);
+                              console.log('patient.data:', patient.data);
+                              console.log('patient keys:', Object.keys(patient));
+                              onSelectPatient(patient, 'edit');
+                            }}
                             className="text-orange-600 hover:text-orange-800 transition"
                             title="Modifier"
                           >
