@@ -104,6 +104,7 @@ interface FormData {
     sexe: boolean;
   };
   autres: string;
+  hasAntecedentsChirurgicaux: boolean;
   antecedentsChirurgicaux: AntecedentChirurgical[];
   examenPhysique: {
     poids: string;
@@ -185,13 +186,21 @@ interface FormData {
   medicaments: string;
   examensParacliniques: {
     biologie: string;
+    biologieCommentaire: string;
     hemostase: string;
+    hemostaseCommentaire: string;
     groupeSanguin: string;
+    groupeSanguinCommentaire: string;
     ecgRepos: string;
+    ecgReposCommentaire: string;
     rxThorax: string;
+    rxThoraxCommentaire: string;
     efr: string;
+    efrCommentaire: string;
     testEffort: string;
+    testEffortCommentaire: string;
     autres: string;
+    autresCommentaire: string;
     commentaires: string;
   };
   avisSpecialises: {
@@ -335,6 +344,7 @@ export default function PreAnesthesiaForm({
       sexe: false,
     },
     autres: '',
+    hasAntecedentsChirurgicaux: false,
     antecedentsChirurgicaux: [],
     examenPhysique: {
       poids: '',
@@ -416,13 +426,21 @@ export default function PreAnesthesiaForm({
     medicaments: '',
     examensParacliniques: {
       biologie: '',
+      biologieCommentaire: '',
       hemostase: '',
+      hemostaseCommentaire: '',
       groupeSanguin: '',
+      groupeSanguinCommentaire: '',
       ecgRepos: '',
+      ecgReposCommentaire: '',
       rxThorax: '',
+      rxThoraxCommentaire: '',
       efr: '',
+      efrCommentaire: '',
       testEffort: '',
+      testEffortCommentaire: '',
       autres: '',
+      autresCommentaire: '',
       commentaires: '',
     },
     avisSpecialises: {
@@ -2164,23 +2182,62 @@ export default function PreAnesthesiaForm({
             ❖ Antécédents Chirurgicaux
           </h2>
           
-          {/* Instructions */}
+          {/* Cases à cocher Non/Oui */}
           <div className="mb-4 p-4 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-4 mb-3">
-              <span className="text-sm font-medium text-gray-700">Non</span>
-              <span className="text-sm font-medium text-gray-700">oui</span>
+            <div className="flex items-center gap-6 mb-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...getFieldProps()}
+                  checked={!formData.hasAntecedentsChirurgicaux}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      hasAntecedentsChirurgicaux: !e.target.checked,
+                      antecedentsChirurgicaux: e.target.checked ? [] : formData.antecedentsChirurgicaux
+                    });
+                  }}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Non</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...getFieldProps()}
+                  checked={formData.hasAntecedentsChirurgicaux}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      hasAntecedentsChirurgicaux: e.target.checked,
+                      antecedentsChirurgicaux: e.target.checked ? formData.antecedentsChirurgicaux : []
+                    });
+                  }}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Oui</span>
+              </label>
             </div>
-            <p className="text-sm text-gray-600 mb-3">(si oui case commentaire pour détails Pour chaque intervention, préciser :</p>
-            <ul className="text-sm text-gray-600 space-y-1 ml-4">
-              <li>• Année</li>
-              <li>• Intervention</li>
-              <li>• Type d'anesthésie</li>
-              <li>• Difficultés de ventilation et d'intubation</li>
-              <li className="ml-4">o Cormack</li>
-              <li className="ml-4">o Technique utilisée si intubation difficile)</li>
-            </ul>
+            
+            {/* Instructions conditionnelles - apparaissent seulement si "Oui" est coché */}
+            {formData.hasAntecedentsChirurgicaux && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-600 mb-3">Pour chaque intervention, préciser :</p>
+                <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                  <li>• Année</li>
+                  <li>• Intervention</li>
+                  <li>• Type d'anesthésie</li>
+                  <li>• Difficultés de ventilation et d'intubation</li>
+                  <li className="ml-4">o Cormack</li>
+                  <li className="ml-4">o Technique utilisée si intubation difficile)</li>
+                </ul>
+              </div>
+            )}
           </div>
-          {formData.antecedentsChirurgicaux.map((atcd, index) => (
+          {/* Liste des antécédents chirurgicaux - apparaît seulement si "Oui" est coché */}
+          {formData.hasAntecedentsChirurgicaux && (
+            <>
+              {formData.antecedentsChirurgicaux.map((atcd, index) => (
             <div key={index} className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-300">
               <div className="flex justify-between items-center mb-3">
                 <h4 className="font-semibold text-gray-700">Intervention #{index + 1}</h4>
@@ -2260,14 +2317,18 @@ export default function PreAnesthesiaForm({
                 />
               </div>
             </div>
-          ))}
-          <button
-            onClick={addAntecedentChirurgical}
-            className="flex items-center px-4 py-2 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition shadow-md"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Ajouter un antécédent chirurgical
-          </button>
+              ))}
+              
+              {/* Bouton pour ajouter un antécédent chirurgical */}
+              <button
+                onClick={addAntecedentChirurgical}
+                className="flex items-center px-4 py-2 bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition shadow-md"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Ajouter un antécédent chirurgical
+              </button>
+            </>
+          )}
         </section>
 
 
@@ -3788,11 +3849,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="biologie"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.biologie === 'Non'}
                     onChange={(e) => setFormData({
                       ...formData,
-                      examensParacliniques: { ...formData.examensParacliniques, biologie: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        biologie: e.target.value,
+                        biologieCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.biologieCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -3802,16 +3867,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="biologie"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.biologie === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, biologie: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        biologie: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
-                  </label>
+                </label>
+              </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.biologie === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur la biologie..."
+                    value={formData.examensParacliniques.biologieCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        biologieCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
                 </div>
+              )}
             </div>
 
             {/* Hémostase */}
@@ -3823,11 +3911,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="hemostase"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.hemostase === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, hemostase: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        hemostase: e.target.value,
+                        hemostaseCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.hemostaseCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -3837,16 +3929,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="hemostase"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.hemostase === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, hemostase: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        hemostase: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.hemostase === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur l'hémostase..."
+                    value={formData.examensParacliniques.hemostaseCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        hemostaseCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Groupe sanguin */}
@@ -3858,11 +3973,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="groupeSanguin"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.groupeSanguin === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, groupeSanguin: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        groupeSanguin: e.target.value,
+                        groupeSanguinCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.groupeSanguinCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -3872,16 +3991,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="groupeSanguin"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.groupeSanguin === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, groupeSanguin: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        groupeSanguin: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.groupeSanguin === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur le groupe sanguin..."
+                    value={formData.examensParacliniques.groupeSanguinCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        groupeSanguinCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* ECG repos */}
@@ -3893,11 +4035,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="ecgRepos"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.ecgRepos === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, ecgRepos: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        ecgRepos: e.target.value,
+                        ecgReposCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.ecgReposCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -3907,16 +4053,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="ecgRepos"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.ecgRepos === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, ecgRepos: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        ecgRepos: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.ecgRepos === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur l'ECG repos..."
+                    value={formData.examensParacliniques.ecgReposCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        ecgReposCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* RX thorax */}
@@ -3928,11 +4097,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="rxThorax"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.rxThorax === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, rxThorax: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        rxThorax: e.target.value,
+                        rxThoraxCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.rxThoraxCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -3942,16 +4115,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="rxThorax"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.rxThorax === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, rxThorax: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        rxThorax: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.rxThorax === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur la RX thorax..."
+                    value={formData.examensParacliniques.rxThoraxCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        rxThoraxCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* EFR */}
@@ -3963,11 +4159,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="efr"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.efr === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, efr: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        efr: e.target.value,
+                        efrCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.efrCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -3977,16 +4177,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="efr"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.efr === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, efr: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        efr: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.efr === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur l'EFR..."
+                    value={formData.examensParacliniques.efrCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        efrCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Test effort */}
@@ -3998,11 +4221,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="testEffort"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.testEffort === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, testEffort: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        testEffort: e.target.value,
+                        testEffortCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.testEffortCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -4012,16 +4239,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="testEffort"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.testEffort === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, testEffort: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        testEffort: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.testEffort === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur le test effort..."
+                    value={formData.examensParacliniques.testEffortCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        testEffortCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Autres */}
@@ -4033,11 +4283,15 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="autres"
                     value="Non"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.autres === 'Non'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, autres: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        autres: e.target.value,
+                        autresCommentaire: e.target.value === 'Non' ? '' : formData.examensParacliniques.autresCommentaire
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Non</span>
@@ -4047,16 +4301,39 @@ export default function PreAnesthesiaForm({
                     type="radio"
                     name="autres"
                     value="Oui"
-                    className="w-4 h-4 text-[#0ea5e9] border-gray-300 focus:ring-[#0ea5e9]"
+                    {...getFieldProps()}
                     checked={formData.examensParacliniques.autres === 'Oui'}
                     onChange={(e) => setFormData({ 
                       ...formData, 
-                      examensParacliniques: { ...formData.examensParacliniques, autres: e.target.value } 
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        autres: e.target.value 
+                      } 
                     })}
                   />
                   <span className="ml-2 text-sm text-gray-700">Oui</span>
                 </label>
               </div>
+              
+              {/* Champ de commentaire conditionnel */}
+              {formData.examensParacliniques.autres === 'Oui' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    {...getFieldProps()}
+                    placeholder="Commentaires sur les autres examens..."
+                    value={formData.examensParacliniques.autresCommentaire || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      examensParacliniques: { 
+                        ...formData.examensParacliniques, 
+                        autresCommentaire: e.target.value 
+                      }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Commentaires */}
