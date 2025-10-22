@@ -815,7 +815,113 @@ export default function PreAnesthesiaForm({
   };
 
   const handlePrint = () => {
-    window.print();
+    // Créer une nouvelle fenêtre pour l'impression
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    // Générer le contenu HTML pour l'impression
+    const printContent = generatePrintContent();
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Consultation Pré-Anesthésique - ${formData.patient?.nom || ''} ${formData.patient?.prenom || ''}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
+            .patient-info { margin-bottom: 20px; }
+            .section { margin-bottom: 25px; page-break-inside: avoid; }
+            .section-title { font-weight: bold; font-size: 14px; color: #1e3a8a; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+            .field { margin-bottom: 8px; }
+            .field-label { font-weight: bold; display: inline-block; width: 150px; }
+            .field-value { display: inline-block; }
+            .checkbox-group { margin-left: 20px; }
+            .checkbox-item { margin-bottom: 5px; }
+            .signature-section { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+            .signature-line { margin-top: 30px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+
+  const generatePrintContent = () => {
+    const { patient, intervention, anamnese, allergies, examenPhysique, examensParacliniques } = formData;
+    
+    return `
+      <div class="header">
+        <h1>CONSULTATION PRÉ-ANESTHÉSIQUE</h1>
+        <h2>Centre Diagnostic de Libreville</h2>
+        <p>Date: ${formData.patient?.dateConsultation || new Date().toLocaleDateString('fr-FR')}</p>
+      </div>
+
+      <div class="patient-info">
+        <div class="section-title">INFORMATIONS PATIENT</div>
+        <div class="field"><span class="field-label">Nom:</span> <span class="field-value">${patient?.nom || ''}</span></div>
+        <div class="field"><span class="field-label">Prénom:</span> <span class="field-value">${patient?.prenom || ''}</span></div>
+        <div class="field"><span class="field-label">Date de naissance:</span> <span class="field-value">${patient?.dateNaissance || ''}</span></div>
+        <div class="field"><span class="field-label">Âge:</span> <span class="field-value">${patient?.age || ''} ans</span></div>
+        <div class="field"><span class="field-label">N° Identification:</span> <span class="field-value">${patient?.numeroIdentification || ''}</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">INTERVENTION PRÉVUE</div>
+        <div class="field"><span class="field-label">Libellé:</span> <span class="field-value">${intervention?.libelle || ''}</span></div>
+        <div class="field"><span class="field-label">Date:</span> <span class="field-value">${intervention?.dateIntervention || ''}</span></div>
+        <div class="field"><span class="field-label">Ambulatoire:</span> <span class="field-value">${intervention?.ambulatoire ? 'Oui' : 'Non'}</span></div>
+        <div class="field"><span class="field-label">Date entrée prévue:</span> <span class="field-value">${intervention?.dateEntreePrevue || ''}</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">ANAMNÈSE</div>
+        <div class="field-value">${anamnese || 'Non renseigné'}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">ALLERGIES</div>
+        <div class="field"><span class="field-label">Antibiotiques:</span> <span class="field-value">${allergies?.antibiotiques?.presente ? 'Oui' : 'Non'}</span></div>
+        <div class="field"><span class="field-label">Aspirine/AINS:</span> <span class="field-value">${allergies?.aspirineAINS?.presente ? 'Oui' : 'Non'}</span></div>
+        <div class="field"><span class="field-label">Latex:</span> <span class="field-value">${allergies?.latex?.presente ? 'Oui' : 'Non'}</span></div>
+        <div class="field"><span class="field-label">Autres:</span> <span class="field-value">${allergies?.autres?.presente ? 'Oui' : 'Non'}</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">EXAMEN PHYSIQUE</div>
+        <div class="field"><span class="field-label">Poids:</span> <span class="field-value">${examenPhysique?.poids || ''} kg</span></div>
+        <div class="field"><span class="field-label">Taille:</span> <span class="field-value">${examenPhysique?.taille || ''} cm</span></div>
+        <div class="field"><span class="field-label">IMC:</span> <span class="field-value">${examenPhysique?.imc || ''}</span></div>
+        <div class="field"><span class="field-label">FC:</span> <span class="field-value">${examenPhysique?.fc || ''} bpm</span></div>
+        <div class="field"><span class="field-label">PA:</span> <span class="field-value">${examenPhysique?.pa || ''} mmHg</span></div>
+        <div class="field"><span class="field-label">SpO2:</span> <span class="field-value">${examenPhysique?.spo2 || ''}%</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">EXAMENS PARA-CLINIQUES</div>
+        <div class="field"><span class="field-label">Biologie:</span> <span class="field-value">${examensParacliniques?.biologie || 'Non renseigné'}</span></div>
+        <div class="field"><span class="field-label">ECG:</span> <span class="field-value">${examensParacliniques?.ecgRepos || 'Non renseigné'}</span></div>
+        <div class="field"><span class="field-label">RX Thorax:</span> <span class="field-value">${examensParacliniques?.rxThorax || 'Non renseigné'}</span></div>
+        <div class="field"><span class="field-label">Groupe sanguin:</span> <span class="field-value">${examensParacliniques?.groupeSanguin || 'Non renseigné'}</span></div>
+      </div>
+
+      <div class="signature-section">
+        <div class="section-title">SIGNATURE</div>
+        <div class="signature-line">
+          <div class="field"><span class="field-label">Nom du médecin:</span> <span class="field-value">_______________________</span></div>
+          <div class="field"><span class="field-label">Signature:</span> <span class="field-value">_______________________</span></div>
+          <div class="field"><span class="field-label">Date:</span> <span class="field-value">${new Date().toLocaleDateString('fr-FR')}</span></div>
+        </div>
+      </div>
+    `;
   };
 
   const handleExportJSON = () => {
