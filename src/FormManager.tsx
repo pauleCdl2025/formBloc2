@@ -273,6 +273,10 @@ export default function FormManager() {
                         if (form.id === 'preanesthesia') {
                           console.log('Aller à PatientList');
                           setCurrentView('list');
+                        } else if (form.id === 'checklist-chirurgicale') {
+                          console.log('Aller à ChecklistList');
+                          setSelectedForm('checklist-chirurgicale');
+                          setCurrentView('list');
                         } else if (form.id === 'compte-rendu') {
                           console.log('Aller à Compte-rendu Consultation');
                           handleCompteRenduConsultation();
@@ -298,6 +302,10 @@ export default function FormManager() {
                           console.log('Aller au formulaire PreAnesthesia');
                           setSelectedForm('preanesthesia');
                           setCurrentView('form');
+                        } else if (form.id === 'checklist-chirurgicale') {
+                          console.log('Aller au formulaire ChecklistChirurgicale');
+                          setSelectedForm('checklist-chirurgicale');
+                          setCurrentView('form');
                         } else {
                           console.log('Aller à FormSelect');
                           handleFormSelect(form.id);
@@ -307,6 +315,7 @@ export default function FormManager() {
                     >
                       <span className="text-sm font-medium mr-1">
                         {form.id === 'preanesthesia' ? 'Nouveau Formulaire' : 
+                         form.id === 'checklist-chirurgicale' ? 'Nouvelle Checklist' :
                          form.id === 'compte-rendu' ? 'Nouveau Compte-rendu' :
                          form.id === 'consentement' ? 'Nouveau Consentement' : 'Nouveau'}
                       </span>
