@@ -200,6 +200,12 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
 
   const { intervention, checklist, progress } = checklistData.data || {};
 
+  // Debug: Afficher les données pour comprendre le problème
+  console.log('ChecklistConsultation - checklistData:', checklistData);
+  console.log('ChecklistConsultation - intervention:', intervention);
+  console.log('ChecklistConsultation - operatingRoom:', intervention?.operatingRoom);
+  console.log('ChecklistConsultation - interventionDate:', intervention?.interventionDate);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-6xl mx-auto">
