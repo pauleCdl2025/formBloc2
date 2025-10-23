@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, ArrowLeft, Edit, Download, Trash2 } from 'lucide-react';
+import { Printer, ArrowLeft, Edit, Download, Trash2, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 interface ChecklistConsultationProps {

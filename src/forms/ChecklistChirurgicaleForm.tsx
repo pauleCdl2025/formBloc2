@@ -11,7 +11,7 @@ import {
   AlertCircle,
   Syringe,
   Scalpel,
-  BandAid,
+  Shield,
   User,
   Calendar,
   MapPin,
@@ -95,7 +95,7 @@ const ChecklistChirurgicaleForm: React.FC = () => {
     {
       id: 'section3',
       title: 'Partie III : Avant la fermeture de la peau',
-      icon: <BandAid className="w-6 h-6" />,
+      icon: <Shield className="w-6 h-6" />,
       items: [
         'Compte final des compresses et instruments',
         'Vérifier l\'étiquetage des prélèvements',
