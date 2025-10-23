@@ -38,6 +38,7 @@ interface ChecklistData {
   section1: ChecklistItem[];
   section2: ChecklistItem[];
   section3: ChecklistItem[];
+  [key: string]: ChecklistItem[];
 }
 
 interface ChecklistChirurgicaleFormProps {
@@ -177,7 +178,7 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
   const handleCheckboxChange = (sectionId: string, itemId: string, checked: boolean) => {
     setChecklistData(prev => ({
       ...prev,
-      [sectionId]: prev[sectionId].map(item => 
+      [sectionId]: prev[sectionId].map((item: ChecklistItem) => 
         item.id === itemId 
           ? { 
               ...item, 
