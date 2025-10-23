@@ -230,6 +230,7 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
   console.log('ChecklistConsultation - interventionDate:', intervention?.interventionDate);
   console.log('ChecklistConsultation - scheduledTime:', intervention?.scheduledTime);
   console.log('ChecklistConsultation - scheduledTime type:', typeof intervention?.scheduledTime);
+  console.log('ChecklistConsultation - Toutes les propriétés de intervention:', Object.keys(intervention || {}));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -327,7 +328,12 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                 <Printer className="w-5 h-5 text-blue-600 mr-2" />
                 <span className="text-sm font-medium text-blue-800">Salle</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(intervention?.operatingRoom)}</span>
+              <span className="text-lg font-semibold text-gray-900">
+                {intervention?.operatingRoom || 
+                 intervention?.salle || 
+                 intervention?.room ||
+                 (intervention ? JSON.stringify(intervention) : 'Non renseigné')}
+              </span>
             </div>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
               <div className="flex items-center mb-2">
