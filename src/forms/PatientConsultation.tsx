@@ -400,21 +400,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-lg border border-emerald-200">
-              <div className="flex items-center mb-2">
-                <Heart className="w-5 h-5 text-emerald-600 mr-2" />
-                <span className="text-sm font-medium text-emerald-800">Sexe</span>
-              </div>
-              <span className="text-lg font-semibold text-gray-900">Non renseigné</span>
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center mb-2">
-                <Activity className="w-5 h-5 text-blue-600 mr-2" />
-                <span className="text-sm font-medium text-blue-800">Type</span>
-              </div>
-              <span className="text-lg font-semibold text-gray-900">Non renseigné</span>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
                 <MapPin className="w-5 h-5 text-purple-600 mr-2" />
@@ -548,60 +534,58 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
         )}
 
         {/* Examen physique */}
-        {examenPhysique && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-              <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 rounded-lg mr-3">
-                <Activity className="w-6 h-6 text-purple-600" />
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-blue-100">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 rounded-lg mr-3">
+              <Activity className="w-6 h-6 text-purple-600" />
+            </div>
+            Examen physique
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Activity className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-purple-800">Poids</span>
               </div>
-              Examen physique
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center mb-2">
-                  <Activity className="w-5 h-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-800">Poids</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique.poids)} kg</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.poids)} kg</span>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Activity className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-purple-800">Taille</span>
               </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center mb-2">
-                  <Activity className="w-5 h-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-800">Taille</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique.taille)} cm</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.taille)} cm</span>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Activity className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-purple-800">IMC</span>
               </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center mb-2">
-                  <Activity className="w-5 h-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-800">IMC</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique.imc)}</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.imc)}</span>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Heart className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-purple-800">FC</span>
               </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center mb-2">
-                  <Heart className="w-5 h-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-800">FC</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique.fc)} bpm</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.fc)} bpm</span>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Activity className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-purple-800">PA</span>
               </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center mb-2">
-                  <Activity className="w-5 h-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-800">PA</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique.pa)} mmHg</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.pa)} mmHg</span>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Activity className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-sm font-medium text-purple-800">SpO2</span>
               </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-center mb-2">
-                  <Activity className="w-5 h-5 text-purple-600 mr-2" />
-                  <span className="text-sm font-medium text-purple-800">SpO2</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique.spo2)}%</span>
-              </div>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.spo2)}%</span>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Examens para-cliniques */}
         {examensParacliniques && (
