@@ -30,6 +30,7 @@ interface InterventionData {
   interventionType: string;
   surgeon: string;
   operatingRoom: string;
+  interventionDate?: string;
   scheduledTime?: string;
 }
 
@@ -59,6 +60,7 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
     interventionType: patientData?.interventionType || '',
     surgeon: patientData?.surgeon || '',
     operatingRoom: patientData?.operatingRoom || '',
+    interventionDate: patientData?.interventionDate || '',
     scheduledTime: patientData?.interventionTime || ''
   });
   const [checklistData, setChecklistData] = useState<ChecklistData>({
@@ -550,11 +552,20 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
                   onChange={(e) => setInterventionData({...interventionData, operatingRoom: e.target.value})}
                 >
                   <option value="">Sélectionnez...</option>
-                  <option value="Bloc A">Bloc A</option>
-                  <option value="Bloc B">Bloc B</option>
-                  <option value="Bloc C">Bloc C</option>
-                  <option value="Urgences">Urgences</option>
+                  <option value="Bloc 1">Bloc 1</option>
+                  <option value="Bloc 2">Bloc 2</option>
+                  <option value="Bloc 3">Bloc 3</option>
+                  <option value="Akanda">Akanda</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date de l'Intervention</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={interventionData.interventionDate}
+                  onChange={(e) => setInterventionData({...interventionData, interventionDate: e.target.value})}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Heure Prévue</label>

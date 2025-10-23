@@ -87,10 +87,10 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
           <p><strong>Chirurgien:</strong> ${formatValue(intervention?.surgeon)}</p>
           <p><strong>Salle:</strong> ${formatValue(intervention?.operatingRoom)}</p>
           <p><strong>Date:</strong> ${intervention?.interventionDate ? 
-            (typeof intervention.interventionDate === 'string' ? 
-              new Date(intervention.interventionDate).toLocaleDateString('fr-FR') : 
-              intervention.interventionDate) : 
-            'Non renseigné'}</p>
+            new Date(intervention.interventionDate).toLocaleDateString('fr-FR') :
+            intervention?.scheduledTime ? 
+              new Date(intervention.scheduledTime).toLocaleDateString('fr-FR') :
+              'Non renseigné'}</p>
         </div>
 
         ${checklist ? `
@@ -315,9 +315,9 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
               </div>
               <span className="text-lg font-semibold text-gray-900">
                 {intervention?.interventionDate ? 
-                  (typeof intervention.interventionDate === 'string' ? 
-                    new Date(intervention.interventionDate).toLocaleDateString('fr-FR') : 
-                    intervention.interventionDate) : 
+                  new Date(intervention.interventionDate).toLocaleDateString('fr-FR') :
+                  intervention?.scheduledTime ? 
+                    new Date(intervention.scheduledTime).toLocaleDateString('fr-FR') :
                   'Non renseigné'}
               </span>
             </div>
