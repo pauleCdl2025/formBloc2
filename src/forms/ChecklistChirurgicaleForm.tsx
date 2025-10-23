@@ -441,11 +441,25 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
                 {editMode ? 'Modifier Intervention' : 'Nouvelle Intervention'}
               </button>
               <button
+                onClick={handleSave}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Sauvegarder
+              </button>
+              <button
                 onClick={handlePrint}
                 className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Imprimer
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Télécharger
               </button>
             </div>
           </div>
