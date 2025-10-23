@@ -95,12 +95,17 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
               }
             }
             
-            // Essayer scheduledTime ensuite
-            if (intervention?.scheduledTime) {
+            // Si scheduledTime contient une date complète
+            if (intervention?.scheduledTime && intervention.scheduledTime.length > 5) {
               const date = new Date(intervention.scheduledTime);
               if (!isNaN(date.getTime())) {
                 return date.toLocaleDateString('fr-FR');
               }
+            }
+            
+            // Si on a seulement l'heure, utiliser la date de création
+            if (intervention?.scheduledTime && intervention.scheduledTime.length === 5) {
+              return new Date(checklistData.created_at).toLocaleDateString('fr-FR');
             }
             
             return 'Non renseigné';
@@ -339,12 +344,17 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                     }
                   }
                   
-                  // Essayer scheduledTime ensuite
-                  if (intervention?.scheduledTime) {
+                  // Si scheduledTime contient une date complète
+                  if (intervention?.scheduledTime && intervention.scheduledTime.length > 5) {
                     const date = new Date(intervention.scheduledTime);
                     if (!isNaN(date.getTime())) {
                       return date.toLocaleDateString('fr-FR');
                     }
+                  }
+                  
+                  // Si on a seulement l'heure, utiliser la date de création
+                  if (intervention?.scheduledTime && intervention.scheduledTime.length === 5) {
+                    return new Date(checklistData.created_at).toLocaleDateString('fr-FR');
                   }
                   
                   return 'Non renseigné';
