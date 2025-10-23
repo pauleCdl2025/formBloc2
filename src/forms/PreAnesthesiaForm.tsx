@@ -10,8 +10,6 @@ interface PatientInfo {
   dateNaissance: string;
   age: number;
   dateConsultation: string;
-  sexe: string;
-  type: string;
 }
 
 interface Intervention {
@@ -20,8 +18,6 @@ interface Intervention {
   ambulatoire: boolean;
   dateEntreePrevue: string;
   commentaires: string;
-  typeChirurgie: string;
-  chirurgieLongueDuree: string;
 }
 
 interface Allergie {
@@ -296,8 +292,6 @@ export default function PreAnesthesiaForm({
       dateNaissance: '',
       age: 0,
       dateConsultation: new Date().toISOString().split('T')[0],
-      sexe: '',
-      type: '',
     },
     intervention: {
       libelle: '',
@@ -305,8 +299,6 @@ export default function PreAnesthesiaForm({
       ambulatoire: false,
       dateEntreePrevue: '',
       commentaires: '',
-      typeChirurgie: '',
-      chirurgieLongueDuree: '',
     },
     anamnese: '',
     allergies: {
@@ -1137,31 +1129,6 @@ export default function PreAnesthesiaForm({
                 onChange={(e) => setFormData({ ...formData, patient: { ...(formData.patient || {}), dateConsultation: e.target.value } })}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sexe</label>
-              <select
-                {...getFieldProps()}
-                value={formData.patient?.sexe || ''}
-                onChange={(e) => setFormData({ ...formData, patient: { ...(formData.patient || {}), sexe: e.target.value } })}
-              >
-                <option value="">Sélectionner...</option>
-                <option value="M">Masculin</option>
-                <option value="F">Féminin</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-              <select
-                {...getFieldProps()}
-                value={formData.patient?.type || ''}
-                onChange={(e) => setFormData({ ...formData, patient: { ...(formData.patient || {}), type: e.target.value } })}
-              >
-                <option value="">Sélectionner...</option>
-                <option value="adulte">Adulte</option>
-                <option value="enfant">Enfant</option>
-                <option value="personne_agee">Personne âgée</option>
-              </select>
-            </div>
           </div>
         </section>
 
@@ -1179,35 +1146,6 @@ export default function PreAnesthesiaForm({
                 value={formData.intervention?.libelle || ''}
                 onChange={(e) => setFormData({ ...formData, intervention: { ...(formData.intervention || {}), libelle: e.target.value } })}
               />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type de chirurgie</label>
-                <select
-                  {...getFieldProps()}
-                  value={formData.intervention?.typeChirurgie || ''}
-                  onChange={(e) => setFormData({ ...formData, intervention: { ...(formData.intervention || {}), typeChirurgie: e.target.value } })}
-                >
-                  <option value="">Sélectionner...</option>
-                  <option value="laparoscopique">Laparoscopique</option>
-                  <option value="ouverte">Ouverte</option>
-                  <option value="endoscopique">Endoscopique</option>
-                  <option value="robotique">Robotique</option>
-                  <option value="autre">Autre</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Chirurgie longue durée</label>
-                <select
-                  {...getFieldProps()}
-                  value={formData.intervention?.chirurgieLongueDuree || ''}
-                  onChange={(e) => setFormData({ ...formData, intervention: { ...(formData.intervention || {}), chirurgieLongueDuree: e.target.value } })}
-                >
-                  <option value="">Sélectionner...</option>
-                  <option value="Oui">Oui</option>
-                  <option value="Non">Non</option>
-                </select>
-              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

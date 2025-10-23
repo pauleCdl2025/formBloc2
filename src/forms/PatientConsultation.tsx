@@ -406,14 +406,14 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
                 <Heart className="w-5 h-5 text-emerald-600 mr-2" />
                 <span className="text-sm font-medium text-emerald-800">Sexe</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(patient?.sexe)}</span>
+              <span className="text-lg font-semibold text-gray-900">Non renseigné</span>
             </div>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
               <div className="flex items-center mb-2">
                 <Activity className="w-5 h-5 text-blue-600 mr-2" />
                 <span className="text-sm font-medium text-blue-800">Type</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(patient?.type)}</span>
+              <span className="text-lg font-semibold text-gray-900">Non renseigné</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
@@ -434,20 +434,13 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
               </div>
               Intervention prévue
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                 <div className="flex items-center mb-2">
                   <Activity className="w-5 h-5 text-blue-600 mr-2" />
                   <span className="text-sm font-medium text-blue-800">Type de chirurgie</span>
                 </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(intervention.typeChirurgie)}</span>
-              </div>
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-lg border border-emerald-200">
-                <div className="flex items-center mb-2">
-                  <Clock className="w-5 h-5 text-emerald-600 mr-2" />
-                  <span className="text-sm font-medium text-emerald-800">Chirurgie longue durée</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">{formatValue(intervention.chirurgieLongueDuree)}</span>
+                <span className="text-lg font-semibold text-gray-900">{formatValue(intervention.libelle)}</span>
               </div>
             </div>
           </div>
