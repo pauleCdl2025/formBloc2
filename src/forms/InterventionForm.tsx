@@ -36,11 +36,10 @@ const InterventionForm: React.FC<InterventionFormProps> = ({
   ];
 
   const operatingRooms = [
-    'Bloc A',
-    'Bloc B', 
-    'Bloc C',
-    'Salle d\'urgence',
-    'Salle spécialisée'
+    'Bloc 1',
+    'Bloc 2', 
+    'Bloc 3',
+    'Akanda'
   ];
 
   const validateForm = () => {
