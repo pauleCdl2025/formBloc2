@@ -282,6 +282,29 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
     }
   };
 
+  const handleDownload = () => {
+    const dataToDownload = {
+      intervention: interventionData,
+      checklist: checklistData,
+      progress: calculateOverallProgress(),
+      completedAt: new Date().toISOString()
+    };
+
+    // Créer un fichier JSON
+    const jsonData = JSON.stringify(dataToDownload, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Créer un lien de téléchargement
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `checklist_${interventionData.patientName}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const generatePrintContent = () => {
     const overallProgress = calculateOverallProgress();
     const isComplete = overallProgress === 100;
