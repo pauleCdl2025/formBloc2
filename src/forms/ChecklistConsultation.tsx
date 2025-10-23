@@ -86,11 +86,25 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
           <p><strong>Type d'intervention:</strong> ${formatValue(intervention?.interventionType)}</p>
           <p><strong>Chirurgien:</strong> ${formatValue(intervention?.surgeon)}</p>
           <p><strong>Salle:</strong> ${formatValue(intervention?.operatingRoom)}</p>
-          <p><strong>Date:</strong> ${intervention?.interventionDate ? 
-            new Date(intervention.interventionDate).toLocaleDateString('fr-FR') :
-            intervention?.scheduledTime ? 
-              new Date(intervention.scheduledTime).toLocaleDateString('fr-FR') :
-              'Non renseigné'}</p>
+          <p><strong>Date:</strong> ${(() => {
+            // Essayer interventionDate d'abord
+            if (intervention?.interventionDate) {
+              const date = new Date(intervention.interventionDate);
+              if (!isNaN(date.getTime())) {
+                return date.toLocaleDateString('fr-FR');
+              }
+            }
+            
+            // Essayer scheduledTime ensuite
+            if (intervention?.scheduledTime) {
+              const date = new Date(intervention.scheduledTime);
+              if (!isNaN(date.getTime())) {
+                return date.toLocaleDateString('fr-FR');
+              }
+            }
+            
+            return 'Non renseigné';
+          })()}</p>
         </div>
 
         ${checklist ? `
@@ -209,6 +223,8 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
   console.log('ChecklistConsultation - intervention:', intervention);
   console.log('ChecklistConsultation - operatingRoom:', intervention?.operatingRoom);
   console.log('ChecklistConsultation - interventionDate:', intervention?.interventionDate);
+  console.log('ChecklistConsultation - scheduledTime:', intervention?.scheduledTime);
+  console.log('ChecklistConsultation - scheduledTime type:', typeof intervention?.scheduledTime);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -314,11 +330,25 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                 <span className="text-sm font-medium text-blue-800">Date</span>
               </div>
               <span className="text-lg font-semibold text-gray-900">
-                {intervention?.interventionDate ? 
-                  new Date(intervention.interventionDate).toLocaleDateString('fr-FR') :
-                  intervention?.scheduledTime ? 
-                    new Date(intervention.scheduledTime).toLocaleDateString('fr-FR') :
-                  'Non renseigné'}
+                {(() => {
+                  // Essayer interventionDate d'abord
+                  if (intervention?.interventionDate) {
+                    const date = new Date(intervention.interventionDate);
+                    if (!isNaN(date.getTime())) {
+                      return date.toLocaleDateString('fr-FR');
+                    }
+                  }
+                  
+                  // Essayer scheduledTime ensuite
+                  if (intervention?.scheduledTime) {
+                    const date = new Date(intervention.scheduledTime);
+                    if (!isNaN(date.getTime())) {
+                      return date.toLocaleDateString('fr-FR');
+                    }
+                  }
+                  
+                  return 'Non renseigné';
+                })()}
               </span>
             </div>
           </div>
