@@ -263,9 +263,12 @@ export default function PreAnesthesiaForm({
         console.log('Setting formData with patientData.data');
         console.log('examenPhysique in data:', patientData.data.examenPhysique);
         console.log('examenPhysique poids:', patientData.data.examenPhysique?.poids);
+        console.log('patient nom:', patientData.data.patient?.nom);
+        console.log('patient prenom:', patientData.data.patient?.prenom);
         setFormData(patientData.data);
         setSelectedPatientNumber(String(patientData.patient_number || ''));
         setCurrentView('form');
+        console.log('FormData set, currentView set to form');
       } else {
         console.error('❌ patientData.data is undefined or null');
         console.log('Available keys in patientData:', Object.keys(patientData));
@@ -275,6 +278,16 @@ export default function PreAnesthesiaForm({
     }
     console.log('=== END DEBUG ===');
   }, [patientData]);
+
+  // Surveiller les changements de formData
+  useEffect(() => {
+    console.log('=== FormData changed ===');
+    console.log('formData.patient:', formData.patient);
+    console.log('formData.patient.nom:', formData.patient?.nom);
+    console.log('formData.examenPhysique:', formData.examenPhysique);
+    console.log('formData.examenPhysique.poids:', formData.examenPhysique?.poids);
+    console.log('=== End FormData check ===');
+  }, [formData]);
 
   // Fonction utilitaire pour les propriétés des champs selon le mode
   const getFieldProps = () => ({
