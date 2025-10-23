@@ -19,6 +19,16 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
     if (value === null || value === undefined || value === '') {
       return 'Non renseigné';
     }
+    
+    // Si c'est une date, la formater correctement
+    if (value instanceof Date || (typeof value === 'string' && !isNaN(Date.parse(value)))) {
+      try {
+        return new Date(value).toLocaleDateString('fr-FR');
+      } catch {
+        return value.toString();
+      }
+    }
+    
     return value;
   };
 
@@ -76,7 +86,7 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
           <p><strong>Type d'intervention:</strong> ${formatValue(intervention?.interventionType)}</p>
           <p><strong>Chirurgien:</strong> ${formatValue(intervention?.surgeon)}</p>
           <p><strong>Salle:</strong> ${formatValue(intervention?.operatingRoom)}</p>
-          <p><strong>Date:</strong> ${new Date(checklistData.created_at).toLocaleDateString('fr-FR')}</p>
+          <p><strong>Date:</strong> ${formatValue(intervention?.interventionDate)}</p>
         </div>
 
         ${checklist ? `
@@ -292,7 +302,7 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                 <span className="text-sm font-medium text-blue-800">Date</span>
               </div>
               <span className="text-lg font-semibold text-gray-900">
-                {new Date(checklistData.created_at).toLocaleDateString('fr-FR')}
+                {formatValue(intervention?.interventionDate)}
               </span>
             </div>
           </div>
