@@ -53,6 +53,8 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
   editMode = false,
   onBackToList 
 }) => {
+  console.log('ChecklistChirurgicaleForm - patientData reçu:', patientData);
+  
   const [currentSection, setCurrentSection] = useState(0);
   const [interventionData, setInterventionData] = useState<InterventionData>({
     patientName: patientData?.patientName || '',
@@ -218,6 +220,9 @@ const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({
         progress: calculateOverallProgress(),
         completedAt: new Date().toISOString()
       };
+
+      console.log('ChecklistChirurgicaleForm - Données à sauvegarder:', dataToSave);
+      console.log('ChecklistChirurgicaleForm - interventionData:', interventionData);
 
       if (editMode && existingChecklistData?.id) {
         // Mode édition : mettre à jour l'enregistrement existant
