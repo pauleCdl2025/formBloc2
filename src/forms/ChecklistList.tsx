@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Eye, Edit, Download, Trash2, ArrowLeft, Plus } from 'lucide-react';
+import { Eye, Edit, Download, Trash2, ArrowLeft, Plus, Shield } from 'lucide-react';
 
 interface ChecklistListProps {
   onBackToMain: () => void;
@@ -228,6 +228,10 @@ const ChecklistList: React.FC<ChecklistListProps> = ({ onBackToMain, onSelectChe
                         }`}>
                           {getStatusText(checklist.data?.progress || 0)}
                         </span>
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex items-center gap-1">
+                          <Shield className="w-3 h-3" />
+                          Verrouillée
+                        </span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                         <div>
@@ -265,8 +269,9 @@ const ChecklistList: React.FC<ChecklistListProps> = ({ onBackToMain, onSelectChe
                       </button>
                       <button
                         onClick={() => onSelectChecklist(checklist, 'edit')}
-                        className="flex items-center px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                        title="Modifier"
+                        className="flex items-center px-3 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50"
+                        title="Modification désactivée - Checklist verrouillée"
+                        disabled
                       >
                         <Edit className="w-4 h-4" />
                       </button>

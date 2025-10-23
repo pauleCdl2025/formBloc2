@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, ArrowLeft, Edit, Download, Trash2, Shield } from 'lucide-react';
+import { Printer, ArrowLeft, Edit, Download, Trash2, Shield, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 interface ChecklistConsultationProps {
@@ -203,6 +203,10 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Consultation Checklist Chirurgicale</h1>
                 <p className="text-gray-600">Centre Diagnostic de Libreville</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Lock className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm text-blue-600 font-medium">Checklist verrouillée - Lecture seule</span>
+                </div>
               </div>
             </div>
             <div className="flex gap-3">
@@ -215,10 +219,12 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
               </button>
               <button
                 onClick={() => onEdit(checklistData)}
-                className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                className="flex items-center px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50"
+                disabled
+                title="Modification désactivée - Checklist verrouillée"
               >
                 <Edit className="w-4 h-4 mr-2" />
-                Modifier
+                Modifier (Verrouillé)
               </button>
               <button
                 onClick={handleDownload}

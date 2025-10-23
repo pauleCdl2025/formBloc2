@@ -39,7 +39,17 @@ interface ChecklistData {
   section3: ChecklistItem[];
 }
 
-const ChecklistChirurgicaleForm: React.FC = () => {
+interface ChecklistChirurgicaleFormProps {
+  checklistData?: any;
+  editMode?: boolean;
+  onBackToList?: () => void;
+}
+
+const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({ 
+  checklistData: existingChecklistData, 
+  editMode = false,
+  onBackToList 
+}) => {
   const [currentSection, setCurrentSection] = useState(0);
   const [interventionData, setInterventionData] = useState<InterventionData>({
     patientName: '',
@@ -106,25 +116,41 @@ const ChecklistChirurgicaleForm: React.FC = () => {
 
   // Initialiser les données de checklist
   useEffect(() => {
-    const initialData: ChecklistData = {
-      section1: sections[0].items.map((item, index) => ({
-        id: `1-${index + 1}`,
-        checked: false,
-        time: ''
-      })),
-      section2: sections[1].items.map((item, index) => ({
-        id: `2-${index + 1}`,
-        checked: false,
-        time: ''
-      })),
-      section3: sections[2].items.map((item, index) => ({
-        id: `3-${index + 1}`,
-        checked: false,
-        time: ''
-      }))
-    };
-    setChecklistData(initialData);
-  }, []);
+    if (editMode && existingChecklistData?.data) {
+      // Mode édition : charger les données existantes
+      const existingData = existingChecklistData.data;
+      
+      // Charger les données d'intervention
+      if (existingData.intervention) {
+        setInterventionData(existingData.intervention);
+      }
+      
+      // Charger les données de checklist
+      if (existingData.checklist) {
+        setChecklistData(existingData.checklist);
+      }
+    } else {
+      // Mode création : initialiser avec des données vides
+      const initialData: ChecklistData = {
+        section1: sections[0].items.map((item, index) => ({
+          id: `1-${index + 1}`,
+          checked: false,
+          time: ''
+        })),
+        section2: sections[1].items.map((item, index) => ({
+          id: `2-${index + 1}`,
+          checked: false,
+          time: ''
+        })),
+        section3: sections[2].items.map((item, index) => ({
+          id: `3-${index + 1}`,
+          checked: false,
+          time: ''
+        }))
+      };
+      setChecklistData(initialData);
+    }
+  }, [editMode, existingChecklistData]);
 
   // Vérifier que les données sont initialisées avant de rendre
   if (!checklistData.section1 || !checklistData.section2 || !checklistData.section3) {
@@ -189,26 +215,51 @@ const ChecklistChirurgicaleForm: React.FC = () => {
         completedAt: new Date().toISOString()
       };
 
-      const { error } = await supabase
-        .from('checklist_chirurgicale')
-        .insert([{
-          patient_name: interventionData.patientName,
-          intervention_type: interventionData.interventionType,
-          surgeon: interventionData.surgeon,
-          operating_room: interventionData.operatingRoom,
-          data: dataToSave,
-          created_at: new Date().toISOString()
-        }]);
+      if (editMode && existingChecklistData?.id) {
+        // Mode édition : mettre à jour l'enregistrement existant
+        const { error } = await supabase
+          .from('checklist_chirurgicale')
+          .update({
+            patient_name: interventionData.patientName,
+            intervention_type: interventionData.interventionType,
+            surgeon: interventionData.surgeon,
+            operating_room: interventionData.operatingRoom,
+            data: dataToSave,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingChecklistData.id);
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // Table n'existe pas
-          setSavedMessage('⚠️ Table checklist_chirurgicale non créée. Veuillez exécuter le script SQL sur Supabase.');
+        if (error) {
+          if (error.code === 'PGRST116') {
+            setSavedMessage('⚠️ Table checklist_chirurgicale non créée. Veuillez exécuter le script SQL sur Supabase.');
+          } else {
+            throw error;
+          }
         } else {
-          throw error;
+          setSavedMessage('Checklist mise à jour avec succès !');
         }
       } else {
-        setSavedMessage('Checklist sauvegardée avec succès !');
+        // Mode création : créer un nouvel enregistrement
+        const { error } = await supabase
+          .from('checklist_chirurgicale')
+          .insert([{
+            patient_name: interventionData.patientName,
+            intervention_type: interventionData.interventionType,
+            surgeon: interventionData.surgeon,
+            operating_room: interventionData.operatingRoom,
+            data: dataToSave,
+            created_at: new Date().toISOString()
+          }]);
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            setSavedMessage('⚠️ Table checklist_chirurgicale non créée. Veuillez exécuter le script SQL sur Supabase.');
+          } else {
+            throw error;
+          }
+        } else {
+          setSavedMessage('Checklist sauvegardée avec succès !');
+        }
       }
       
       setTimeout(() => setSavedMessage(''), 5000);
@@ -371,12 +422,21 @@ const ChecklistChirurgicaleForm: React.FC = () => {
               </div>
             </div>
             <div className="flex gap-3">
+              {onBackToList && (
+                <button
+                  onClick={onBackToList}
+                  className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Retour à la liste
+                </button>
+              )}
               <button
                 onClick={() => setShowInterventionForm(true)}
                 className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 <User className="w-4 h-4 mr-2" />
-                Nouvelle Intervention
+                {editMode ? 'Modifier Intervention' : 'Nouvelle Intervention'}
               </button>
               <button
                 onClick={handlePrint}
