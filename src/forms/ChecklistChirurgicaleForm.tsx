@@ -126,6 +126,22 @@ const ChecklistChirurgicaleForm: React.FC = () => {
     setChecklistData(initialData);
   }, []);
 
+  // Vérifier que les données sont initialisées avant de rendre
+  if (!checklistData.section1 || !checklistData.section2 || !checklistData.section3) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <span className="ml-4 text-lg text-gray-600">Chargement de la checklist...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleCheckboxChange = (sectionId: string, itemId: string, checked: boolean) => {
     setChecklistData(prev => ({
       ...prev,
@@ -547,7 +563,9 @@ const ChecklistChirurgicaleForm: React.FC = () => {
 
             <div className="space-y-4">
               {sections[currentSection].items.map((item, index) => {
-                const itemData = checklistData[`section${currentSection + 1}` as keyof ChecklistData][index];
+                const itemData = checklistData[`section${currentSection + 1}` as keyof ChecklistData]?.[index];
+                if (!itemData) return null;
+                
                 return (
                   <div
                     key={index}
