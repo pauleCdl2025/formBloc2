@@ -10,7 +10,7 @@ import {
   Clock, 
   AlertCircle,
   Syringe,
-  Scalpel,
+  Scissors,
   Shield,
   User,
   Calendar,
@@ -79,7 +79,7 @@ const ChecklistChirurgicaleForm: React.FC = () => {
     {
       id: 'section2',
       title: 'Partie II : Avant l\'incision de la peau',
-      icon: <Scalpel className="w-6 h-6" />,
+      icon: <Scissors className="w-6 h-6" />,
       items: [
         'Présentation de toute l\'équipe du bloc',
         'Confirmer à nouveau l\'identité du patient',
