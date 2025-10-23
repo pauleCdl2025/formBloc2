@@ -41,30 +41,32 @@ interface ChecklistData {
 
 interface ChecklistChirurgicaleFormProps {
   checklistData?: any;
+  patientData?: any; // Données d'intervention
   editMode?: boolean;
   onBackToList?: () => void;
 }
 
 const ChecklistChirurgicaleForm: React.FC<ChecklistChirurgicaleFormProps> = ({ 
   checklistData: existingChecklistData, 
+  patientData,
   editMode = false,
   onBackToList 
 }) => {
   const [currentSection, setCurrentSection] = useState(0);
   const [interventionData, setInterventionData] = useState<InterventionData>({
-    patientName: '',
-    patientAge: undefined,
-    interventionType: '',
-    surgeon: '',
-    operatingRoom: '',
-    scheduledTime: ''
+    patientName: patientData?.patientName || '',
+    patientAge: patientData?.patientAge || undefined,
+    interventionType: patientData?.interventionType || '',
+    surgeon: patientData?.surgeon || '',
+    operatingRoom: patientData?.operatingRoom || '',
+    scheduledTime: patientData?.interventionTime || ''
   });
   const [checklistData, setChecklistData] = useState<ChecklistData>({
     section1: [],
     section2: [],
     section3: []
   });
-  const [showInterventionForm, setShowInterventionForm] = useState(false);
+  const [showInterventionForm, setShowInterventionForm] = useState(!patientData);
   const [savedMessage, setSavedMessage] = useState<string>('');
 
   // Données des sections de checklist

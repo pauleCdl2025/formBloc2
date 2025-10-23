@@ -10,6 +10,7 @@ import ConsentementConsultation from './forms/ConsentementConsultation';
 import PatientConsultation from './forms/PatientConsultation';
 import ChecklistList from './forms/ChecklistList';
 import ChecklistConsultation from './forms/ChecklistConsultation';
+import InterventionForm from './forms/InterventionForm';
 
 interface FormConfig {
   id: string;
@@ -57,7 +58,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation' | 'checklist-consultation'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation' | 'checklist-consultation' | 'intervention-form'>('main');
   const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
 
@@ -88,6 +89,18 @@ export default function FormManager() {
     } else {
       setCurrentView('form');
     }
+  };
+
+  const handleInterventionCreated = (interventionData: any) => {
+    console.log('Intervention créée:', interventionData);
+    setSelectedPatientData(interventionData);
+    setSelectedForm('checklist-chirurgicale');
+    setEditMode(false);
+    setCurrentView('form');
+  };
+
+  const handleBackFromIntervention = () => {
+    setCurrentView('main');
   };
 
   const handleSelectChecklist = (checklistData: any, mode: 'view' | 'edit') => {
@@ -130,6 +143,15 @@ export default function FormManager() {
         />
       );
     }
+  }
+
+  if (currentView === 'intervention-form') {
+    return (
+      <InterventionForm 
+        onBack={handleBackFromIntervention}
+        onInterventionCreated={handleInterventionCreated}
+      />
+    );
   }
 
   if (currentView === 'form' && FormComponent) {
@@ -304,9 +326,8 @@ export default function FormManager() {
                           setSelectedForm('preanesthesia');
                           setCurrentView('form');
                         } else if (form.id === 'checklist-chirurgicale') {
-                          console.log('Aller au formulaire ChecklistChirurgicale');
-                          setSelectedForm('checklist-chirurgicale');
-                          setCurrentView('form');
+                          console.log('Aller au formulaire InterventionForm');
+                          setCurrentView('intervention-form');
                         } else {
                           console.log('Aller à FormSelect');
                           handleFormSelect(form.id);
