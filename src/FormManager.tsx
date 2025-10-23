@@ -92,7 +92,8 @@ export default function FormManager() {
   };
 
   const handleInterventionCreated = (interventionData: any) => {
-    console.log('Intervention créée:', interventionData);
+    console.log('FormManager - Intervention créée:', interventionData);
+    console.log('FormManager - interventionDate:', interventionData.interventionDate);
     setSelectedPatientData(interventionData);
     setSelectedForm('checklist-chirurgicale');
     setEditMode(false);

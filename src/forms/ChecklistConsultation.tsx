@@ -352,9 +352,9 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                     }
                   }
                   
-                  // Si on a seulement l'heure, utiliser la date de création
+                  // Si on a seulement l'heure, utiliser la date de création comme fallback temporaire
                   if (intervention?.scheduledTime && intervention.scheduledTime.length === 5) {
-                    return new Date(checklistData.created_at).toLocaleDateString('fr-FR');
+                    return new Date(checklistData.created_at).toLocaleDateString('fr-FR') + ' (date création)';
                   }
                   
                   return 'Non renseigné';
