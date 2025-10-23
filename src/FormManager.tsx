@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Stethoscope, Heart, Shield, FileCheck, FileText, Users, ClipboardList, Eye } from 'lucide-react';
+import { Stethoscope, Heart, Shield, FileCheck, FileText, Users, ClipboardList, Eye, CheckSquare } from 'lucide-react';
 import PreAnesthesiaForm from './forms/PreAnesthesiaForm';
 import CompteRenduPreAnesthesiqueForm from './forms/CompteRenduPreAnesthesiqueForm';
 import ConsentementAnesthesiqueForm from './forms/ConsentementAnesthesiqueForm';
+import ChecklistChirurgicaleForm from './forms/ChecklistChirurgicaleForm';
 import PatientList from './forms/PatientList';
 import CompteRenduConsultation from './forms/CompteRenduConsultation';
 import ConsentementConsultation from './forms/ConsentementConsultation';
 import PatientConsultation from './forms/PatientConsultation';
+import ChecklistList from './forms/ChecklistList';
+import ChecklistConsultation from './forms/ChecklistConsultation';
 
 interface FormConfig {
   id: string;
@@ -41,12 +44,20 @@ const availableForms: FormConfig[] = [
     icon: <Shield className="w-8 h-8" />,
     component: ConsentementAnesthesiqueForm,
     color: 'bg-gradient-to-br from-emerald-600 to-emerald-700'
+  },
+  {
+    id: 'checklist-chirurgicale',
+    name: 'Checklist Chirurgicale',
+    description: 'Checklist de sécurité chirurgicale complète',
+    icon: <CheckSquare className="w-8 h-8" />,
+    component: ChecklistChirurgicaleForm,
+    color: 'bg-gradient-to-br from-purple-600 to-purple-700'
   }
 ];
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation' | 'checklist-consultation'>('main');
   const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
 
@@ -69,7 +80,21 @@ export default function FormManager() {
     setSelectedPatientData(patientData);
     setEditMode(mode === 'edit');
     if (mode === 'view') {
-      setCurrentView('consultation');
+      if (selectedForm === 'checklist-chirurgicale') {
+        setCurrentView('checklist-consultation');
+      } else {
+        setCurrentView('consultation');
+      }
+    } else {
+      setCurrentView('form');
+    }
+  };
+
+  const handleSelectChecklist = (checklistData: any, mode: 'view' | 'edit') => {
+    setSelectedPatientData(checklistData);
+    setEditMode(mode === 'edit');
+    if (mode === 'view') {
+      setCurrentView('checklist-consultation');
     } else {
       setCurrentView('form');
     }
@@ -88,13 +113,22 @@ export default function FormManager() {
   const FormComponent = selectedFormConfig?.component;
 
   if (currentView === 'list') {
-    return (
-      <PatientList 
-        onCreateNew={handleCreateNew}
-        onSelectPatient={handleSelectPatient}
-        onBackToList={handleBackToList}
-      />
-    );
+    if (selectedForm === 'checklist-chirurgicale') {
+      return (
+        <ChecklistList 
+          onBackToMain={handleBackToList}
+          onSelectChecklist={handleSelectChecklist}
+        />
+      );
+    } else {
+      return (
+        <PatientList 
+          onCreateNew={handleCreateNew}
+          onSelectPatient={handleSelectPatient}
+          onBackToList={handleBackToList}
+        />
+      );
+    }
   }
 
   if (currentView === 'form' && FormComponent) {
@@ -121,6 +155,24 @@ export default function FormManager() {
         onPrint={() => {
           // La fonction d'impression est maintenant gérée directement dans PatientConsultation
           // Pas besoin d'implémenter quoi que ce soit ici
+        }}
+      />
+    );
+  }
+
+  if (currentView === 'checklist-consultation') {
+    return (
+      <ChecklistConsultation 
+        checklistData={selectedPatientData}
+        onBackToList={handleBackToList}
+        onEdit={(checklist) => {
+          setSelectedPatientData(checklist);
+          setEditMode(true);
+          setCurrentView('form');
+        }}
+        onDelete={(id) => {
+          // La suppression est gérée dans ChecklistConsultation
+          handleBackToList();
         }}
       />
     );
