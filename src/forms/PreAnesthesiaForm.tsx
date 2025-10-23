@@ -261,6 +261,8 @@ export default function PreAnesthesiaForm({
       
       if (patientData.data) {
         console.log('Setting formData with patientData.data');
+        console.log('examenPhysique in data:', patientData.data.examenPhysique);
+        console.log('examenPhysique poids:', patientData.data.examenPhysique?.poids);
         setFormData(patientData.data);
         setSelectedPatientNumber(String(patientData.patient_number || ''));
         setCurrentView('form');
