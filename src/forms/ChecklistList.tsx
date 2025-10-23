@@ -5,9 +5,10 @@ import { Eye, Download, Trash2, ArrowLeft, Plus, Shield } from 'lucide-react';
 interface ChecklistListProps {
   onBackToMain: () => void;
   onSelectChecklist: (checklist: any, mode: 'view' | 'edit') => void;
+  onCreateNewChecklist: () => void;
 }
 
-const ChecklistList: React.FC<ChecklistListProps> = ({ onBackToMain, onSelectChecklist }) => {
+const ChecklistList: React.FC<ChecklistListProps> = ({ onBackToMain, onSelectChecklist, onCreateNewChecklist }) => {
   const [checklists, setChecklists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -126,7 +127,7 @@ const ChecklistList: React.FC<ChecklistListProps> = ({ onBackToMain, onSelectChe
               </div>
             </div>
             <button
-              onClick={() => onSelectChecklist(null, 'edit')}
+              onClick={onCreateNewChecklist}
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Plus className="w-4 h-4 mr-2" />

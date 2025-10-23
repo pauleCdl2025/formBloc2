@@ -132,6 +132,7 @@ export default function FormManager() {
         <ChecklistList 
           onBackToMain={handleBackToList}
           onSelectChecklist={handleSelectChecklist}
+          onCreateNewChecklist={() => setCurrentView('intervention-form')}
         />
       );
     } else {
