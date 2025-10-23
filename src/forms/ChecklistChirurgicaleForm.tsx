@@ -162,14 +162,22 @@ const ChecklistChirurgicaleForm: React.FC = () => {
 
   const calculateProgress = (sectionId: string) => {
     const section = checklistData[sectionId as keyof ChecklistData];
+    if (!section || section.length === 0) {
+      return 0;
+    }
     const checked = section.filter(item => item.checked).length;
-    return (checked / section.length) * 100;
+    const progress = (checked / section.length) * 100;
+    return isNaN(progress) ? 0 : progress;
   };
 
   const calculateOverallProgress = () => {
+    if (!checklistData.section1 || !checklistData.section2 || !checklistData.section3) {
+      return 0;
+    }
     const allItems = [...checklistData.section1, ...checklistData.section2, ...checklistData.section3];
     const checked = allItems.filter(item => item.checked).length;
-    return (checked / allItems.length) * 100;
+    const progress = (checked / allItems.length) * 100;
+    return isNaN(progress) ? 0 : progress;
   };
 
   const handleSave = async () => {
@@ -192,10 +200,18 @@ const ChecklistChirurgicaleForm: React.FC = () => {
           created_at: new Date().toISOString()
         }]);
 
-      if (error) throw error;
-
-      setSavedMessage('Checklist sauvegardée avec succès !');
-      setTimeout(() => setSavedMessage(''), 3000);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Table n'existe pas
+          setSavedMessage('⚠️ Table checklist_chirurgicale non créée. Veuillez exécuter le script SQL sur Supabase.');
+        } else {
+          throw error;
+        }
+      } else {
+        setSavedMessage('Checklist sauvegardée avec succès !');
+      }
+      
+      setTimeout(() => setSavedMessage(''), 5000);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
       setSavedMessage('Erreur lors de la sauvegarde');
