@@ -82,11 +82,15 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
         <div class="intervention-info">
           <h3>Informations de l'Intervention</h3>
           <p><strong>Patient:</strong> ${formatValue(intervention?.patientName)}</p>
-          <p><strong>Âge:</strong> ${formatValue(intervention?.patientAge)}</p>
+          <p><strong>Âge:</strong> ${intervention?.patientAge ? `${intervention.patientAge} ans` : 'Non renseigné'}</p>
           <p><strong>Type d'intervention:</strong> ${formatValue(intervention?.interventionType)}</p>
           <p><strong>Chirurgien:</strong> ${formatValue(intervention?.surgeon)}</p>
           <p><strong>Salle:</strong> ${formatValue(intervention?.operatingRoom)}</p>
-          <p><strong>Date:</strong> ${formatValue(intervention?.interventionDate)}</p>
+          <p><strong>Date:</strong> ${intervention?.interventionDate ? 
+            (typeof intervention.interventionDate === 'string' ? 
+              new Date(intervention.interventionDate).toLocaleDateString('fr-FR') : 
+              intervention.interventionDate) : 
+            'Non renseigné'}</p>
         </div>
 
         ${checklist ? `
@@ -279,7 +283,9 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                 <Printer className="w-5 h-5 text-blue-600 mr-2" />
                 <span className="text-sm font-medium text-blue-800">Âge</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(intervention?.patientAge)} ans</span>
+              <span className="text-lg font-semibold text-gray-900">
+                {intervention?.patientAge ? `${intervention.patientAge} ans` : 'Non renseigné'}
+              </span>
             </div>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
               <div className="flex items-center mb-2">
@@ -308,7 +314,11 @@ const ChecklistConsultation: React.FC<ChecklistConsultationProps> = ({
                 <span className="text-sm font-medium text-blue-800">Date</span>
               </div>
               <span className="text-lg font-semibold text-gray-900">
-                {formatValue(intervention?.interventionDate)}
+                {intervention?.interventionDate ? 
+                  (typeof intervention.interventionDate === 'string' ? 
+                    new Date(intervention.interventionDate).toLocaleDateString('fr-FR') : 
+                    intervention.interventionDate) : 
+                  'Non renseigné'}
               </span>
             </div>
           </div>
