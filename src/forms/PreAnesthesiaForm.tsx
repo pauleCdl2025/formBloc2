@@ -279,16 +279,6 @@ export default function PreAnesthesiaForm({
     console.log('=== END DEBUG ===');
   }, [patientData]);
 
-  // Surveiller les changements de formData
-  useEffect(() => {
-    console.log('=== FormData changed ===');
-    console.log('formData.patient:', formData.patient);
-    console.log('formData.patient.nom:', formData.patient?.nom);
-    console.log('formData.examenPhysique:', formData.examenPhysique);
-    console.log('formData.examenPhysique.poids:', formData.examenPhysique?.poids);
-    console.log('=== End FormData check ===');
-  }, [formData]);
-
   // Fonction utilitaire pour les propriétés des champs selon le mode
   const getFieldProps = () => ({
     readOnly: !editMode,
