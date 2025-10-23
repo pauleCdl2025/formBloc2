@@ -547,42 +547,42 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
                 <Activity className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">Poids</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.poids)} kg</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.poids)} kg</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
                 <Activity className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">Taille</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.taille)} cm</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.taille)} cm</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
                 <Activity className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">IMC</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.imc)}</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.imc)}</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
                 <Heart className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">FC</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.fc)} bpm</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.fc)} bpm</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
                 <Activity className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">PA</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.pa)} mmHg</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.pa)} mmHg</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
                 <Activity className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">SpO2</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(examenPhysique?.spo2)}%</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.spo2)}%</span>
             </div>
           </div>
         </div>
