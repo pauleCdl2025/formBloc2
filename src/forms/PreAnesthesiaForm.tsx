@@ -2559,20 +2559,20 @@ export default function PreAnesthesiaForm({
                 </div>
               </div>
 
-              {/* BMI */}
+              {/* IMC - Calculé automatiquement */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">BMI</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">IMC</label>
                 <div className="flex items-center">
                   <input
-                    type="number"
-                    step="0.1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]"
-                    value={formData.parametresPhysiques?.bmi || ''}
+                    type="text"
                     readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+                    value={formData.parametresPhysiques?.bmi || ''}
                   />
                   <span className="ml-2 text-sm text-gray-600">kg/m²</span>
                 </div>
               </div>
+
 
               {/* TA */}
               <div>

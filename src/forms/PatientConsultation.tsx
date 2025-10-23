@@ -198,7 +198,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
         <div class="grid-3">
           <div class="field"><span class="field-label">Poids:</span> <span class="field-value">${formatValue(examenPhysique?.poids)} kg</span></div>
           <div class="field"><span class="field-label">Taille:</span> <span class="field-value">${formatValue(examenPhysique?.taille)} cm</span></div>
-          <div class="field"><span class="field-label">IMC:</span> <span class="field-value">${formatValue(examenPhysique?.imc)}</span></div>
+          <div class="field"><span class="field-label">IMC:</span> <span class="field-value">${formatValue(parametresPhysiques?.bmi)} kg/m²</span></div>
           <div class="field"><span class="field-label">FC:</span> <span class="field-value">${formatValue(examenPhysique?.fc)} bpm</span></div>
           <div class="field"><span class="field-label">PA:</span> <span class="field-value">${formatValue(examenPhysique?.pa)} mmHg</span></div>
           <div class="field"><span class="field-label">SpO2:</span> <span class="field-value">${formatValue(examenPhysique?.spo2)}%</span></div>
@@ -561,7 +561,7 @@ export default function PatientConsultation({ patientData, onBackToList, onEdit,
                 <Activity className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-sm font-medium text-purple-800">IMC</span>
               </div>
-              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.imc)}</span>
+              <span className="text-lg font-semibold text-gray-900">{formatValue(parametresPhysiques?.bmi)} kg/m²</span>
             </div>
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center mb-2">
