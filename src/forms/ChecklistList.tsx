@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Eye, Edit, Download, Trash2, ArrowLeft, Plus, Shield } from 'lucide-react';
+import { Eye, Download, Trash2, ArrowLeft, Plus, Shield } from 'lucide-react';
 
 interface ChecklistListProps {
   onBackToMain: () => void;
@@ -266,14 +266,6 @@ const ChecklistList: React.FC<ChecklistListProps> = ({ onBackToMain, onSelectChe
                         title="Consulter"
                       >
                         <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onSelectChecklist(checklist, 'edit')}
-                        className="flex items-center px-3 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed opacity-50"
-                        title="Modification désactivée - Checklist verrouillée"
-                        disabled
-                      >
-                        <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDownload(checklist)}

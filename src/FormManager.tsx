@@ -94,12 +94,6 @@ export default function FormManager() {
     setSelectedPatientData(checklistData);
     setEditMode(mode === 'edit');
     
-    // Empêcher la modification des checklists déjà sauvegardées
-    if (mode === 'edit' && checklistData && checklistData.id) {
-      alert('Cette checklist est verrouillée et ne peut plus être modifiée pour des raisons de traçabilité.');
-      return;
-    }
-    
     if (mode === 'view') {
       setCurrentView('checklist-consultation');
     } else {
