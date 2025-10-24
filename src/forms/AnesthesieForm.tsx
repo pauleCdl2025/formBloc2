@@ -956,6 +956,66 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
             </div>
           </div>
 
+          {/* Sélecteur de couleur et légende des paramètres */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-red-500 rounded"></div>
+                  <span className="text-sm font-medium">T°C</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                  <span className="text-sm font-medium">SpO₂</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-green-500 rounded"></div>
+                  <span className="text-sm font-medium">FC</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-purple-500 rounded"></div>
+                  <span className="text-sm font-medium">PA</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">Sélectionner:</span>
+                  <div className="flex space-x-2">
+                    {[
+                      { color: 'red', param: 'temperature', label: 'T°C' },
+                      { color: 'blue', param: 'spo2', label: 'SpO₂' },
+                      { color: 'green', param: 'fc', label: 'FC' },
+                      { color: 'purple', param: 'pa', label: 'PA' }
+                    ].map(({ color, param, label }) => (
+                      <button
+                        key={param}
+                        onClick={() => setSelectedParam(param)}
+                        className={`w-6 h-6 rounded-full border-2 ${
+                          selectedParam === param ? 'border-black' : 'border-gray-300'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={label}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">Mode:</span>
+                  <select
+                    value={drawingMode}
+                    onChange={(e) => setDrawingMode(e.target.value)}
+                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                  >
+                    <option value="line">Lignes</option>
+                    <option value="point">Points</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Section Monitoring */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Monitoring</h3>
