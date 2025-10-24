@@ -420,6 +420,42 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
                 placeholder="Nom du chirurgien"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Anesthésistes</label>
+              <input
+                type="text"
+                id="anesthesistes"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nom des anesthésistes"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">TSAR</label>
+              <input
+                type="text"
+                id="tsar"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="TSAR"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Checklist</label>
+              <input
+                type="text"
+                id="checklist"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Checklist"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Position patient</label>
+              <input
+                type="text"
+                id="position_patient"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Position du patient"
+              />
+            </div>
           </div>
 
           {/* Modes anesthésiques */}
@@ -483,9 +519,289 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
             </div>
           </div>
 
-          {/* Grilles de monitoring */}
+          {/* Section ALR */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Détails ALR</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Site de ponction</label>
+                <input
+                  type="text"
+                  id="site_ponction"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Site de ponction"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Aiguille</label>
+                <input
+                  type="text"
+                  id="aiguille"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Type d'aiguille"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Profondeur</label>
+                <input
+                  type="text"
+                  id="profondeur"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Profondeur (cm)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Intensité MA</label>
+                <input
+                  type="text"
+                  id="intensite_ma"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Intensité MA"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">KT</label>
+                <input
+                  type="text"
+                  id="kt"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="KT"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dose test</label>
+                <input
+                  type="text"
+                  id="dose_test"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Dose test"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mélange</label>
+                <input
+                  type="text"
+                  id="melange"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Mélange"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Incident ALR</label>
+                <input
+                  type="text"
+                  id="incident_alr"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Incident ALR"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bloc obtenu</label>
+                <input
+                  type="text"
+                  id="bloc_obtenu"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Bloc obtenu"
+                />
+              </div>
+            </div>
+            
+            {/* Champs ALR supplémentaires */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ALR Complément</label>
+                <input
+                  type="text"
+                  id="alr_complement"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ALR Complément"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 1</label>
+                <input
+                  type="text"
+                  id="alr_autre1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autre 1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 2</label>
+                <input
+                  type="text"
+                  id="alr_autre2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autre 2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 3</label>
+                <input
+                  type="text"
+                  id="alr_autre3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autre 3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 4</label>
+                <input
+                  type="text"
+                  id="alr_autre4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autre 4"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 5</label>
+                <input
+                  type="text"
+                  id="alr_autre5"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autre 5"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 6</label>
+                <input
+                  type="text"
+                  id="alr_autre6"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autre 6"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section Monitoring */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Monitoring</h3>
+            
+            {/* Valeurs de monitoring */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">SaO₂</label>
+                <input
+                  type="text"
+                  id="sao2_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="SaO₂ (%)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">EtO₂</label>
+                <input
+                  type="text"
+                  id="eto2_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="EtO₂ (%)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">VS VI</label>
+                <input
+                  type="text"
+                  id="vs_vi_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="VS VI"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">VC FR</label>
+                <input
+                  type="text"
+                  id="vc_fr_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="VC FR"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pi</label>
+                <input
+                  type="text"
+                  id="pi_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Pi"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">FiO₂/N₂O/Air</label>
+                <input
+                  type="text"
+                  id="fio2_n2o_air"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="FiO₂/N₂O/Air"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Halogéné</label>
+                <input
+                  type="text"
+                  id="halogene"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Halogéné"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fi</label>
+                <input
+                  type="text"
+                  id="fi_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Fi"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fe</label>
+                <input
+                  type="text"
+                  id="fe_value"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Fe"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">TOF ALR</label>
+                <input
+                  type="text"
+                  id="tof_alr"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="TOF ALR"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Hématocrite/Dextro</label>
+                <input
+                  type="text"
+                  id="hematocrite_dextro"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Hématocrite/Dextro"
+                />
+              </div>
+            </div>
+
+            {/* Checkboxes VS et VC */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="vs_checked"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="vs_checked" className="text-sm font-medium text-gray-700">VS</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="vc_checked"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="vc_checked" className="text-sm font-medium text-gray-700">VC</label>
+              </div>
+            </div>
+
+            {/* Grilles de dessin */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Grille Température */}
               <div className="border border-gray-300 rounded-lg p-4">
@@ -521,6 +837,126 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
                   <p className="text-gray-500">Grille de dessin à implémenter</p>
                   <p className="text-sm text-gray-400">Fonctionnalité de dessin en cours de développement</p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section Drogues */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Drogues</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 1</label>
+                <input
+                  type="text"
+                  id="drogue1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Drogue 1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 2</label>
+                <input
+                  type="text"
+                  id="drogue2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Drogue 2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 3</label>
+                <input
+                  type="text"
+                  id="drogue3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Drogue 3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 4</label>
+                <input
+                  type="text"
+                  id="drogue4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Drogue 4"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 5</label>
+                <input
+                  type="text"
+                  id="drogue5"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Drogue 5"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section Perfusions */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Perfusions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 1</label>
+                <input
+                  type="text"
+                  id="perfusion1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Perfusion 1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 2</label>
+                <input
+                  type="text"
+                  id="perfusion2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Perfusion 2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 3</label>
+                <input
+                  type="text"
+                  id="perfusion3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Perfusion 3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 4</label>
+                <input
+                  type="text"
+                  id="perfusion4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Perfusion 4"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 5</label>
+                <input
+                  type="text"
+                  id="perfusion5"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Perfusion 5"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section Bilans */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Bilans</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autres bilans</label>
+                <input
+                  type="text"
+                  id="autres_bilans"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Autres bilans"
+                />
               </div>
             </div>
           </div>
