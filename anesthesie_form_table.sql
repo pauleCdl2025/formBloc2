@@ -28,6 +28,13 @@ CREATE TABLE IF NOT EXISTS anesthesie_form (
     melange VARCHAR(255),
     incident_alr TEXT,
     bloc_obtenu VARCHAR(255),
+    alr_complement VARCHAR(255),
+    alr_autre1 VARCHAR(255),
+    alr_autre2 VARCHAR(255),
+    alr_autre3 VARCHAR(255),
+    alr_autre4 VARCHAR(255),
+    alr_autre5 VARCHAR(255),
+    alr_autre6 VARCHAR(255),
     
     -- Appareillage (stocké en JSONB)
     appareillage_data JSONB DEFAULT '{}',
@@ -102,3 +109,20 @@ CREATE TRIGGER update_anesthesie_form_updated_at
     BEFORE UPDATE ON anesthesie_form
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Insérer quelques données de test (optionnel)
+INSERT INTO anesthesie_form (
+    salle, 
+    chirurgien, 
+    date_intervention, 
+    mode_ag, 
+    appareillage_data,
+    grilles_data
+) VALUES (
+    'Bloc 1',
+    'Dr. Test',
+    CURRENT_DATE,
+    true,
+    '{"app_masque": true, "app_mlf": false}',
+    '{"main": {"temperature": [{"x": 10, "y": 20}], "spo2": []}}'
+) ON CONFLICT DO NOTHING;

@@ -43,6 +43,21 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     if (formData) {
       populateForm(formData);
     }
+    
+    // Exposer les fonctions React au window pour que le HTML puisse les appeler
+    (window as any).ReactAnesthesieForm = {
+      handleSave,
+      handleLoad,
+      toggleCheckbox,
+      clearAllCanvases: clearAllCanvases,
+      newFormulaire: newFormulaire,
+      printFormulaire: printFormulaire
+    };
+    
+    return () => {
+      // Nettoyer les références au démontage
+      delete (window as any).ReactAnesthesieForm;
+    };
   }, [formData]);
 
   const initializeCanvases = () => {
@@ -245,6 +260,13 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
       melange: (document.getElementById('melange') as HTMLInputElement)?.value || '',
       incident_alr: (document.getElementById('incident_alr') as HTMLInputElement)?.value || '',
       bloc_obtenu: (document.getElementById('bloc_obtenu') as HTMLInputElement)?.value || '',
+      alr_complement: (document.getElementById('alr_complement') as HTMLInputElement)?.value || '',
+      alr_autre1: (document.getElementById('alr_autre1') as HTMLInputElement)?.value || '',
+      alr_autre2: (document.getElementById('alr_autre2') as HTMLInputElement)?.value || '',
+      alr_autre3: (document.getElementById('alr_autre3') as HTMLInputElement)?.value || '',
+      alr_autre4: (document.getElementById('alr_autre4') as HTMLInputElement)?.value || '',
+      alr_autre5: (document.getElementById('alr_autre5') as HTMLInputElement)?.value || '',
+      alr_autre6: (document.getElementById('alr_autre6') as HTMLInputElement)?.value || '',
       
       // Appareillage
       appareillage_data: collectAppareillageData(),
@@ -314,16 +336,26 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     try {
       const formData = collectFormData();
       
+      console.log('Données à sauvegarder:', formData);
+      
       const { data: result, error } = await supabase
         .from('anesthesie_form')
         .upsert(formData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw error;
+      }
 
+      console.log('Résultat sauvegarde:', result);
+      
       setCurrentFormId(result.id);
-      (document.getElementById('currentId') as HTMLInputElement).value = result.id.toString();
+      const currentIdInput = document.getElementById('currentId') as HTMLInputElement;
+      if (currentIdInput) {
+        currentIdInput.value = result.id.toString();
+      }
       setMessage({ text: 'Formulaire sauvegardé avec succès', type: 'success' });
       
       if (onSave) {
@@ -331,7 +363,7 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      setMessage({ text: 'Erreur lors de la sauvegarde', type: 'error' });
+      setMessage({ text: `Erreur lors de la sauvegarde: ${error.message}`, type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -366,7 +398,8 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
       'salle', 'heure', 'date_intervention', 'chirurgien', 'anesthesistes',
       'tsar', 'checklist', 'position_patient', 'site_ponction', 'aiguille',
       'profondeur', 'intensite_ma', 'kt', 'dose_test', 'melange',
-      'incident_alr', 'bloc_obtenu', 'sao2_value', 'eto2_value',
+      'incident_alr', 'bloc_obtenu', 'alr_complement', 'alr_autre1', 'alr_autre2',
+      'alr_autre3', 'alr_autre4', 'alr_autre5', 'alr_autre6', 'sao2_value', 'eto2_value',
       'vs_vi_value', 'vc_fr_value', 'pi_value', 'fio2_n2o_air',
       'halogene', 'fi_value', 'fe_value', 'tof_alr', 'hematocrite_dextro',
       'drogue1', 'drogue2', 'drogue3', 'drogue4', 'drogue5',
@@ -1772,12 +1805,12 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
             
             window.handleSave = function() {
               // Cette fonction sera appelée par React
-              console.log('Save clicked');
+              window.ReactAnesthesieForm?.handleSave();
             };
             
             window.handleLoad = function() {
               // Cette fonction sera appelée par React
-              console.log('Load clicked');
+              window.ReactAnesthesieForm?.handleLoad();
             };
             
             window.printFormulaire = function() {
