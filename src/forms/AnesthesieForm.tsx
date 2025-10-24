@@ -366,7 +366,8 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      setMessage({ text: `Erreur lors de la sauvegarde: ${error.message}`, type: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      setMessage({ text: `Erreur lors de la sauvegarde: ${errorMessage}`, type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -526,7 +527,7 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
 
   const printFormulaire = () => {
     // Masquer la barre d'outils pour l'impression
-    const toolbar = document.querySelector('.toolbar');
+    const toolbar = document.querySelector('.toolbar') as HTMLElement;
     if (toolbar) {
       toolbar.style.display = 'none';
     }
