@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 
 interface AnesthesieFormProps {
   formData?: any;
+  patientData?: any;
   editMode?: boolean;
   onBack?: () => void;
   onSave?: (data: any) => void;
@@ -11,6 +12,7 @@ interface AnesthesieFormProps {
 
 const AnesthesieForm: React.FC<AnesthesieFormProps> = ({ 
   formData, 
+  patientData,
   editMode = false, 
   onBack,
   onSave 
@@ -40,8 +42,9 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
 
   useEffect(() => {
     initializeCanvases();
-    if (formData) {
-      populateForm(formData);
+    const dataToUse = patientData || formData;
+    if (dataToUse) {
+      populateForm(dataToUse);
     }
     
     // Exposer les fonctions React au window pour que le HTML puisse les appeler
@@ -58,7 +61,7 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
       // Nettoyer les références au démontage
       delete (window as any).ReactAnesthesieForm;
     };
-  }, [formData]);
+  }, [patientData, formData]);
 
   const initializeCanvases = () => {
     const canvases = document.querySelectorAll('canvas');

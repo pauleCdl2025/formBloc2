@@ -12,6 +12,7 @@ import ChecklistList from './forms/ChecklistList';
 import ChecklistConsultation from './forms/ChecklistConsultation';
 import InterventionForm from './forms/InterventionForm';
 import AnesthesieForm from './forms/AnesthesieForm';
+import AnesthesieList from './forms/AnesthesieList';
 
 interface FormConfig {
   id: string;
@@ -67,7 +68,7 @@ const availableForms: FormConfig[] = [
 
 export default function FormManager() {
   const [selectedForm, setSelectedForm] = useState<string>('preanesthesia');
-  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation' | 'checklist-consultation' | 'intervention-form'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'list' | 'form' | 'consultation' | 'compte-rendu-consultation' | 'consentement-consultation' | 'checklist-consultation' | 'intervention-form' | 'anesthesie-list' | 'anesthesie-consultation'>('main');
   const [selectedPatientData, setSelectedPatientData] = useState<any>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
 
@@ -133,6 +134,16 @@ export default function FormManager() {
     setCurrentView('consentement-consultation');
   };
 
+  const handleAnesthesieFormSelect = (formData: any, mode: 'view' | 'edit') => {
+    setSelectedPatientData(formData);
+    setEditMode(mode === 'edit');
+    setCurrentView('anesthesie-consultation');
+  };
+
+  const handleAnesthesieBackToList = () => {
+    setCurrentView('anesthesie-list');
+  };
+
   const selectedFormConfig = availableForms.find(form => form.id === selectedForm);
   const FormComponent = selectedFormConfig?.component;
 
@@ -143,6 +154,14 @@ export default function FormManager() {
           onBackToMain={handleBackToList}
           onSelectChecklist={handleSelectChecklist}
           onCreateNewChecklist={() => setCurrentView('intervention-form')}
+        />
+      );
+    } else if (selectedForm === 'anesthesie') {
+      return (
+        <AnesthesieList 
+          onCreateNew={handleCreateNew}
+          onBack={handleBackToList}
+          onSelectForm={handleAnesthesieFormSelect}
         />
       );
     } else {
@@ -208,6 +227,20 @@ export default function FormManager() {
           // La suppression est gérée dans ChecklistConsultation
           handleBackToList();
         }}
+      />
+    );
+  }
+
+  if (currentView === 'anesthesie-consultation') {
+    return (
+      <AnesthesieForm 
+        patientData={selectedPatientData}
+        editMode={editMode}
+        onSave={(data) => {
+          console.log('Formulaire d\'anesthésie sauvegardé:', data);
+          handleAnesthesieBackToList();
+        }}
+        onBack={handleAnesthesieBackToList}
       />
     );
   }
