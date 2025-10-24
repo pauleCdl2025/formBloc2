@@ -52,6 +52,12 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     pa: []
   });
 
+  // États pour le dessin
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [selectedParam, setSelectedParam] = useState('temperature');
+  const [drawingMode, setDrawingMode] = useState('line');
+  const [lastPoint, setLastPoint] = useState<{x: number, y: number} | null>(null);
+
   // Références pour les canvas
   const canvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
@@ -320,6 +326,170 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     setAppareillage(prev => ({ ...prev, [app]: !prev[app] }));
   };
 
+  // Fonctions de dessin
+  const initializeCanvas = (param: string) => {
+    const canvas = canvasRefs.current[param];
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Définir la taille du canvas
+    canvas.width = 400;
+    canvas.height = 300;
+
+    // Dessiner la grille
+    drawGrid(ctx, canvas.width, canvas.height, param);
+  };
+
+  const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number, param: string) => {
+    ctx.clearRect(0, 0, width, height);
+    
+    // Couleur de fond
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, width, height);
+
+    // Couleur des lignes de grille
+    ctx.strokeStyle = '#e9ecef';
+    ctx.lineWidth = 1;
+
+    // Lignes verticales
+    for (let x = 0; x <= width; x += 20) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    // Lignes horizontales
+    for (let y = 0; y <= height; y += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Dessiner les courbes existantes
+    const points = gridData[param] || [];
+    if (points.length > 0) {
+      drawCurve(ctx, points, param);
+    }
+  };
+
+  const drawCurve = (ctx: CanvasRenderingContext2D, points: any[], param: string) => {
+    if (points.length === 0) return;
+
+    // Couleur selon le paramètre
+    const colors = {
+      temperature: '#dc2626', // Rouge
+      spo2: '#2563eb',        // Bleu
+      fc: '#16a34a',          // Vert
+      pa: '#9333ea'           // Violet
+    };
+
+    ctx.strokeStyle = colors[param as keyof typeof colors];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    points.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    });
+
+    ctx.stroke();
+
+    // Dessiner les points
+    ctx.fillStyle = colors[param as keyof typeof colors];
+    points.forEach(point => {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+  };
+
+  const getMousePos = (canvas: HTMLCanvasElement, e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>, param: string) => {
+    const canvas = canvasRefs.current[param];
+    if (!canvas) return;
+
+    const pos = getMousePos(canvas, e);
+    setIsDrawing(true);
+    setSelectedParam(param);
+    setLastPoint(pos);
+
+    // Ajouter le point
+    const newPoints = [...(gridData[param] || []), pos];
+    setGridData(prev => ({ ...prev, [param]: newPoints }));
+
+    // Redessiner
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      drawGrid(ctx, canvas.width, canvas.height, param);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>, param: string) => {
+    if (!isDrawing || selectedParam !== param) return;
+
+    const canvas = canvasRefs.current[param];
+    if (!canvas) return;
+
+    const pos = getMousePos(canvas, e);
+    
+    // Ajouter le point si on dessine
+    if (drawingMode === 'line') {
+      const newPoints = [...(gridData[param] || []), pos];
+      setGridData(prev => ({ ...prev, [param]: newPoints }));
+      setLastPoint(pos);
+
+      // Redessiner
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        drawGrid(ctx, canvas.width, canvas.height, param);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDrawing(false);
+    setLastPoint(null);
+  };
+
+  const clearCanvas = (param: string) => {
+    const canvas = canvasRefs.current[param];
+    if (!canvas) return;
+
+    setGridData(prev => ({ ...prev, [param]: [] }));
+    
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      drawGrid(ctx, canvas.width, canvas.height, param);
+    }
+  };
+
+  const clearAllCanvases = () => {
+    Object.keys(gridData).forEach(param => {
+      clearCanvas(param);
+    });
+  };
+
+  // Initialiser les canvas au montage
+  useEffect(() => {
+    Object.keys(gridData).forEach(param => {
+      initializeCanvas(param);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -368,6 +538,12 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Imprimer
+              </button>
+              <button
+                onClick={clearAllCanvases}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Effacer grilles
               </button>
             </div>
           </div>
@@ -805,38 +981,90 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Grille Température */}
               <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-md font-medium text-red-600 mb-2">Température (°C)</h4>
-                <div className="bg-gray-100 p-4 rounded text-center">
-                  <p className="text-gray-500">Grille de dessin à implémenter</p>
-                  <p className="text-sm text-gray-400">Fonctionnalité de dessin en cours de développement</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-md font-medium text-red-600">Température (°C)</h4>
+                  <button
+                    onClick={() => clearCanvas('temperature')}
+                    className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                  >
+                    Effacer
+                  </button>
                 </div>
+                <canvas
+                  ref={(el) => canvasRefs.current.temperature = el}
+                  onMouseDown={(e) => handleMouseDown(e, 'temperature')}
+                  onMouseMove={(e) => handleMouseMove(e, 'temperature')}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="border border-gray-200 rounded cursor-crosshair w-full"
+                  style={{ maxWidth: '400px', height: '300px' }}
+                />
               </div>
 
               {/* Grille SpO₂ */}
               <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-md font-medium text-blue-600 mb-2">SpO₂ (%)</h4>
-                <div className="bg-gray-100 p-4 rounded text-center">
-                  <p className="text-gray-500">Grille de dessin à implémenter</p>
-                  <p className="text-sm text-gray-400">Fonctionnalité de dessin en cours de développement</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-md font-medium text-blue-600">SpO₂ (%)</h4>
+                  <button
+                    onClick={() => clearCanvas('spo2')}
+                    className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    Effacer
+                  </button>
                 </div>
+                <canvas
+                  ref={(el) => canvasRefs.current.spo2 = el}
+                  onMouseDown={(e) => handleMouseDown(e, 'spo2')}
+                  onMouseMove={(e) => handleMouseMove(e, 'spo2')}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="border border-gray-200 rounded cursor-crosshair w-full"
+                  style={{ maxWidth: '400px', height: '300px' }}
+                />
               </div>
 
               {/* Grille FC */}
               <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-md font-medium text-green-600 mb-2">FC (bpm)</h4>
-                <div className="bg-gray-100 p-4 rounded text-center">
-                  <p className="text-gray-500">Grille de dessin à implémenter</p>
-                  <p className="text-sm text-gray-400">Fonctionnalité de dessin en cours de développement</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-md font-medium text-green-600">FC (bpm)</h4>
+                  <button
+                    onClick={() => clearCanvas('fc')}
+                    className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                  >
+                    Effacer
+                  </button>
                 </div>
+                <canvas
+                  ref={(el) => canvasRefs.current.fc = el}
+                  onMouseDown={(e) => handleMouseDown(e, 'fc')}
+                  onMouseMove={(e) => handleMouseMove(e, 'fc')}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="border border-gray-200 rounded cursor-crosshair w-full"
+                  style={{ maxWidth: '400px', height: '300px' }}
+                />
               </div>
 
               {/* Grille PA */}
               <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-md font-medium text-purple-600 mb-2">PA (mmHg)</h4>
-                <div className="bg-gray-100 p-4 rounded text-center">
-                  <p className="text-gray-500">Grille de dessin à implémenter</p>
-                  <p className="text-sm text-gray-400">Fonctionnalité de dessin en cours de développement</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-md font-medium text-purple-600">PA (mmHg)</h4>
+                  <button
+                    onClick={() => clearCanvas('pa')}
+                    className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                  >
+                    Effacer
+                  </button>
                 </div>
+                <canvas
+                  ref={(el) => canvasRefs.current.pa = el}
+                  onMouseDown={(e) => handleMouseDown(e, 'pa')}
+                  onMouseMove={(e) => handleMouseMove(e, 'pa')}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="border border-gray-200 rounded cursor-crosshair w-full"
+                  style={{ maxWidth: '400px', height: '300px' }}
+                />
               </div>
             </div>
           </div>
