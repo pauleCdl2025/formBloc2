@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire d'Anesthésie</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        
+        .toolbar {
+            background-color: white;
+            border: 1px solid #2a4b8d;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar button {
+            background-color: #2a4b8d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .toolbar button:hover {
+            background-color: #1a3b6d;
+        }
+        
+        .toolbar input, .toolbar select {
+            padding: 6px;
+            border: 1px solid #2a4b8d;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .status-message {
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .form-container {
+            background-color: white;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            border: 1px solid #2a4b8d;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        td, th {
+            border: 1px solid #2a4b8d;
+            padding: 2px;
+            font-size: 11px;
+        }
+        
+        .header-row td {
+            height: 65px;
+            vertical-align: middle;
+        }
+        
+        .left-column {
+            width: 400px;
+            vertical-align: top;
+            border-right: 2px solid #2a4b8d;
+        }
+        
+        .info-row td {
+            height: 65px;
+            vertical-align: middle;
+        }
+        
+        .info-label {
+            padding-left: 5px;
+        }
+        
+        .section-title {
+            background-color: #2a4b8d;
+            color: white;
+            text-align: center;
+            padding: 3px;
+            font-weight: bold;
+        }
+        
+        input[type="text"], input[type="time"], input[type="date"] {
+            width: 95%;
+            border: none;
+            border-bottom: 1px dotted #2a4b8d;
+            font-size: 11px;
+            padding: 2px;
+            background: transparent;
+        }
+        
+        input[type="text"]:focus, input[type="time"]:focus, input[type="date"]:focus {
+            outline: none;
+            border-bottom: 1px solid #2a4b8d;
+            background-color: #f0f5ff;
+        }
+
+        .main-field {
+            width: 100%;
+            border: none;
+            border-bottom: 1px dotted #2a4b8d;
+            font-size: 11px;
+            padding: 2px 5px;
+            background: transparent;
+            height: 18px;
+        }
+
+        .main-field:focus {
+            outline: none;
+            border-bottom: 1px solid #2a4b8d;
+            background-color: #f0f5ff;
+        }
+        
+        .grid-cell {
+            width: 100%;
+            height: 65px;
+            position: relative;
+        }
+        
+        .grid-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(#a8c3e5 1px, transparent 1px), 
+                              linear-gradient(90deg, #a8c3e5 1px, transparent 1px);
+            background-size: 20px 25px;
+            pointer-events: none;
+            background-color: #f2f6fc;
+        }
+        
+        .grid-with-major-lines {
+            background-image: 
+                linear-gradient(#e6f0ff 1px, transparent 1px), 
+                linear-gradient(90deg, #e6f0ff 1px, transparent 1px),
+                linear-gradient(#2a4b8d 2px, transparent 2px),
+                linear-gradient(90deg, #2a4b8d 2px, transparent 2px);
+            background-size: 13px 13px, 13px 13px, 69px 69px, 69px 69px;
+            background-position: 0 0, 0 0, 0 0, 0 0;
+            background-color: white;
+            margin-top: 0px;
+            height: 100%;
+        }
+        
+        .grid-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            cursor: crosshair;
+        }
+        
+        .vertical-text {
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+            text-align: center;
+            padding: 5px 0;
+            height: 100%;
+            font-size: 11px;
+            color: #2a4b8d;
+            font-weight: bold;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        .checkbox {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #000;
+            margin-right: 5px;
+            text-align: center;
+            line-height: 10px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+        
+        .checkbox-label {
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .comments-section {
+            height: 150px;
+            vertical-align: top;
+        }
+        
+        .dotted-underline {
+            border-bottom: 1px dotted #2a4b8d;
+        }
+        
+        .grid-header td {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .grid-values td {
+            text-align: center;
+        }
+        
+        .appareillage {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .appareillage-column {
+            width: 50%;
+        }
+        
+        .vent-values {
+            font-size: 10px;
+            padding-left: 2px;
+        }
+        
+        .indent {
+            padding-left: 15px;
+        }
+        
+        .color-selector {
+            display: flex;
+            align-items: center;
+            margin: 5px;
+            padding: 5px;
+            background-color: #f2f6fc;
+            border: 1px solid #2a4b8d;
+            border-radius: 3px;
+        }
+        
+        .color-option {
+            width: 15px;
+            height: 65px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .color-option.selected {
+            border-color: black;
+        }
+        
+        .control-panel {
+            padding: 5px;
+            background-color: #f2f6fc;
+            border-bottom: 1px solid #2a4b8d;
+            display: flex;
+            align-items: center;
+        }
+        
+        .drawing-mode-switch {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+        
+        button {
+            background-color: #2a4b8d;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        
+        button:hover {
+            background-color: #1a3b6d;
+        }
+        
+        .parameter-legend {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 3px;
+        }
+        
+        .legend-text {
+            font-size: 10px;
+        }
+        
+        textarea {
+            width: 98%;
+            height: 95%;
+            border: none;
+            resize: none;
+            font-size: 11px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            background-color: #f0f5ff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #2a4b8d;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 5px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+
+        .formulaires-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .formulaire-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .formulaire-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .formulaire-info {
+            flex-grow: 1;
+        }
+
+        .formulaire-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-small {
+            padding: 3px 8px;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barre d'outils -->
+    <div class="toolbar">
+        <button id="newBtn">Nouveau</button>
+        <button id="saveBtn">Sauvegarder</button>
+        <button id="loadBtn">Charger</button>
+        <button id="printBtn">Imprimer</button>
+        <input type="text" id="currentId" readonly placeholder="ID du formulaire" style="width: 100px;">
+        <div style="border-left: 1px solid #ccc; height: 65px; margin: 0 10px;"></div>
+        <label for="searchInput">Recherche:</label>
+        <input type="text" id="searchInput" placeholder="Chirurgien, salle..." style="width: 150px;">
+        <button id="searchBtn">Rechercher</button>
+    </div>
+
+    <!-- Messages de statut -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <div class="form-container">
+        <div class="control-panel">
+            <div class="parameter-legend">
+                <div class="legend-color" style="background-color: red;"></div>
+                <span class="legend-text">T°C</span>
+            </div>
+            <div class="parameter-legend">
+                <div class="legend-color" style="background-color: blue;"></div>
+                <span class="legend-text">SpO₂</span>
+            </div>
+            <div class="parameter-legend">
+                <div class="legend-color" style="background-color: green;"></div>
+                <span class="legend-text">FC</span>
+            </div>
+            <div class="parameter-legend">
+                <div class="legend-color" style="background-color: purple;"></div>
+                <span class="legend-text">PA</span>
+            </div>
+            <div class="color-selector">
+                <div class="color-option selected" style="background-color: red;" data-param="temperature"></div>
+                <div class="color-option" style="background-color: blue;" data-param="spo2"></div>
+                <div class="color-option" style="background-color: green;" data-param="fc"></div>
+                <div class="color-option" style="background-color: purple;" data-param="pa"></div>
+            </div>
+            <div class="drawing-mode-switch">
+                <label for="drawingMode" style="font-size: 11px; margin-right: 5px;">Mode de tracé:</label>
+                <select id="drawingMode" style="font-size: 11px;">
+                    <option value="line">Lignes</option>
+                    <option value="point">Points</option>
+                </select>
+                <button id="clearBtn">Effacer</button>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <td style="width: 60px; border-right: 0; text-align: left; padding: 5px;"><strong>Salle :</strong></td>
+                <td style="width: 100px; border-left: 0; text-align: left; padding: 0;">
+                    <input type="text" id="salle" class="main-field" placeholder="Numéro de salle">
+                </td>
+                <td style="width: 8%; text-align: left; padding: 5px;"><strong>Heure :</strong></td>
+                <td colspan="3" style="border-left: 0; text-align: left; padding: 0;">
+                    <input type="time" id="heure" class="main-field">
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 60px; text-align: left; padding: 5px; border-right: 0;"><strong>Date :</strong></td>
+                <td style="width: 100px; border-left: 0; padding: 0;">
+                    <input type="date" id="date_intervention" class="main-field">
+                </td>
+                <td style="text-align: center; width: 4%;"><strong>T</strong></td>
+                <td style="text-align: center; width: 4%;"><strong>SpO₂</strong></td>
+                <td style="text-align: center; width: 4%;"><strong>FC</strong></td>
+                <td style="text-align: center; width: 4%;"><strong>PA</strong></td>
+            </tr>
+            <tr>
+                <td style="width: 60px; text-align: left; padding: 5px; border-right: 0; vertical-align: middle;"><strong>Chirurgien :</strong></td>
+                <td style="width: 100px; border-left: 0; padding: 0;">
+                    <input type="text" id="chirurgien" class="main-field" placeholder="Nom du chirurgien">
+                </td>
+                <td style="text-align: center; height: 65px; padding: 2px;">39</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">100</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">200</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">200</td>
+                <td rowspan="5" style="position: relative; vertical-align: top; padding: 0; height: 335px;">
+                    <div class="grid-background grid-with-major-lines" style="height: 335px;"></div>
+                    <canvas id="mainCanvas" class="grid-canvas"></canvas>
+                </td>
+            </tr>
+            <tr class="grid-values">
+                <td style="width: 60px; text-align: left; padding: 5px; border-right: 0;"><strong>Anesthésistes :</strong></td>
+                <td style="width: 100px; border-left: 0; padding: 0;">
+                    <input type="text" id="anesthesistes" class="main-field" placeholder="Nom des anesthésistes">
+                </td>
+                <td style="text-align: center; height: 65px; padding: 2px;">38</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">90</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">150</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">150</td>
+            </tr>
+            <tr class="grid-values">
+                <td style="width: 60px; text-align: left; padding: 5px; border-right: 0;"><strong>TSAR :</strong></td>
+                <td style="width: 100px; border-left: 0; padding: 0;">
+                    <input type="text" id="tsar" class="main-field" placeholder="TSAR">
+                </td>
+                <td style="text-align: center; height: 65px; padding: 2px;">37</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">80</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">100</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">100</td>
+            </tr>
+            <tr class="grid-values">
+                <td style="width: 60px; text-align: left; padding: 5px; border-right: 0;"><strong>CHECKLIST :</strong></td>
+                <td style="width: 100px; border-left: 0; padding: 0;">
+                    <input type="text" id="checklist" class="main-field" placeholder="Checklist">
+                </td>
+                <td style="text-align: center; height: 65px; padding: 2px;">36</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">70</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">50</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">50</td>
+            </tr>
+            <tr class="grid-values">
+                <td style="width: 60px; text-align: left; padding: 5px; border-right: 0;"><strong>Position :</strong></td>
+                <td style="width: 100px; border-left: 0; padding: 0;">
+                    <input type="text" id="position_patient" class="main-field" placeholder="Position du patient">
+                </td>
+                <td style="text-align: center; height: 65px; padding: 2px;">35</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">60</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">0</td>
+                <td style="text-align: center; height: 65px; padding: 2px;">0</td>
+            </tr>
+            
+            <tr>
+                <td colspan="2" class="left-column" style="width: 160px; vertical-align: top; border-right: 2px solid #2a4b8d; padding: 0;">
+                    <table class="mode-appareillage-table" style="width: 100%; border: none; border-collapse: collapse;">
+                        <style>
+                            .mode-appareillage-table td {
+                                border-top: none !important;
+                                border-bottom: none !important;
+                            }
+                            .mode-appareillage-table tr {
+                                border-top: none !important;
+                                border-bottom: none !important;
+                            }
+                        </style>
+                        
+                        <tr>
+                            <td class="section-title" style="">MODE ANESTHESIQUE</td>
+                            <td class="section-title">APPAREILLAGE</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>SEDATION</span>
+                                    <div class="checkbox" id="mode_sedation" onclick="toggleCheckbox(this)">□</div>
+                                </div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_masque" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Masque</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="checkbox" id="mode_ag" onclick="toggleCheckbox(this)">□</div>
+                                        <span style="margin-left: 5px;">AG</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center;">
+                                        <span style="margin-right: 5px;">CRUSH</span>
+                                        <div class="checkbox" id="mode_crush" onclick="toggleCheckbox(this)">□</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_mlf" onclick="toggleCheckbox(this)">□</div>
+                                    <span>MLØ</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <span>ALR</span>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_lto" onclick="toggleCheckbox(this)">□</div>
+                                    <span>ITØ</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px 3px 25px; border-right: 1px solid #2a4b8d;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>RA</span>
+                                    <div class="checkbox" id="mode_ra" onclick="toggleCheckbox(this)">□</div>
+                                </div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_orale" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Orale</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px 3px 25px; border-right: 1px solid #2a4b8d;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>APD</span>
+                                    <div class="checkbox" id="mode_apd" onclick="toggleCheckbox(this)">□</div>
+                                </div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_nasale" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Nasale</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px 3px 25px; border-right: 1px solid #2a4b8d;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>BLOC</span>
+                                    <div class="checkbox" id="mode_bloc" onclick="toggleCheckbox(this)">□</div>
+                                </div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_armee" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Armée</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>Site de ponction <span class="dotted-underline" style="width: 60%;">&nbsp;</span></div>
+                                <div><input type="text" id="site_ponction" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_tracheo" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Trachéo</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_complement" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_circuit_ouvert" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Circuit ouvert</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>Aiguille <span class="dotted-underline" style="width: 70%;">&nbsp;</span></div>
+                                <div><input type="text" id="aiguille" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_circuit_ferme" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Circuit fermé</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>Profondeur <span class="dotted-underline" style="width: 65%;">&nbsp;</span></div>
+                                <div><input type="text" id="profondeur" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_bain" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Bain</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>intensité mA <span class="dotted-underline" style="width: 65%;">&nbsp;</span></div>
+                                <div><input type="text" id="intensite_ma" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_curarmetre" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Curamètre</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>KT <span class="dotted-underline" style="width: 82%;">&nbsp;</span></div>
+                                <div><input type="text" id="kt" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_fibroscope" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Fibroscope</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>Dose test <span class="dotted-underline" style="width: 70%;">&nbsp;</span></div>
+                                <div><input type="text" id="dose_test" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_thermometre" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Thermomètre</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>mélange <span class="dotted-underline" style="width: 72%;">&nbsp;</span></div>
+                                <div><input type="text" id="melange" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_air_pulse" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Air pulsé</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>Incident: sang/LCR/paresthésie <span class="dotted-underline" style="width: 30%;">&nbsp;</span></div>
+                                <div><input type="text" id="incident_alr" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_accelerateur" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Accélérateur</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div>bloc obtenu <span class="dotted-underline" style="width: 65%;">&nbsp;</span></div>
+                                <div><input type="text" id="bloc_obtenu" style="width: 100%; margin-top: 3px;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_perfusion" onclick="toggleCheckbox(this)">□</div>
+                                    <span>de perfusion</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_autre1" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_cell_saver" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Cell saver</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_autre2" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_pas" onclick="toggleCheckbox(this)">□</div>
+                                    <span>PAS</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_autre3" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_swan_ganz" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Swan Ganz</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_autre4" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_vvc" onclick="toggleCheckbox(this)">□</div>
+                                    <span>VVC</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_autre5" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_sonde_gastrique" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Sonde gastrique</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="padding: 3px 5px; border-right: 1px solid #2a4b8d;">
+                                <div><input type="text" id="alr_autre6" style="width: 100%;" placeholder=""></div>
+                            </td>
+                            <td style="padding: 3px 5px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="checkbox" id="app_sonde_urinaire" onclick="toggleCheckbox(this)">□</div>
+                                    <span>Sonde urinaire</span>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td colspan="2" class="section-title">COMMENTAIRES / INCIDENTS</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="height: 150px; vertical-align: top; padding: 3px;">
+                                <textarea id="commentaires" placeholder="Commentaires et incidents..."></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td colspan="6" style="padding: 0; vertical-align: top;">
+                    <table style="width: 95%; border: none;">
+                        
+                        <tr>
+                            <td style="vertical-align: middle; text-align: left; padding-left: 5px;  width: 6%;">
+                                Sa O₂
+                            </td>
+                            <td colspan="3" style="vertical-align: middle; text-align: left; padding-left: 5px; width: 14%;">
+                                <input type="text" id="sao2_value" style="width: 70%; border: none; text-align: left; float: left;" placeholder="Valeur">
+                                <span style="display: inline-block; width: 20%; text-align: right; font-size: 10px;">%</span>
+                            </td>
+                            <td class="grid-cell" id="grid-spo2" style="height: 65px; width: 39%;">
+                                <div class="grid-background"></div>
+                                <canvas id="spo2Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle; text-align: left; padding-left: 5px;  width: 6%;">
+                                Et O₂
+                            </td>
+                            <td colspan="3" style="vertical-align: middle; text-align: left; padding-left: 5px; width: 14%;">
+                                <input type="text" id="eto2_value" style="width: 70%; border: none; text-align: left; float: left;" placeholder="Valeur">
+                                <span style="display: inline-block; width: 20%; text-align: right; font-size: 10px;">mmHg</span>
+                            </td>
+                            <td class="grid-cell" id="grid-eto2" style="height: 65px; width: 39%;">
+                                <div class="grid-background"></div>
+                                <canvas id="eto2Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0;" rowspan="8">
+                                <div class="vertical-text">VENTILATION</div>
+                            </td>
+                            <td style="vertical-align: middle; text-align: left; padding-left: 5px;  width: 6%;">
+                                <div class="checkbox-container">
+                                    <div class="checkbox" id="vs_checked" onclick="toggleCheckbox(this)">□</div>
+                                    <span class="checkbox-label">VS</span>
+                                </div>
+                            </td>
+                            <td colspan="2" style="vertical-align: middle; text-align: left; padding-left: 5px; width: 14%;">
+                                <span style="display: inline-block; width: 25px; text-align: left;">Vi</span>
+                                <input type="text" id="vs_vi_value" style="width: 60%; border: none;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-vs" style="height: 65px; width: 39%;">
+                                <div class="grid-background"></div>
+                                <canvas id="vsCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align: middle; text-align: left; padding-left: 5px; ">
+                                <div class="checkbox-container">
+                                    <div class="checkbox" id="vc_checked" onclick="toggleCheckbox(this)">□</div>
+                                    <span class="checkbox-label">VC</span>
+                                </div>
+                            </td>
+                            <td colspan="2" style="vertical-align: middle; text-align: left; padding-left: 5px;">
+                                <span style="display: inline-block; width: 25px; text-align: left;">FR</span>
+                                <input type="text" id="vc_fr_value" style="width: 60%; border: none;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-vc" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="vcCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style=""></td>
+                            <td colspan="2" style="vertical-align: middle; text-align: left; padding-left: 5px;">
+                                <span style="display: inline-block; width: 25px; text-align: left;">Pi</span>
+                                <input type="text" id="pi_value" style="width: 60%; border: none;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-pi" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="piCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="vertical-align: middle; text-align: left; padding-left: 5px;">
+                                Fi O₂/N₂O/Air
+                                <input type="text" id="fio2_n2o_air" style="width: 60%; border: none; margin-left: 10px;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-vent1" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="vent1Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="vertical-align: middle; text-align: left; padding-left: 5px;">
+                                HALOGÉNÉ
+                                <input type="text" id="halogene" style="width: 60%; border: none; margin-left: 10px;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-vent2" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="vent2Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="vertical-align: middle; text-align: left; padding-left: 5px; border-bottom: 1px dotted #2a4b8d;">
+                                Fi
+                                <input type="text" id="fi_value" style="width: 80%; border: none; margin-left: 10px;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-fi" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="fiCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="vertical-align: middle; text-align: left; padding-left: 5px; border-bottom: 1px dotted #2a4b8d;">
+                                Fe
+                                <input type="text" id="fe_value" style="width: 80%; border: none; margin-left: 10px;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-fe" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="feCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"></td>
+                            <td class="grid-cell" id="grid-vent3" style="height: 65px; width: 200px;">
+                                <div class="grid-background"></div>
+                                <canvas id="vent3Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="vertical-align: middle; text-align: left; padding-left: 5px; border-bottom: 1px dotted #2a4b8d;">
+                                T.O.F./Niveau A.L.R.
+                                <input type="text" id="tof_alr" style="width: 60%; border: none; margin-left: 10px;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-tof" style="height: 65px;">
+                                <div class="grid-background"></div>
+                                <canvas id="tofCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="vertical-align: middle; text-align: left; padding-left: 5px; border-bottom: 1px dotted #2a4b8d;">
+                                Hématocrite/Dextro
+                                <input type="text" id="hematocrite_dextro" style="width: 60%; border: none; margin-left: 10px;" placeholder="Valeur">
+                            </td>
+                            <td class="grid-cell" id="grid-hema">
+                                <div class="grid-background"></div>
+                                <canvas id="hemaCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0;" rowspan="5">
+                                <div class="vertical-text">DROGUES</div>
+                            </td>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="drogue1" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-drogues1">
+                                <div class="grid-background"></div>
+                                <canvas id="drogues1Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="drogue2" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-drogues2">
+                                <div class="grid-background"></div>
+                                <canvas id="drogues2Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="drogue3" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-drogues3">
+                                <div class="grid-background"></div>
+                                <canvas id="drogues3Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="drogue4" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-drogues4">
+                                <div class="grid-background"></div>
+                                <canvas id="drogues4Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="drogue5" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-drogues5">
+                                <div class="grid-background"></div>
+                                <canvas id="drogues5Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0;" rowspan="5">
+                                <div class="vertical-text">PERFUSIONS</div>
+                            </td>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="perfusion1" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-perf1">
+                                <div class="grid-background"></div>
+                                <canvas id="perf1Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="perfusion2" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-perf2">
+                                <div class="grid-background"></div>
+                                <canvas id="perf2Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="perfusion3" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-perf3">
+                                <div class="grid-background"></div>
+                                <canvas id="perf3Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="perfusion4" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-perf4">
+                                <div class="grid-background"></div>
+                                <canvas id="perf4Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 65px; border-bottom: 1px solid #2a4b8d;">
+                                <input type="text" id="perfusion5" style="width: 100%; border: none;" placeholder="Entrée">
+                            </td>
+                            <td class="grid-cell" id="grid-perf5">
+                                <div class="grid-background"></div>
+                                <canvas id="perf5Canvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0;" rowspan="4">
+                                <div class="vertical-text">BILANS</div>
+                            </td>
+                            <td colspan="3" style="text-align: center; vertical-align: middle; ">SANG</td>
+                            <td class="grid-cell" id="grid-sang">
+                                <div class="grid-background"></div>
+                                <canvas id="sangCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: center; vertical-align: middle; ">Diurèse</td>
+                            <td class="grid-cell" id="grid-diurese">
+                                <div class="grid-background"></div>
+                                <canvas id="diureseCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: center; vertical-align: middle; ">Saignement</td>
+                            <td class="grid-cell" id="grid-saignement">
+                                <div class="grid-background"></div>
+                                <canvas id="saignementCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: left; vertical-align: middle; padding-left: 5px; ">
+                                Autres :
+                                <input type="text" id="autres_bilans" style="width: 70%; border: none; margin-left: 5px;" placeholder="Précisez">
+                            </td>
+                            <td class="grid-cell" id="grid-autres">
+                                <div class="grid-background"></div>
+                                <canvas id="autresCanvas" class="grid-canvas"></canvas>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Modal pour charger les formulaires -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Charger un formulaire</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="formulaires-list" id="formulairesList">
+                <!-- Les formulaires seront chargés ici -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration API
+        const API_URL = 'api.php';
+        
+        // Variables globales pour le dessin (identiques au code original)
+        const paramColors = {
+            'temperature': 'red',
+            'spo2': 'blue',
+            'fc': 'green',
+            'pa': 'purple'
+        };
+        
+        let isDrawing = false;
+        let currentCanvas = null;
+        let currentGridKey = null;
+        let lastX = 0;
+        let lastY = 0;
+        let selectedParam = 'temperature';
+        let drawingMode = 'line';
+        let currentFormId = null;
+        
+        const gridPoints = {};
+        
+        // Fonctions utilitaires pour l'affichage des messages
+        function showMessage(message, type = 'success') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Fonction pour collecter toutes les données du formulaire
+        function collectFormData() {
+            const data = {
+                id: currentFormId,
+                salle: document.getElementById('salle').value,
+                heure: document.getElementById('heure').value,
+                date_intervention: document.getElementById('date_intervention').value,
+                chirurgien: document.getElementById('chirurgien').value,
+                anesthesistes: document.getElementById('anesthesistes').value,
+                tsar: document.getElementById('tsar').value,
+                checklist: document.getElementById('checklist').value,
+                position_patient: document.getElementById('position_patient').value,
+                
+                // Modes anesthésiques
+                mode_sedation: document.getElementById('mode_sedation').textContent === '✓',
+                mode_ag: document.getElementById('mode_ag').textContent === '✓',
+                mode_crush: document.getElementById('mode_crush').textContent === '✓',
+                mode_ra: document.getElementById('mode_ra').textContent === '✓',
+                mode_apd: document.getElementById('mode_apd').textContent === '✓',
+                mode_bloc: document.getElementById('mode_bloc').textContent === '✓',
+                
+                // Détails ALR
+                site_ponction: document.getElementById('site_ponction').value,
+                aiguille: document.getElementById('aiguille').value,
+                profondeur: document.getElementById('profondeur').value,
+                intensite_ma: document.getElementById('intensite_ma').value,
+                kt: document.getElementById('kt').value,
+                dose_test: document.getElementById('dose_test').value,
+                melange: document.getElementById('melange').value,
+                incident_alr: document.getElementById('incident_alr').value,
+                bloc_obtenu: document.getElementById('bloc_obtenu').value,
+                
+                // Appareillage
+                appareillage_data: collectAppareillageData(),
+                
+                // Valeurs de monitoring
+                sao2_value: document.getElementById('sao2_value').value,
+                eto2_value: document.getElementById('eto2_value').value,
+                vs_checked: document.getElementById('vs_checked').textContent === '✓',
+                vs_vi_value: document.getElementById('vs_vi_value').value,
+                vc_checked: document.getElementById('vc_checked').textContent === '✓',
+                vc_fr_value: document.getElementById('vc_fr_value').value,
+                pi_value: document.getElementById('pi_value').value,
+                fio2_n2o_air: document.getElementById('fio2_n2o_air').value,
+                halogene: document.getElementById('halogene').value,
+                fi_value: document.getElementById('fi_value').value,
+                fe_value: document.getElementById('fe_value').value,
+                tof_alr: document.getElementById('tof_alr').value,
+                hematocrite_dextro: document.getElementById('hematocrite_dextro').value,
+                
+                // Drogues
+                drogue1: document.getElementById('drogue1').value,
+                drogue2: document.getElementById('drogue2').value,
+                drogue3: document.getElementById('drogue3').value,
+                drogue4: document.getElementById('drogue4').value,
+                drogue5: document.getElementById('drogue5').value,
+                
+                // Perfusions
+                perfusion1: document.getElementById('perfusion1').value,
+                perfusion2: document.getElementById('perfusion2').value,
+                perfusion3: document.getElementById('perfusion3').value,
+                perfusion4: document.getElementById('perfusion4').value,
+                perfusion5: document.getElementById('perfusion5').value,
+                
+                // Autres
+                autres_bilans: document.getElementById('autres_bilans').value,
+                commentaires: document.getElementById('commentaires').value,
+                
+                // Données de dessin
+                grilles_data: collectGrillesData()
+            };
+            
+            return data;
+        }
+        
+        // Collecter les données d'appareillage
+        function collectAppareillageData() {
+            const appareillageIds = [
+                'app_masque', 'app_mlf', 'app_lto', 'app_orale', 'app_nasale', 'app_armee',
+                'app_tracheo', 'app_circuit_ouvert', 'app_circuit_ferme', 'app_bain',
+                'app_curarmetre', 'app_fibroscope', 'app_thermometre', 'app_air_pulse',
+                'app_accelerateur', 'app_perfusion', 'app_cell_saver', 'app_pas',
+                'app_swan_ganz', 'app_vvc', 'app_sonde_gastrique', 'app_sonde_urinaire'
+            ];
+            
+            const data = {};
+            appareillageIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    data[id] = element.textContent === '✓';
+                }
+            });
+            
+            return data;
+        }
+        
+        // Collecter les données de dessin des grilles
+        function collectGrillesData() {
+            const data = {};
+            
+            for (const gridKey in gridPoints) {
+                data[gridKey] = {};
+                for (const param in gridPoints[gridKey]) {
+                    if (gridPoints[gridKey][param].length > 0) {
+                        data[gridKey][param] = {
+                            points: gridPoints[gridKey][param],
+                            mode: drawingMode
+                        };
+                    }
+                }
+            }
+            
+            return data;
+        }
+        
+        // Sauvegarder le formulaire
+        async function saveFormulaire() {
+            try {
+                const formData = collectFormData();
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentFormId = result.id;
+                    document.getElementById('currentId').value = currentFormId;
+                    showMessage('Formulaire sauvegardé avec succès', 'success');
+                } else {
+                    showMessage('Erreur lors de la sauvegarde: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur de communication avec le serveur', 'error');
+            }
+        }
+        
+        // Charger un formulaire par ID
+        async function loadFormulaire(id) {
+            try {
+                const response = await fetch(`${API_URL}?id=${id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    populateForm(result.data);
+                    currentFormId = id;
+                    document.getElementById('currentId').value = currentFormId;
+                    showMessage('Formulaire chargé avec succès', 'success');
+                } else {
+                    showMessage('Erreur lors du chargement: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur de communication avec le serveur', 'error');
+            }
+        }
+        
+        // Remplir le formulaire avec les données chargées
+        function populateForm(data) {
+            // Champs texte simples
+            const textFields = [
+                'salle', 'heure', 'date_intervention', 'chirurgien', 'anesthesistes',
+                'tsar', 'checklist', 'position_patient', 'site_ponction', 'aiguille',
+                'profondeur', 'intensite_ma', 'kt', 'dose_test', 'melange',
+                'incident_alr', 'bloc_obtenu', 'sao2_value', 'eto2_value',
+                'vs_vi_value', 'vc_fr_value', 'pi_value', 'fio2_n2o_air',
+                'halogene', 'fi_value', 'fe_value', 'tof_alr', 'hematocrite_dextro',
+                'drogue1', 'drogue2', 'drogue3', 'drogue4', 'drogue5',
+                'perfusion1', 'perfusion2', 'perfusion3', 'perfusion4', 'perfusion5',
+                'autres_bilans', 'commentaires'
+            ];
+            
+            textFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && data[field]) {
+                    element.value = data[field];
+                }
+            });
+            
+            // Cases à cocher - modes anesthésiques
+            const checkboxModes = [
+                'mode_sedation', 'mode_ag', 'mode_crush', 'mode_ra', 'mode_apd', 'mode_bloc',
+                'vs_checked', 'vc_checked'
+            ];
+            
+            checkboxModes.forEach(field => {
+                const element = document.getElementById(field);
+                if (element) {
+                    element.textContent = data[field] ? '✓' : '□';
+                }
+            });
+            
+            // Appareillage
+            if (data.appareillage_data) {
+                for (const [key, value] of Object.entries(data.appareillage_data)) {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.textContent = value ? '✓' : '□';
+                    }
+                }
+            }
+            
+            // Données de dessin
+            if (data.grilles_data) {
+                loadGrillesData(data.grilles_data);
+            }
+        }
+        
+        // Charger les données de dessin des grilles
+        function loadGrillesData(grillesData) {
+            // Effacer toutes les grilles d'abord
+            clearAllCanvases();
+            
+            // Charger les nouvelles données
+            for (const [gridKey, gridParams] of Object.entries(grillesData)) {
+                if (!gridPoints[gridKey]) {
+                    gridPoints[gridKey] = {
+                        'temperature': [],
+                        'spo2': [],
+                        'fc': [],
+                        'pa': []
+                    };
+                }
+                
+                for (const [param, paramData] of Object.entries(gridParams)) {
+                    if (paramData.points && paramData.points.length > 0) {
+                        gridPoints[gridKey][param] = paramData.points;
+                    }
+                }
+            }
+            
+            // Redessiner tous les canvas
+            const canvases = document.querySelectorAll('canvas');
+            canvases.forEach(canvas => {
+                redrawCanvas(canvas);
+            });
+        }
+        
+        // Lister tous les formulaires disponibles
+        async function loadFormulairesToModal() {
+            try {
+                const response = await fetch(`${API_URL}?limit=100`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const listDiv = document.getElementById('formulairesList');
+                    listDiv.innerHTML = '';
+                    
+                    if (result.data.length === 0) {
+                        listDiv.innerHTML = '<p>Aucun formulaire trouvé</p>';
+                        return;
+                    }
+                    
+                    result.data.forEach(form => {
+                        const div = document.createElement('div');
+                        div.className = 'formulaire-item';
+                        div.innerHTML = `
+                            <div class="formulaire-info">
+                                <strong>ID: ${form.id}</strong> - 
+                                ${form.salle ? 'Salle ' + form.salle : 'Salle non spécifiée'} - 
+                                ${form.chirurgien || 'Chirurgien non spécifié'}<br>
+                                <small>Date: ${form.date_intervention || 'Non spécifiée'} - 
+                                Créé le: ${new Date(form.date_creation).toLocaleString('fr-FR')}</small>
+                            </div>
+                            <div class="formulaire-actions">
+                                <button class="btn-small" onclick="loadAndCloseModal(${form.id})">Charger</button>
+                                <button class="btn-small" onclick="deleteFormulaire(${form.id})" style="background-color: #dc3545;">Supprimer</button>
+                            </div>
+                        `;
+                        listDiv.appendChild(div);
+                    });
+                } else {
+                    showMessage('Erreur lors du chargement de la liste', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur de communication avec le serveur', 'error');
+            }
+        }
+        
+        // Charger un formulaire et fermer la modal
+        function loadAndCloseModal(id) {
+            loadFormulaire(id);
+            document.getElementById('loadModal').style.display = 'none';
+        }
+        
+        // Supprimer un formulaire
+        async function deleteFormulaire(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce formulaire ?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}?id=${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Formulaire supprimé avec succès', 'success');
+                    loadFormulairesToModal(); // Recharger la liste
+                } else {
+                    showMessage('Erreur lors de la suppression: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur de communication avec le serveur', 'error');
+            }
+        }
+        
+        // Nouveau formulaire
+        function newFormulaire() {
+            // Effacer tous les champs
+            const inputs = document.querySelectorAll('input[type="text"], input[type="time"], input[type="date"], textarea');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            
+            // Réinitialiser les cases à cocher
+            const checkboxes = document.querySelectorAll('.checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.textContent = '□';
+            });
+            
+            // Effacer toutes les grilles
+            clearAllCanvases();
+            
+            // Réinitialiser l'ID
+            currentFormId = null;
+            document.getElementById('currentId').value = '';
+            
+            showMessage('Nouveau formulaire créé', 'success');
+        }
+        
+        // Fonction d'impression
+        function printFormulaire() {
+            // Masquer la barre d'outils pour l'impression
+            const toolbar = document.querySelector('.toolbar');
+            const originalDisplay = toolbar.style.display;
+            toolbar.style.display = 'none';
+            
+            // Masquer les boutons et éléments non nécessaires à l'impression
+            const elementsToHide = document.querySelectorAll('.toolbar, .message');
+            elementsToHide.forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Ajuster les styles pour l'impression
+            const printStyles = `
+                <style>
+                    @media print {
+                        body { margin: 0; padding: 0; }
+                        .toolbar { display: none !important; }
+                        .message { display: none !important; }
+                        table { page-break-inside: avoid; }
+                        .grid-canvas { pointer-events: none; }
+                        input, textarea { border: 1px solid #000 !important; }
+                        .checkbox { border: 1px solid #000 !important; }
+                    }
+                </style>
+            `;
+            
+            // Ajouter les styles d'impression
+            const styleElement = document.createElement('div');
+            styleElement.innerHTML = printStyles;
+            document.head.appendChild(styleElement);
+            
+            // Lancer l'impression
+            window.print();
+            
+            // Restaurer l'affichage après l'impression
+            setTimeout(() => {
+                elementsToHide.forEach(el => {
+                    el.style.display = '';
+                });
+                document.head.removeChild(styleElement);
+            }, 1000);
+        }
+        
+        // === Code original pour le dessin (inchangé) ===
+        
+        function toggleCheckbox(checkbox) {
+            if (checkbox.textContent === '□') {
+                checkbox.textContent = '✓';
+            } else {
+                checkbox.textContent = '□';
+            }
+        }
+        
+        function drawPoint(ctx, x, y, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+        
+        function initializeCanvases() {
+            const canvases = document.querySelectorAll('canvas');
+            
+            canvases.forEach(canvas => {
+                const canvasId = canvas.id;
+                const gridKey = canvasId.replace('Canvas', '');
+                
+                gridPoints[gridKey] = {
+                    'temperature': [],
+                    'spo2': [],
+                    'fc': [],
+                    'pa': []
+                };
+                
+                resizeCanvas(canvas);
+                
+                canvas.addEventListener('mousedown', handleMouseDown);
+                canvas.addEventListener('mousemove', handleMouseMove);
+                canvas.addEventListener('mouseup', handleMouseUp);
+                canvas.addEventListener('mouseout', handleMouseUp);
+                
+                canvas.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousedown', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    canvas.dispatchEvent(mouseEvent);
+                });
+                
+                canvas.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    canvas.dispatchEvent(mouseEvent);
+                });
+                
+                canvas.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    const mouseEvent = new MouseEvent('mouseup', {});
+                    canvas.dispatchEvent(mouseEvent);
+                });
+            });
+        }
+        
+        function resizeCanvas(canvas) {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        function handleMouseDown(e) {
+            isDrawing = true;
+            currentCanvas = e.target;
+            currentGridKey = currentCanvas.id.replace('Canvas', '');
+            
+            const rect = currentCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (drawingMode === 'point') {
+                const gridX = Math.floor(x / 20) * 20 + 10;
+                const gridY = Math.floor(y / 25) * 25 + 12.5;
+                
+                const ctx = currentCanvas.getContext('2d');
+                drawPoint(ctx, gridX, gridY, paramColors[selectedParam]);
+                
+                gridPoints[currentGridKey][selectedParam].push({ x: gridX, y: gridY });
+            } else {
+                lastX = x;
+                lastY = y;
+                gridPoints[currentGridKey][selectedParam].push({ x, y });
+            }
+        }
+        
+        function handleMouseMove(e) {
+            if (!isDrawing || e.target !== currentCanvas) return;
+            
+            const rect = currentCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const ctx = currentCanvas.getContext('2d');
+            
+            if (drawingMode === 'point') {
+                const gridX = Math.floor(x / 20) * 20 + 10;
+                const gridY = Math.floor(y / 25) * 25 + 12.5;
+                
+                const existingPoint = gridPoints[currentGridKey][selectedParam].find(
+                    point => point.x === gridX && point.y === gridY
+                );
+                
+                if (!existingPoint) {
+                    drawPoint(ctx, gridX, gridY, paramColors[selectedParam]);
+                    gridPoints[currentGridKey][selectedParam].push({ x: gridX, y: gridY });
+                }
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = paramColors[selectedParam];
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                lastX = x;
+                lastY = y;
+                gridPoints[currentGridKey][selectedParam].push({ x, y });
+            }
+        }
+        
+        function handleMouseUp() {
+            isDrawing = false;
+            currentCanvas = null;
+            currentGridKey = null;
+        }
+        
+        function clearAllCanvases() {
+            const canvases = document.querySelectorAll('canvas');
+            canvases.forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const gridKey = canvas.id.replace('Canvas', '');
+                for (const param in gridPoints[gridKey]) {
+                    gridPoints[gridKey][param] = [];
+                }
+            });
+        }
+        
+        function redrawCanvas(canvas) {
+            const ctx = canvas.getContext('2d');
+            const gridKey = canvas.id.replace('Canvas', '');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (const param in gridPoints[gridKey]) {
+                const points = gridPoints[gridKey][param];
+                const color = paramColors[param];
+                
+                if (points.length === 0) continue;
+                
+                if (drawingMode === 'point') {
+                    points.forEach(point => {
+                        drawPoint(ctx, point.x, point.y, color);
+                    });
+                } else {
+                    if (points.length === 1) {
+                        drawPoint(ctx, points[0].x, points[0].y, color);
+                        continue;
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Fonction pour effacer le canvas principal
+        function clearMainCanvas() {
+            const mainCanvas = document.getElementById('mainCanvas');
+            if (mainCanvas) {
+                const ctx = mainCanvas.getContext('2d');
+                ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+                
+                // Effacer aussi les données sauvegardées
+                if (gridPoints.main) {
+                    for (const param in gridPoints.main) {
+                        gridPoints.main[param] = [];
+                    }
+                }
+            }
+        }
+
+        // Initialisation
+        window.onload = function() {
+            initializeCanvases();
+            clearMainCanvas(); // Effacer le canvas principal au chargement
+            
+            // Événements pour les boutons de la barre d'outils
+            document.getElementById('newBtn').addEventListener('click', newFormulaire);
+            document.getElementById('saveBtn').addEventListener('click', saveFormulaire);
+            document.getElementById('loadBtn').addEventListener('click', function() {
+                loadFormulairesToModal();
+                document.getElementById('loadModal').style.display = 'block';
+            });
+            document.getElementById('printBtn').addEventListener('click', printFormulaire);
+            
+            // Gestion de la modal
+            const modal = document.getElementById('loadModal');
+            const closeBtn = document.querySelector('.close');
+            
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Événements pour le dessin (identiques au code original)
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.color-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedParam = this.dataset.param;
+                });
+            });
+            
+            document.getElementById('drawingMode').addEventListener('change', function() {
+                drawingMode = this.value;
+            });
+            
+            document.getElementById('clearBtn').addEventListener('click', clearAllCanvases);
+            
+            window.addEventListener('resize', function() {
+                const canvases = document.querySelectorAll('canvas');
+                canvases.forEach(canvas => {
+                    resizeCanvas(canvas);
+                    redrawCanvas(canvas);
+                });
+            });
+        };
+    </script>
+</body>
+</html>

@@ -11,6 +11,7 @@ import PatientConsultation from './forms/PatientConsultation';
 import ChecklistList from './forms/ChecklistList';
 import ChecklistConsultation from './forms/ChecklistConsultation';
 import InterventionForm from './forms/InterventionForm';
+import AnesthesieForm from './forms/AnesthesieForm';
 
 interface FormConfig {
   id: string;
@@ -53,6 +54,14 @@ const availableForms: FormConfig[] = [
     icon: <CheckSquare className="w-8 h-8" />,
     component: ChecklistChirurgicaleForm,
     color: 'bg-gradient-to-br from-purple-600 to-purple-700'
+  },
+  {
+    id: 'anesthesie',
+    name: 'Formulaire d\'Anesthésie',
+    description: 'Enregistrement des paramètres peropératoires',
+    icon: <Stethoscope className="w-8 h-8" />,
+    component: AnesthesieForm,
+    color: 'bg-gradient-to-br from-orange-600 to-orange-700'
   }
 ];
 
