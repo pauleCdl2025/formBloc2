@@ -344,6 +344,10 @@ export default function FormManager() {
                           console.log('Aller à ChecklistList');
                           setSelectedForm('checklist-chirurgicale');
                           setCurrentView('list');
+                        } else if (form.id === 'anesthesie') {
+                          console.log('Aller à AnesthesieList');
+                          setSelectedForm('anesthesie');
+                          setCurrentView('list');
                         } else if (form.id === 'compte-rendu') {
                           console.log('Aller à Compte-rendu Consultation');
                           handleCompteRenduConsultation();
@@ -522,6 +526,10 @@ export default function FormManager() {
                       } else if (form.id === 'consentement') {
                         console.log('Aller à Consentement Consultation');
                         handleConsentementConsultation();
+                      } else if (form.id === 'anesthesie') {
+                        console.log('Aller à AnesthesieList');
+                        setSelectedForm('anesthesie');
+                        setCurrentView('list');
                       } else {
                         console.log('Aller à FormSelect');
                         handleFormSelect(form.id);
