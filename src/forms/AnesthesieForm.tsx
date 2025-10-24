@@ -33,23 +33,61 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     bloc: false
   });
 
-  // États pour l'appareillage
+  // États pour l'appareillage (tous les éléments du HTML original)
   const [appareillage, setAppareillage] = useState({
     masque: false,
     mlf: false,
-    ito: false,
+    lto: false,
     orale: false,
     nasale: false,
-    lma: false,
-    autre: false
+    armee: false,
+    tracheo: false,
+    circuit_ouvert: false,
+    circuit_ferme: false,
+    bain: false,
+    curarmetre: false,
+    fibroscope: false,
+    thermometre: false,
+    air_pulse: false,
+    accelerateur: false,
+    perfusion: false,
+    cell_saver: false,
+    pas: false,
+    swan_ganz: false,
+    vvc: false,
+    sonde_gastrique: false,
+    sonde_urinaire: false
   });
 
-  // États pour les grilles de dessin
+  // États pour les grilles de dessin (tous les canvas du HTML original)
   const [gridData, setGridData] = useState<Record<string, any[]>>({
-    temperature: [],
+    main: [],
     spo2: [],
-    fc: [],
-    pa: []
+    eto2: [],
+    vs: [],
+    vc: [],
+    pi: [],
+    vent1: [],
+    vent2: [],
+    fi: [],
+    fe: [],
+    vent3: [],
+    tof: [],
+    hema: [],
+    drogues1: [],
+    drogues2: [],
+    drogues3: [],
+    drogues4: [],
+    drogues5: [],
+    perf1: [],
+    perf2: [],
+    perf3: [],
+    perf4: [],
+    perf5: [],
+    sang: [],
+    diurese: [],
+    saignement: [],
+    autres: []
   });
 
   // États pour le dessin
@@ -98,17 +136,32 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     if (data.mode_apd) setModes(prev => ({ ...prev, apd: true }));
     if (data.mode_bloc) setModes(prev => ({ ...prev, bloc: true }));
 
-    // Remplir l'appareillage
+    // Remplir l'appareillage (tous les éléments)
     if (data.appareillage_data) {
       setAppareillage(prev => ({
         ...prev,
         masque: data.appareillage_data.app_masque || false,
         mlf: data.appareillage_data.app_mlf || false,
-        ito: data.appareillage_data.app_ito || false,
+        lto: data.appareillage_data.app_lto || false,
         orale: data.appareillage_data.app_orale || false,
         nasale: data.appareillage_data.app_nasale || false,
-        lma: data.appareillage_data.app_lma || false,
-        autre: data.appareillage_data.app_autre || false
+        armee: data.appareillage_data.app_armee || false,
+        tracheo: data.appareillage_data.app_tracheo || false,
+        circuit_ouvert: data.appareillage_data.app_circuit_ouvert || false,
+        circuit_ferme: data.appareillage_data.app_circuit_ferme || false,
+        bain: data.appareillage_data.app_bain || false,
+        curarmetre: data.appareillage_data.app_curarmetre || false,
+        fibroscope: data.appareillage_data.app_fibroscope || false,
+        thermometre: data.appareillage_data.app_thermometre || false,
+        air_pulse: data.appareillage_data.app_air_pulse || false,
+        accelerateur: data.appareillage_data.app_accelerateur || false,
+        perfusion: data.appareillage_data.app_perfusion || false,
+        cell_saver: data.appareillage_data.app_cell_saver || false,
+        pas: data.appareillage_data.app_pas || false,
+        swan_ganz: data.appareillage_data.app_swan_ganz || false,
+        vvc: data.appareillage_data.app_vvc || false,
+        sonde_gastrique: data.appareillage_data.app_sonde_gastrique || false,
+        sonde_urinaire: data.appareillage_data.app_sonde_urinaire || false
       }));
     }
 
@@ -296,18 +349,56 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
     setAppareillage({
       masque: false,
       mlf: false,
-      ito: false,
+      lto: false,
       orale: false,
       nasale: false,
-      lma: false,
-      autre: false
+      armee: false,
+      tracheo: false,
+      circuit_ouvert: false,
+      circuit_ferme: false,
+      bain: false,
+      curarmetre: false,
+      fibroscope: false,
+      thermometre: false,
+      air_pulse: false,
+      accelerateur: false,
+      perfusion: false,
+      cell_saver: false,
+      pas: false,
+      swan_ganz: false,
+      vvc: false,
+      sonde_gastrique: false,
+      sonde_urinaire: false
     });
 
     setGridData({
-      temperature: [],
+      main: [],
       spo2: [],
-      fc: [],
-      pa: []
+      eto2: [],
+      vs: [],
+      vc: [],
+      pi: [],
+      vent1: [],
+      vent2: [],
+      fi: [],
+      fe: [],
+      vent3: [],
+      tof: [],
+      hema: [],
+      drogues1: [],
+      drogues2: [],
+      drogues3: [],
+      drogues4: [],
+      drogues5: [],
+      perf1: [],
+      perf2: [],
+      perf3: [],
+      perf4: [],
+      perf5: [],
+      sang: [],
+      diurese: [],
+      saignement: [],
+      autres: []
     });
 
     setCurrentFormId(null);
@@ -664,30 +755,45 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
             </div>
           </div>
 
-          {/* Appareillage */}
+          {/* Appareillage complet */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Appareillage</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {Object.entries(appareillage).map(([key, value]) => (
                 <button
                   key={key}
                   onClick={() => toggleAppareillage(key as keyof typeof appareillage)}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
+                  className={`p-2 rounded-lg border-2 transition-colors ${
                     value 
                       ? 'border-blue-500 bg-blue-50 text-blue-700' 
                       : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                   }`}
                 >
                   <div className="text-center">
-                    <div className="text-2xl mb-1">{value ? '✓' : '○'}</div>
-                    <div className="text-sm font-medium">
+                    <div className="text-xl mb-1">{value ? '✓' : '○'}</div>
+                    <div className="text-xs font-medium">
                       {key === 'masque' && 'Masque'}
                       {key === 'mlf' && 'MLØ'}
-                      {key === 'ito' && 'ITØ'}
+                      {key === 'lto' && 'LTO'}
                       {key === 'orale' && 'Orale'}
                       {key === 'nasale' && 'Nasale'}
-                      {key === 'lma' && 'LMA'}
-                      {key === 'autre' && 'Autre'}
+                      {key === 'armee' && 'Armée'}
+                      {key === 'tracheo' && 'Trachéo'}
+                      {key === 'circuit_ouvert' && 'Circuit Ouvert'}
+                      {key === 'circuit_ferme' && 'Circuit Fermé'}
+                      {key === 'bain' && 'Bain'}
+                      {key === 'curarmetre' && 'Curarmètre'}
+                      {key === 'fibroscope' && 'Fibroscope'}
+                      {key === 'thermometre' && 'Thermomètre'}
+                      {key === 'air_pulse' && 'Air Pulse'}
+                      {key === 'accelerateur' && 'Accélérateur'}
+                      {key === 'perfusion' && 'Perfusion'}
+                      {key === 'cell_saver' && 'Cell Saver'}
+                      {key === 'pas' && 'PAS'}
+                      {key === 'swan_ganz' && 'Swan-Ganz'}
+                      {key === 'vvc' && 'VVC'}
+                      {key === 'sonde_gastrique' && 'Sonde Gastrique'}
+                      {key === 'sonde_urinaire' && 'Sonde Urinaire'}
                     </div>
                   </div>
                 </button>
@@ -977,94 +1083,387 @@ const AnesthesieForm: React.FC<AnesthesieFormProps> = ({
               </div>
             </div>
 
-            {/* Grilles de dessin */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Grille Température */}
+            {/* Grilles de dessin complètes (toutes du HTML original) */}
+            <div className="space-y-6">
+              {/* Canvas principal */}
               <div className="border border-gray-300 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-md font-medium text-red-600">Température (°C)</h4>
+                  <h4 className="text-md font-medium text-gray-700">Canvas Principal</h4>
                   <button
-                    onClick={() => clearCanvas('temperature')}
-                    className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    onClick={() => clearCanvas('main')}
+                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
                   >
                     Effacer
                   </button>
                 </div>
                 <canvas
-                  ref={(el) => canvasRefs.current.temperature = el}
-                  onMouseDown={(e) => handleMouseDown(e, 'temperature')}
-                  onMouseMove={(e) => handleMouseMove(e, 'temperature')}
+                  ref={(el) => canvasRefs.current.main = el}
+                  onMouseDown={(e) => handleMouseDown(e, 'main')}
+                  onMouseMove={(e) => handleMouseMove(e, 'main')}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
                   className="border border-gray-200 rounded cursor-crosshair w-full"
-                  style={{ maxWidth: '400px', height: '300px' }}
+                  style={{ maxWidth: '400px', height: '200px' }}
                 />
               </div>
 
-              {/* Grille SpO₂ */}
-              <div className="border border-gray-300 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-md font-medium text-blue-600">SpO₂ (%)</h4>
-                  <button
-                    onClick={() => clearCanvas('spo2')}
-                    className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                  >
-                    Effacer
-                  </button>
+              {/* Grilles de monitoring */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* SpO₂ */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-blue-600">SpO₂</h4>
+                    <button
+                      onClick={() => clearCanvas('spo2')}
+                      className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.spo2 = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'spo2')}
+                    onMouseMove={(e) => handleMouseMove(e, 'spo2')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
                 </div>
-                <canvas
-                  ref={(el) => canvasRefs.current.spo2 = el}
-                  onMouseDown={(e) => handleMouseDown(e, 'spo2')}
-                  onMouseMove={(e) => handleMouseMove(e, 'spo2')}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  className="border border-gray-200 rounded cursor-crosshair w-full"
-                  style={{ maxWidth: '400px', height: '300px' }}
-                />
+
+                {/* EtO₂ */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-green-600">EtO₂</h4>
+                    <button
+                      onClick={() => clearCanvas('eto2')}
+                      className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.eto2 = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'eto2')}
+                    onMouseMove={(e) => handleMouseMove(e, 'eto2')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* VS */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-purple-600">VS</h4>
+                    <button
+                      onClick={() => clearCanvas('vs')}
+                      className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.vs = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'vs')}
+                    onMouseMove={(e) => handleMouseMove(e, 'vs')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* VC */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-orange-600">VC</h4>
+                    <button
+                      onClick={() => clearCanvas('vc')}
+                      className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.vc = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'vc')}
+                    onMouseMove={(e) => handleMouseMove(e, 'vc')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Pi */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-red-600">Pi</h4>
+                    <button
+                      onClick={() => clearCanvas('pi')}
+                      className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.pi = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'pi')}
+                    onMouseMove={(e) => handleMouseMove(e, 'pi')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Ventilation 1 */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-indigo-600">Ventilation 1</h4>
+                    <button
+                      onClick={() => clearCanvas('vent1')}
+                      className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.vent1 = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'vent1')}
+                    onMouseMove={(e) => handleMouseMove(e, 'vent1')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Ventilation 2 */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-teal-600">Ventilation 2</h4>
+                    <button
+                      onClick={() => clearCanvas('vent2')}
+                      className="text-xs px-2 py-1 bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.vent2 = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'vent2')}
+                    onMouseMove={(e) => handleMouseMove(e, 'vent2')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Fi */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-pink-600">Fi</h4>
+                    <button
+                      onClick={() => clearCanvas('fi')}
+                      className="text-xs px-2 py-1 bg-pink-100 text-pink-700 rounded hover:bg-pink-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.fi = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'fi')}
+                    onMouseMove={(e) => handleMouseMove(e, 'fi')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Fe */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-yellow-600">Fe</h4>
+                    <button
+                      onClick={() => clearCanvas('fe')}
+                      className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.fe = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'fe')}
+                    onMouseMove={(e) => handleMouseMove(e, 'fe')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Ventilation 3 */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-cyan-600">Ventilation 3</h4>
+                    <button
+                      onClick={() => clearCanvas('vent3')}
+                      className="text-xs px-2 py-1 bg-cyan-100 text-cyan-700 rounded hover:bg-cyan-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.vent3 = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'vent3')}
+                    onMouseMove={(e) => handleMouseMove(e, 'vent3')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* TOF */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-lime-600">TOF</h4>
+                    <button
+                      onClick={() => clearCanvas('tof')}
+                      className="text-xs px-2 py-1 bg-lime-100 text-lime-700 rounded hover:bg-lime-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.tof = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'tof')}
+                    onMouseMove={(e) => handleMouseMove(e, 'tof')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
+
+                {/* Hématocrite */}
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-amber-600">Hématocrite</h4>
+                    <button
+                      onClick={() => clearCanvas('hema')}
+                      className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition-colors"
+                    >
+                      Effacer
+                    </button>
+                  </div>
+                  <canvas
+                    ref={(el) => canvasRefs.current.hema = el}
+                    onMouseDown={(e) => handleMouseDown(e, 'hema')}
+                    onMouseMove={(e) => handleMouseMove(e, 'hema')}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    className="border border-gray-200 rounded cursor-crosshair w-full"
+                    style={{ height: '150px' }}
+                  />
+                </div>
               </div>
 
-              {/* Grille FC */}
+              {/* Grilles Drogues */}
               <div className="border border-gray-300 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-md font-medium text-green-600">FC (bpm)</h4>
-                  <button
-                    onClick={() => clearCanvas('fc')}
-                    className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                  >
-                    Effacer
-                  </button>
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Drogues</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <div key={num} className="border border-gray-200 rounded p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="text-sm font-medium text-gray-700">Drogue {num}</h5>
+                        <button
+                          onClick={() => clearCanvas(`drogues${num}`)}
+                          className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                        >
+                          Effacer
+                        </button>
+                      </div>
+                      <canvas
+                        ref={(el) => canvasRefs.current[`drogues${num}`] = el}
+                        onMouseDown={(e) => handleMouseDown(e, `drogues${num}`)}
+                        onMouseMove={(e) => handleMouseMove(e, `drogues${num}`)}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                        className="border border-gray-200 rounded cursor-crosshair w-full"
+                        style={{ height: '120px' }}
+                      />
+                    </div>
+                  ))}
                 </div>
-                <canvas
-                  ref={(el) => canvasRefs.current.fc = el}
-                  onMouseDown={(e) => handleMouseDown(e, 'fc')}
-                  onMouseMove={(e) => handleMouseMove(e, 'fc')}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  className="border border-gray-200 rounded cursor-crosshair w-full"
-                  style={{ maxWidth: '400px', height: '300px' }}
-                />
               </div>
 
-              {/* Grille PA */}
+              {/* Grilles Perfusions */}
               <div className="border border-gray-300 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-md font-medium text-purple-600">PA (mmHg)</h4>
-                  <button
-                    onClick={() => clearCanvas('pa')}
-                    className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
-                  >
-                    Effacer
-                  </button>
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Perfusions</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <div key={num} className="border border-gray-200 rounded p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="text-sm font-medium text-gray-700">Perfusion {num}</h5>
+                        <button
+                          onClick={() => clearCanvas(`perf${num}`)}
+                          className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                        >
+                          Effacer
+                        </button>
+                      </div>
+                      <canvas
+                        ref={(el) => canvasRefs.current[`perf${num}`] = el}
+                        onMouseDown={(e) => handleMouseDown(e, `perf${num}`)}
+                        onMouseMove={(e) => handleMouseMove(e, `perf${num}`)}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                        className="border border-gray-200 rounded cursor-crosshair w-full"
+                        style={{ height: '120px' }}
+                      />
+                    </div>
+                  ))}
                 </div>
-                <canvas
-                  ref={(el) => canvasRefs.current.pa = el}
-                  onMouseDown={(e) => handleMouseDown(e, 'pa')}
-                  onMouseMove={(e) => handleMouseMove(e, 'pa')}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  className="border border-gray-200 rounded cursor-crosshair w-full"
-                  style={{ maxWidth: '400px', height: '300px' }}
-                />
+              </div>
+
+              {/* Grilles Bilans */}
+              <div className="border border-gray-300 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Bilans</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { key: 'sang', label: 'Sang' },
+                    { key: 'diurese', label: 'Diurèse' },
+                    { key: 'saignement', label: 'Saignement' },
+                    { key: 'autres', label: 'Autres' }
+                  ].map(({ key, label }) => (
+                    <div key={key} className="border border-gray-200 rounded p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <h5 className="text-sm font-medium text-gray-700">{label}</h5>
+                        <button
+                          onClick={() => clearCanvas(key)}
+                          className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                        >
+                          Effacer
+                        </button>
+                      </div>
+                      <canvas
+                        ref={(el) => canvasRefs.current[key] = el}
+                        onMouseDown={(e) => handleMouseDown(e, key)}
+                        onMouseMove={(e) => handleMouseMove(e, key)}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                        className="border border-gray-200 rounded cursor-crosshair w-full"
+                        style={{ height: '120px' }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
