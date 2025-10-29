@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
 interface AnesthesieFormProps {
@@ -10,1703 +9,490 @@ interface AnesthesieFormProps {
   onSave?: (data: any) => void;
 }
 
-const AnesthesieForm: React.FC<AnesthesieFormProps> = ({ 
-  formData, 
+export default function AnesthesieForm({ 
   patientData,
-  editMode = false, 
+  editMode = false,
   onBack,
   onSave 
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [showLoadModal, setShowLoadModal] = useState(false);
-  const [savedForms, setSavedForms] = useState<any[]>([]);
-  const [currentFormId, setCurrentFormId] = useState<number | null>(null);
-
-  // États pour les modes anesthésiques
-  const [modes, setModes] = useState({
-    sedation: false,
-    ag: false,
-    crush: false,
-    ra: false,
-    apd: false,
-    bloc: false
+}: AnesthesieFormProps) {
+  const [formData, setFormData] = useState({
+    patientName: '',
+    diagnosis: '',
+    surgeon: '',
+    anesthetist: '',
+    dateDebut: '',
+    heureDebut: '',
+    dateFin: '',
+    heureFin: '',
+    age: '',
+    premedication: '',
+    traitement: '',
+    indications: ''
   });
 
-  // États pour l'appareillage (tous les éléments du HTML original)
-  const [appareillage, setAppareillage] = useState({
-    masque: false,
-    mlf: false,
-    lto: false,
-    orale: false,
-    nasale: false,
-    armee: false,
-    tracheo: false,
-    circuit_ouvert: false,
-    circuit_ferme: false,
-    bain: false,
-    curarmetre: false,
-    fibroscope: false,
-    thermometre: false,
-    air_pulse: false,
-    accelerateur: false,
-    perfusion: false,
-    cell_saver: false,
-    pas: false,
-    swan_ganz: false,
-    vvc: false,
-    sonde_gastrique: false,
-    sonde_urinaire: false
-  });
-
-  // États pour les grilles de dessin (tous les canvas du HTML original)
-  const [gridData, setGridData] = useState<Record<string, any[]>>({
-    main: [],
-    spo2: [],
-    eto2: [],
-    vs: [],
-    vc: [],
-    pi: [],
-    vent1: [],
-    vent2: [],
-    fi: [],
-    fe: [],
-    vent3: [],
-    tof: [],
-    hema: [],
-    drogues1: [],
-    drogues2: [],
-    drogues3: [],
-    drogues4: [],
-    drogues5: [],
-    perf1: [],
-    perf2: [],
-    perf3: [],
-    perf4: [],
-    perf5: [],
-    sang: [],
-    diurese: [],
-    saignement: [],
-    autres: []
-  });
-
-  // États pour le dessin
+  const [currentTool, setCurrentTool] = useState('tension'); // tension, frequence, temperature, saturation
   const [isDrawing, setIsDrawing] = useState(false);
-  const [selectedParam, setSelectedParam] = useState('temperature');
-  const [drawingMode, setDrawingMode] = useState('line');
-  const [lastPoint, setLastPoint] = useState<{x: number, y: number} | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [points, setPoints] = useState<{
+    tension: {x: number, y: number}[],
+    frequence: {x: number, y: number}[],
+    temperature: {x: number, y: number}[],
+    saturation: {x: number, y: number}[]
+  }>({
+    tension: [],
+    frequence: [],
+    temperature: [],
+    saturation: []
+  });
 
-  // Références pour les canvas
-  const canvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
+  const colors = {
+    tension: '#0000FF',      // Bleu
+    frequence: '#FF0000',    // Rouge
+    temperature: '#00FF00',  // Vert
+    saturation: '#000000'    // Noir
+  };
 
   useEffect(() => {
-    const dataToUse = patientData || formData;
-    if (dataToUse) {
-      populateForm(dataToUse);
-    }
-  }, [patientData, formData]);
-
-  const populateForm = (data: any) => {
-    // Remplir les champs texte
-    const textFields = [
-      'salle', 'heure', 'date_intervention', 'chirurgien', 'anesthesistes',
-      'tsar', 'checklist', 'position_patient', 'site_ponction', 'aiguille',
-      'profondeur', 'intensite_ma', 'kt', 'dose_test', 'melange',
-      'incident_alr', 'bloc_obtenu', 'alr_complement', 'alr_autre1', 'alr_autre2',
-      'alr_autre3', 'alr_autre4', 'alr_autre5', 'alr_autre6', 'sao2_value', 'eto2_value',
-      'vs_vi_value', 'vc_fr_value', 'pi_value', 'fio2_n2o_air',
-      'halogene', 'fi_value', 'fe_value', 'tof_alr', 'hematocrite_dextro',
-      'drogue1', 'drogue2', 'drogue3', 'drogue4', 'drogue5',
-      'perfusion1', 'perfusion2', 'perfusion3', 'perfusion4', 'perfusion5',
-      'autres_bilans', 'commentaires'
-    ];
-    
-    textFields.forEach(field => {
-      const element = document.getElementById(field) as HTMLInputElement | HTMLTextAreaElement;
-      if (element && data[field]) {
-        element.value = data[field];
-      }
-    });
-
-    // Remplir les modes anesthésiques
-    if (data.mode_sedation) setModes(prev => ({ ...prev, sedation: true }));
-    if (data.mode_ag) setModes(prev => ({ ...prev, ag: true }));
-    if (data.mode_crush) setModes(prev => ({ ...prev, crush: true }));
-    if (data.mode_ra) setModes(prev => ({ ...prev, ra: true }));
-    if (data.mode_apd) setModes(prev => ({ ...prev, apd: true }));
-    if (data.mode_bloc) setModes(prev => ({ ...prev, bloc: true }));
-
-    // Remplir l'appareillage (tous les éléments)
-    if (data.appareillage_data) {
-      setAppareillage(prev => ({
-        ...prev,
-        masque: data.appareillage_data.app_masque || false,
-        mlf: data.appareillage_data.app_mlf || false,
-        lto: data.appareillage_data.app_lto || false,
-        orale: data.appareillage_data.app_orale || false,
-        nasale: data.appareillage_data.app_nasale || false,
-        armee: data.appareillage_data.app_armee || false,
-        tracheo: data.appareillage_data.app_tracheo || false,
-        circuit_ouvert: data.appareillage_data.app_circuit_ouvert || false,
-        circuit_ferme: data.appareillage_data.app_circuit_ferme || false,
-        bain: data.appareillage_data.app_bain || false,
-        curarmetre: data.appareillage_data.app_curarmetre || false,
-        fibroscope: data.appareillage_data.app_fibroscope || false,
-        thermometre: data.appareillage_data.app_thermometre || false,
-        air_pulse: data.appareillage_data.app_air_pulse || false,
-        accelerateur: data.appareillage_data.app_accelerateur || false,
-        perfusion: data.appareillage_data.app_perfusion || false,
-        cell_saver: data.appareillage_data.app_cell_saver || false,
-        pas: data.appareillage_data.app_pas || false,
-        swan_ganz: data.appareillage_data.app_swan_ganz || false,
-        vvc: data.appareillage_data.app_vvc || false,
-        sonde_gastrique: data.appareillage_data.app_sonde_gastrique || false,
-        sonde_urinaire: data.appareillage_data.app_sonde_urinaire || false
-      }));
-    }
-
-    // Remplir les grilles
-    if (data.grilles_data) {
-      setGridData(data.grilles_data);
-    }
-  };
-
-  const collectFormData = () => {
-    const data: any = {
-      // Informations générales
-      salle: (document.getElementById('salle') as HTMLInputElement)?.value || '',
-      heure: (document.getElementById('heure') as HTMLInputElement)?.value || '',
-      date_intervention: (document.getElementById('date_intervention') as HTMLInputElement)?.value || '',
-      chirurgien: (document.getElementById('chirurgien') as HTMLInputElement)?.value || '',
-      anesthesistes: (document.getElementById('anesthesistes') as HTMLInputElement)?.value || '',
-      tsar: (document.getElementById('tsar') as HTMLInputElement)?.value || '',
-      checklist: (document.getElementById('checklist') as HTMLInputElement)?.value || '',
-      position_patient: (document.getElementById('position_patient') as HTMLInputElement)?.value || '',
-      
-      // Modes anesthésiques
-      mode_sedation: modes.sedation,
-      mode_ag: modes.ag,
-      mode_crush: modes.crush,
-      mode_ra: modes.ra,
-      mode_apd: modes.apd,
-      mode_bloc: modes.bloc,
-      
-      // Détails ALR
-      site_ponction: (document.getElementById('site_ponction') as HTMLInputElement)?.value || '',
-      aiguille: (document.getElementById('aiguille') as HTMLInputElement)?.value || '',
-      profondeur: (document.getElementById('profondeur') as HTMLInputElement)?.value || '',
-      intensite_ma: (document.getElementById('intensite_ma') as HTMLInputElement)?.value || '',
-      kt: (document.getElementById('kt') as HTMLInputElement)?.value || '',
-      dose_test: (document.getElementById('dose_test') as HTMLInputElement)?.value || '',
-      melange: (document.getElementById('melange') as HTMLInputElement)?.value || '',
-      incident_alr: (document.getElementById('incident_alr') as HTMLInputElement)?.value || '',
-      bloc_obtenu: (document.getElementById('bloc_obtenu') as HTMLInputElement)?.value || '',
-      alr_complement: (document.getElementById('alr_complement') as HTMLInputElement)?.value || '',
-      alr_autre1: (document.getElementById('alr_autre1') as HTMLInputElement)?.value || '',
-      alr_autre2: (document.getElementById('alr_autre2') as HTMLInputElement)?.value || '',
-      alr_autre3: (document.getElementById('alr_autre3') as HTMLInputElement)?.value || '',
-      alr_autre4: (document.getElementById('alr_autre4') as HTMLInputElement)?.value || '',
-      alr_autre5: (document.getElementById('alr_autre5') as HTMLInputElement)?.value || '',
-      alr_autre6: (document.getElementById('alr_autre6') as HTMLInputElement)?.value || '',
-      
-      // Appareillage
-      appareillage_data: appareillage,
-      
-      // Valeurs de monitoring
-      sao2_value: (document.getElementById('sao2_value') as HTMLInputElement)?.value || '',
-      eto2_value: (document.getElementById('eto2_value') as HTMLInputElement)?.value || '',
-      vs_checked: (document.getElementById('vs_checked') as HTMLInputElement)?.checked || false,
-      vs_vi_value: (document.getElementById('vs_vi_value') as HTMLInputElement)?.value || '',
-      vc_checked: (document.getElementById('vc_checked') as HTMLInputElement)?.checked || false,
-      vc_fr_value: (document.getElementById('vc_fr_value') as HTMLInputElement)?.value || '',
-      pi_value: (document.getElementById('pi_value') as HTMLInputElement)?.value || '',
-      fio2_n2o_air: (document.getElementById('fio2_n2o_air') as HTMLInputElement)?.value || '',
-      halogene: (document.getElementById('halogene') as HTMLInputElement)?.value || '',
-      fi_value: (document.getElementById('fi_value') as HTMLInputElement)?.value || '',
-      fe_value: (document.getElementById('fe_value') as HTMLInputElement)?.value || '',
-      tof_alr: (document.getElementById('tof_alr') as HTMLInputElement)?.value || '',
-      hematocrite_dextro: (document.getElementById('hematocrite_dextro') as HTMLInputElement)?.value || '',
-      
-      // Drogues
-      drogue1: (document.getElementById('drogue1') as HTMLInputElement)?.value || '',
-      drogue2: (document.getElementById('drogue2') as HTMLInputElement)?.value || '',
-      drogue3: (document.getElementById('drogue3') as HTMLInputElement)?.value || '',
-      drogue4: (document.getElementById('drogue4') as HTMLInputElement)?.value || '',
-      drogue5: (document.getElementById('drogue5') as HTMLInputElement)?.value || '',
-      
-      // Perfusions
-      perfusion1: (document.getElementById('perfusion1') as HTMLInputElement)?.value || '',
-      perfusion2: (document.getElementById('perfusion2') as HTMLInputElement)?.value || '',
-      perfusion3: (document.getElementById('perfusion3') as HTMLInputElement)?.value || '',
-      perfusion4: (document.getElementById('perfusion4') as HTMLInputElement)?.value || '',
-      perfusion5: (document.getElementById('perfusion5') as HTMLInputElement)?.value || '',
-      
-      // Autres
-      autres_bilans: (document.getElementById('autres_bilans') as HTMLInputElement)?.value || '',
-      commentaires: (document.getElementById('commentaires') as HTMLTextAreaElement)?.value || '',
-      
-      // Grilles de dessin
-      grilles_data: gridData
-    };
-
-    if (currentFormId) {
-      data.id = currentFormId;
-    }
-    
-    return data;
-  };
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      const formData = collectFormData();
-      
-      console.log('Données à sauvegarder:', formData);
-      
-      const { data: result, error } = await supabase
-        .from('anesthesie_form')
-        .upsert(formData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erreur Supabase:', error);
-        throw error;
-      }
-
-      console.log('Résultat sauvegarde:', result);
-      
-      setCurrentFormId(result.id);
-      setMessage({ text: 'Formulaire sauvegardé avec succès', type: 'success' });
-      
-      if (onSave) {
-        onSave(formData);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      setMessage({ text: `Erreur lors de la sauvegarde: ${errorMessage}`, type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLoad = async () => {
-    try {
-      const { data: forms, error } = await supabase
-        .from('anesthesie_form')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setSavedForms(forms || []);
-      setShowLoadModal(true);
-    } catch (error) {
-      console.error('Erreur lors du chargement:', error);
-      setMessage({ text: 'Erreur lors du chargement des formulaires', type: 'error' });
-    }
-  };
-
-  const handleLoadForm = (form: any) => {
-    populateForm(form);
-    setCurrentFormId(form.id);
-    setShowLoadModal(false);
-  };
-
-  const handleNewForm = () => {
-    // Réinitialiser tous les champs
-    const textFields = [
-      'salle', 'heure', 'date_intervention', 'chirurgien', 'anesthesistes',
-      'tsar', 'checklist', 'position_patient', 'site_ponction', 'aiguille',
-      'profondeur', 'intensite_ma', 'kt', 'dose_test', 'melange',
-      'incident_alr', 'bloc_obtenu', 'alr_complement', 'alr_autre1', 'alr_autre2',
-      'alr_autre3', 'alr_autre4', 'alr_autre5', 'alr_autre6', 'sao2_value', 'eto2_value',
-      'vs_vi_value', 'vc_fr_value', 'pi_value', 'fio2_n2o_air',
-      'halogene', 'fi_value', 'fe_value', 'tof_alr', 'hematocrite_dextro',
-      'drogue1', 'drogue2', 'drogue3', 'drogue4', 'drogue5',
-      'perfusion1', 'perfusion2', 'perfusion3', 'perfusion4', 'perfusion5',
-      'autres_bilans', 'commentaires'
-    ];
-    
-    textFields.forEach(field => {
-      const element = document.getElementById(field) as HTMLInputElement | HTMLTextAreaElement;
-      if (element) {
-        element.value = '';
-      }
-    });
-
-    // Réinitialiser les états
-    setModes({
-      sedation: false,
-      ag: false,
-      crush: false,
-      ra: false,
-      apd: false,
-      bloc: false
-    });
-
-    setAppareillage({
-      masque: false,
-      mlf: false,
-      lto: false,
-      orale: false,
-      nasale: false,
-      armee: false,
-      tracheo: false,
-      circuit_ouvert: false,
-      circuit_ferme: false,
-      bain: false,
-      curarmetre: false,
-      fibroscope: false,
-      thermometre: false,
-      air_pulse: false,
-      accelerateur: false,
-      perfusion: false,
-      cell_saver: false,
-      pas: false,
-      swan_ganz: false,
-      vvc: false,
-      sonde_gastrique: false,
-      sonde_urinaire: false
-    });
-
-    setGridData({
-      main: [],
-      spo2: [],
-      eto2: [],
-      vs: [],
-      vc: [],
-      pi: [],
-      vent1: [],
-      vent2: [],
-      fi: [],
-      fe: [],
-      vent3: [],
-      tof: [],
-      hema: [],
-      drogues1: [],
-      drogues2: [],
-      drogues3: [],
-      drogues4: [],
-      drogues5: [],
-      perf1: [],
-      perf2: [],
-      perf3: [],
-      perf4: [],
-      perf5: [],
-      sang: [],
-      diurese: [],
-      saignement: [],
-      autres: []
-    });
-
-    setCurrentFormId(null);
-    setMessage({ text: 'Nouveau formulaire créé', type: 'success' });
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const toggleMode = (mode: keyof typeof modes) => {
-    setModes(prev => ({ ...prev, [mode]: !prev[mode] }));
-  };
-
-  const toggleAppareillage = (app: keyof typeof appareillage) => {
-    setAppareillage(prev => ({ ...prev, [app]: !prev[app] }));
-  };
-
-  // Fonctions de dessin
-  const initializeCanvas = (param: string) => {
-    const canvas = canvasRefs.current[param];
+    const canvas = canvasRef.current;
     if (!canvas) return;
-
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    // Définir la taille du canvas
-    canvas.width = 400;
-    canvas.height = 300;
-
-    // Dessiner la grille
-    drawGrid(ctx, canvas.width, canvas.height, param);
-  };
-
-  const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number, param: string) => {
-    ctx.clearRect(0, 0, width, height);
-    
-    // Couleur de fond
-    ctx.fillStyle = '#f8f9fa';
-    ctx.fillRect(0, 0, width, height);
-
-    // Couleur des lignes de grille
-    ctx.strokeStyle = '#e9ecef';
-    ctx.lineWidth = 1;
-
-    // Lignes verticales
-    for (let x = 0; x <= width; x += 20) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-
-    // Lignes horizontales
-    for (let y = 0; y <= height; y += 20) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-
-    // Dessiner les courbes existantes
-    const points = gridData[param] || [];
-    if (points.length > 0) {
-      drawCurve(ctx, points, param);
-    }
-  };
-
-  const drawCurve = (ctx: CanvasRenderingContext2D, points: any[], param: string) => {
-    if (points.length === 0) return;
-
-    // Couleur selon le paramètre
-    const colors = {
-      temperature: '#dc2626', // Rouge
-      spo2: '#2563eb',        // Bleu
-      fc: '#16a34a',          // Vert
-      pa: '#9333ea'           // Violet
-    };
-
-    ctx.strokeStyle = colors[param as keyof typeof colors];
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-
-    points.forEach((point, index) => {
-      if (index === 0) {
-        ctx.moveTo(point.x, point.y);
-      } else {
-        ctx.lineTo(point.x, point.y);
-      }
-    });
-
-    ctx.stroke();
-
-    // Dessiner les points
-    ctx.fillStyle = colors[param as keyof typeof colors];
-    points.forEach(point => {
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
-      ctx.fill();
-    });
-  };
-
-  const getMousePos = (canvas: HTMLCanvasElement, e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>, param: string) => {
-    const canvas = canvasRefs.current[param];
-    if (!canvas) return;
-
-    const pos = getMousePos(canvas, e);
-    setIsDrawing(true);
-    setSelectedParam(param);
-    setLastPoint(pos);
-
-    // Ajouter le point
-    const newPoints = [...(gridData[param] || []), pos];
-    setGridData(prev => ({ ...prev, [param]: newPoints }));
-
-    // Redessiner
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      drawGrid(ctx, canvas.width, canvas.height, param);
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>, param: string) => {
-    if (!isDrawing || selectedParam !== param) return;
-
-    const canvas = canvasRefs.current[param];
-    if (!canvas) return;
-
-    const pos = getMousePos(canvas, e);
+    canvas.width = rect.width;
+    canvas.height = rect.height;
     
-    // Ajouter le point si on dessine
-    if (drawingMode === 'line') {
-      const newPoints = [...(gridData[param] || []), pos];
-      setGridData(prev => ({ ...prev, [param]: newPoints }));
-      setLastPoint(pos);
-
-      // Redessiner
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        drawGrid(ctx, canvas.width, canvas.height, param);
+    // Redessiner toutes les courbes
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    (Object.keys(points) as Array<keyof typeof points>).forEach(tool => {
+      const toolPoints = points[tool];
+      if (toolPoints.length > 1) {
+        ctx.strokeStyle = colors[tool];
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(toolPoints[0].x, toolPoints[0].y);
+        for (let i = 1; i < toolPoints.length; i++) {
+          ctx.lineTo(toolPoints[i].x, toolPoints[i].y);
+        }
+        ctx.stroke();
       }
-    }
+    });
+  }, [points]);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPoints(prev => ({
+      ...prev,
+      [currentTool]: [...prev[currentTool as keyof typeof prev], {x, y}]
+    }));
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPoints(prev => ({
+      ...prev,
+      [currentTool]: [...prev[currentTool as keyof typeof prev], {x, y}]
+    }));
   };
 
   const handleMouseUp = () => {
     setIsDrawing(false);
-    setLastPoint(null);
   };
 
-  const clearCanvas = (param: string) => {
-    const canvas = canvasRefs.current[param];
-    if (!canvas) return;
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({...prev, [field]: value}));
+  };
 
-    setGridData(prev => ({ ...prev, [param]: [] }));
-    
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      drawGrid(ctx, canvas.width, canvas.height, param);
+  const clearCurve = (tool: string) => {
+    setPoints(prev => ({...prev, [tool]: []}));
+  };
+
+  const clearAll = () => {
+    setPoints({tension: [], frequence: [], temperature: [], saturation: []});
+  };
+
+  const handleSaveClick = () => {
+    if (onSave) {
+      const dataToSave = {
+        ...formData,
+        points,
+        patientData
+      };
+      onSave(dataToSave);
     }
   };
 
-  const clearAllCanvases = () => {
-    Object.keys(gridData).forEach(param => {
-      clearCanvas(param);
-    });
-  };
-
-  // Initialiser les canvas au montage
-  useEffect(() => {
-    Object.keys(gridData).forEach(param => {
-      initializeCanvas(param);
-    });
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  <span>Retour</span>
-                </button>
-              )}
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Formulaire d'Anesthésie</h1>
-                <p className="text-gray-600">Enregistrement des paramètres peropératoires</p>
+      {/* Header with back button */}
+      {onBack && (
+        <div className="mb-4 flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors px-4 py-2 bg-white rounded-lg shadow"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Retour</span>
+          </button>
+          {onSave && (
+            <button
+              onClick={handleSaveClick}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Sauvegarder
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="w-full max-w-6xl mx-auto bg-yellow-100" style={{fontFamily: 'Courier New, monospace', fontSize: '10px'}}>
+        {/* Toolbar */}
+        <div className="mb-4 p-3 bg-white border-2 border-black rounded flex items-center gap-4 flex-wrap">
+          <div className="font-bold text-sm">Outils de traçage:</div>
+          <button 
+            onClick={() => setCurrentTool('tension')}
+            className={`px-4 py-2 rounded font-bold ${currentTool === 'tension' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          >
+            Tension (Bleu)
+          </button>
+          <button 
+            onClick={() => setCurrentTool('frequence')}
+            className={`px-4 py-2 rounded font-bold ${currentTool === 'frequence' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+          >
+            Fréquence (Rouge)
+          </button>
+          <button 
+            onClick={() => setCurrentTool('temperature')}
+            className={`px-4 py-2 rounded font-bold ${currentTool === 'temperature' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+          >
+            Température (Vert)
+          </button>
+          <button 
+            onClick={() => setCurrentTool('saturation')}
+            className={`px-4 py-2 rounded font-bold ${currentTool === 'saturation' ? 'bg-gray-800 text-white' : 'bg-gray-200'}`}
+          >
+            Saturation (Noir)
+          </button>
+          <button 
+            onClick={() => clearCurve(currentTool)}
+            className="px-4 py-2 rounded bg-orange-500 text-white font-bold ml-4"
+          >
+            Effacer courbe actuelle
+          </button>
+          <button 
+            onClick={clearAll}
+            className="px-4 py-2 rounded bg-red-700 text-white font-bold"
+          >
+            Tout effacer
+          </button>
+        </div>
+
+        {/* Header Section */}
+        <div className="border-2 border-black">
+          <div className="grid grid-cols-12 border-b-2 border-black">
+            {/* Left column - Patient info */}
+            <div className="col-span-3 border-r-2 border-black p-2">
+              <div className="text-[9px] mb-1">SERVICE D'ANESTHESIOLOGIE / CHUQ</div>
+              <input 
+                type="text" 
+                value={formData.patientName}
+                onChange={(e) => handleInputChange('patientName', e.target.value)}
+                className="w-full border-b border-black bg-transparent h-6 mb-2 text-sm font-bold"
+                placeholder="Nom du patient"
+              />
+              <div className="text-center text-[9px] pb-1">Diagnostic Préopérat</div>
+              <input 
+                type="text" 
+                value={formData.diagnosis}
+                onChange={(e) => handleInputChange('diagnosis', e.target.value)}
+                className="w-full border-b border-black bg-transparent h-8 mt-1 text-center font-bold"
+                placeholder="Diagnostic"
+              />
+            </div>
+            
+            {/* Middle columns - Medical staff and timing */}
+            <div className="col-span-5 border-r-2 border-black p-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px]">
+                <div>Chirurgien</div>
+                <input type="text" value={formData.surgeon} onChange={(e) => handleInputChange('surgeon', e.target.value)} className="border-b border-black bg-transparent" />
+                <div>Anesthésiste</div>
+                <input type="text" value={formData.anesthetist} onChange={(e) => handleInputChange('anesthetist', e.target.value)} className="border-b border-black bg-transparent" />
+                <div>Date début</div>
+                <input type="text" value={formData.dateDebut} onChange={(e) => handleInputChange('dateDebut', e.target.value)} className="border-b border-black bg-transparent" />
+                <div>Heure début</div>
+                <input type="text" value={formData.heureDebut} onChange={(e) => handleInputChange('heureDebut', e.target.value)} className="border-b border-black bg-transparent" />
+              </div>
+              <div className="mt-3 text-[9px]">
+                <div>Traitement en cours</div>
+                <input type="text" value={formData.traitement} onChange={(e) => handleInputChange('traitement', e.target.value)} className="w-full border-b border-black bg-transparent h-6 mt-1" />
               </div>
             </div>
             
-            {/* Boutons d'action */}
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handleNewForm}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Nouveau
-              </button>
-              <button
-                onClick={handleLoad}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Charger
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isLoading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
-              <button
-                onClick={handlePrint}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                Imprimer
-              </button>
-              <button
-                onClick={clearAllCanvases}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Effacer grilles
-              </button>
+            {/* Right columns - Patient details */}
+            <div className="col-span-4 p-2">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px]">
+                <div>Préliminaire</div>
+                <input type="text" className="border-b border-black bg-transparent" />
+                <div>Date fin</div>
+                <input type="text" value={formData.dateFin} onChange={(e) => handleInputChange('dateFin', e.target.value)} className="border-b border-black bg-transparent" />
+                <div>Heure fin</div>
+                <input type="text" value={formData.heureFin} onChange={(e) => handleInputChange('heureFin', e.target.value)} className="border-b border-black bg-transparent" />
+                <div>Age</div>
+                <input type="text" value={formData.age} onChange={(e) => handleInputChange('age', e.target.value)} className="border-b border-black bg-transparent" />
+              </div>
+              <div className="mt-3">
+                <div className="text-[9px]">Prémédication</div>
+                <input type="text" value={formData.premedication} onChange={(e) => handleInputChange('premedication', e.target.value)} className="w-full border-b border-black bg-transparent h-6" />
+              </div>
+            </div>
+          </div>
+
+          {/* État pathologique section */}
+          <div className="grid grid-cols-12 border-b-2 border-black">
+            <div className="col-span-4 border-r-2 border-black p-2">
+              <div className="font-bold text-[9px] mb-2">État pathologique</div>
+              <div className="grid grid-cols-2 gap-x-3 text-[8px]">
+                <div className="space-y-0.5">
+                  <div><input type="checkbox" /> A ASA</div>
+                  <div><input type="checkbox" /> B HBS</div>
+                  <div><input type="checkbox" /> C Allergie</div>
+                  <div><input type="checkbox" /> D Angor</div>
+                  <div><input type="checkbox" /> E IDM récent</div>
+                  <div><input type="checkbox" /> F Arythmie</div>
+                  <div><input type="checkbox" /> G BPCO</div>
+                  <div><input type="checkbox" /> H Asthme sévère</div>
+                  <div><input type="checkbox" /> I Cachexie</div>
+                  <div><input type="checkbox" /> J Diabète</div>
+                  <div><input type="checkbox" /> K Obésité sévère</div>
+                  <div><input type="checkbox" /> L Tare de choc</div>
+                  <div><input type="checkbox" /> M ATCD chirurgicaux</div>
+                </div>
+                <div className="space-y-0.5">
+                  <div><input type="checkbox" /> N Intubation</div>
+                  <div><input type="checkbox" /> O Infection</div>
+                  <div><input type="checkbox" /> P Infectious</div>
+                  <div><input type="checkbox" /> Q Dénutrition sévère</div>
+                  <div><input type="checkbox" /> R Insuff. rénale</div>
+                  <div><input type="checkbox" /> S Obésité</div>
+                  <div className="mt-2"><input type="checkbox" /> T Asthme</div>
+                  <div><input type="checkbox" /> U Emphysème</div>
+                  <div><input type="checkbox" /> V Troubles nerveu</div>
+                  <div><input type="checkbox" /> W PTT Anesthésie</div>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-bold text-[9px]">Indication(s) opératoire(s)</div>
+                <input type="text" value={formData.indications} onChange={(e) => handleInputChange('indications', e.target.value)} className="w-full border-b border-black bg-transparent mt-1 h-6" />
+              </div>
+            </div>
+            
+            {/* Observations */}
+            <div className="col-span-4 border-r-2 border-black p-2">
+              <div className="font-bold text-[9px] mb-2">Observations</div>
+              <div className="text-[8px]">
+                <div className="mb-3">En salle à : <input type="text" className="border-b border-black bg-transparent w-20" /></div>
+                <div className="grid grid-cols-2 gap-1 mb-2">
+                  <div>Ouverture de bouche <input type="text" className="border-b border-black bg-transparent w-8" /> cm</div>
+                  <div>Etat dentaire <input type="text" className="border-b border-black bg-transparent w-16" /></div>
+                </div>
+                <div>Mallampati <input type="text" className="border-b border-black bg-transparent w-16" /></div>
+              </div>
+            </div>
+            
+            {/* Vital signs */}
+            <div className="col-span-4 p-2">
+              <div className="grid grid-cols-4 gap-1 text-[8px] mb-2">
+                <div>TA pré</div>
+                <div>Pouls</div>
+                <div>[Label] Stat</div>
+                <div>Ke</div>
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <div>TA post</div>
+                <div>Pouls</div>
+                <div>Hb</div>
+                <div>TP</div>
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <div>Groupe sanguin</div>
+                <div>Hb</div>
+                <div>Hb</div>
+                <div>PTT</div>
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+                <input type="text" className="border-b border-black bg-transparent" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Message */}
-        {message && (
-          <div className={`p-4 rounded-lg mb-6 ${
-            message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          }`}>
-            {message.text}
-          </div>
-        )}
-
-        {/* Formulaire principal */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          {/* Informations générales */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Salle</label>
-              <input
-                type="text"
-                id="salle"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ex: Bloc 1"
-              />
+        {/* Main monitoring grid */}
+        <div className="border-2 border-t-0 border-black bg-green-100 relative" style={{height: '700px'}}>
+          {/* Top left corner labels */}
+          <div className="absolute top-0 left-0 border-r-2 border-b-2 border-black bg-yellow-100 text-[8px] p-1 z-10" style={{width: '100px', height: '80px'}}>
+            <div className="font-bold">Spécial: Dose TA Pouls 200</div>
+            <div className="mt-1 grid grid-cols-2">
+              <div className="border-r border-black text-center">R</div>
+              <div className="text-center">O</div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Heure</label>
-              <input
-                type="time"
-                id="heure"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="mt-2 grid grid-cols-3 text-center border-t border-black pt-1">
+              <div className="border-r border-black">38°</div>
+              <div className="border-r border-black">SaO2</div>
+              <div>180</div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date intervention</label>
-              <input
-                type="date"
-                id="date_intervention"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Chirurgien</label>
-              <input
-                type="text"
-                id="chirurgien"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nom du chirurgien"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Anesthésistes</label>
-              <input
-                type="text"
-                id="anesthesistes"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nom des anesthésistes"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">TSAR</label>
-              <input
-                type="text"
-                id="tsar"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="TSAR"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Checklist</label>
-              <input
-                type="text"
-                id="checklist"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Checklist"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Position patient</label>
-              <input
-                type="text"
-                id="position_patient"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Position du patient"
-              />
+            <div className="grid grid-cols-3 text-center border-t border-black">
+              <div className="border-r border-black"></div>
+              <div className="border-r border-black">PCO2</div>
+              <div>180</div>
             </div>
           </div>
 
-          {/* Modes anesthésiques */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Modes anesthésiques</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {Object.entries(modes).map(([key, value]) => (
-                <button
-                  key={key}
-                  onClick={() => toggleMode(key as keyof typeof modes)}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
-                    value 
-                      ? 'border-green-500 bg-green-50 text-green-700' 
-                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">{value ? '✓' : '○'}</div>
-                    <div className="text-sm font-medium">
-                      {key === 'sedation' && 'Sédation'}
-                      {key === 'ag' && 'AG'}
-                      {key === 'crush' && 'CRUSH'}
-                      {key === 'ra' && 'RA'}
-                      {key === 'apd' && 'APD'}
-                      {key === 'bloc' && 'BLOC'}
-                    </div>
-                  </div>
-                </button>
+          {/* Time header */}
+          <div className="absolute top-0 left-0 right-0 h-20 bg-yellow-100 border-b-2 border-black flex text-xs font-bold z-10">
+            <div style={{width: '100px'}} className="border-r-2 border-black"></div>
+            <div className="flex-1 border-r-2 border-black text-center pt-1">8H</div>
+            <div className="flex-1 border-r-2 border-black text-center pt-1">9H</div>
+            <div className="flex-1 border-r-2 border-black text-center pt-1">10H</div>
+            <div className="flex-1 border-r-2 border-black text-center pt-1">11H</div>
+            <div className="flex-1 border-r-2 border-black text-center pt-1">12H</div>
+            <div className="flex-1 text-center pt-1">13H</div>
+          </div>
+
+          {/* Grid with Y-axis labels */}
+          <div className="absolute left-0 right-0 z-0" style={{top: '80px', bottom: '60px'}}>
+            {/* Y-axis labels and horizontal lines */}
+            {[
+              {label: '36°', right: 'TA 140'},
+              {label: '34°', right: '120 140'},
+              {label: 'Deb op 22', right: '100 130'},
+              {label: '30°', right: '80 100'},
+              {label: '28°', right: '60 80'},
+              {label: '26°', right: '40 60'},
+              {label: '', right: 'Diurèse'},
+              {label: '24°', right: 'PVC 20 40'},
+              {label: 'PEP', right: '0 20'},
+              {label: '22°', right: ''},
+              {label: 'FIO2/ABG/SAT/HDS', right: '0'},
+              {label: 'PEEP/HYPNOT/MORP', right: ''},
+              {label: 'PAV/NOM/TRA/MIV', right: ''},
+              {label: 'LEPTA/BARI/GTN', right: ''}
+            ].map((item, i) => (
+              <div key={i} className="absolute left-0 right-0 border-b border-gray-500" style={{top: `${(i / 14) * 100}%`}}>
+                <div className="absolute left-0 bg-green-100 border-r-2 border-black text-[8px] px-1 flex justify-between z-10" style={{width: '100px'}}>
+                  <span>{item.label}</span>
+                  <span>{item.right}</span>
+                </div>
+              </div>
+            ))}
+
+            {/* Vertical grid lines */}
+            <div className="absolute top-0 bottom-0" style={{left: '100px', right: 0}}>
+              {/* Major hour lines */}
+              {Array.from({length: 6}).map((_, i) => (
+                <div key={`major${i}`} className="absolute top-0 bottom-0 border-r-2 border-black" style={{left: `${(i / 6) * 100}%`}}></div>
+              ))}
+              {/* Minor 10-minute lines */}
+              {Array.from({length: 36}).map((_, i) => (
+                <div key={`minor${i}`} className="absolute top-0 bottom-0 border-r border-gray-400" style={{left: `${(i / 36) * 100}%`}}></div>
               ))}
             </div>
           </div>
 
-          {/* Appareillage complet */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Appareillage</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {Object.entries(appareillage).map(([key, value]) => (
-                <button
-                  key={key}
-                  onClick={() => toggleAppareillage(key as keyof typeof appareillage)}
-                  className={`p-2 rounded-lg border-2 transition-colors ${
-                    value 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-xl mb-1">{value ? '✓' : '○'}</div>
-                    <div className="text-xs font-medium">
-                      {key === 'masque' && 'Masque'}
-                      {key === 'mlf' && 'MLØ'}
-                      {key === 'lto' && 'LTO'}
-                      {key === 'orale' && 'Orale'}
-                      {key === 'nasale' && 'Nasale'}
-                      {key === 'armee' && 'Armée'}
-                      {key === 'tracheo' && 'Trachéo'}
-                      {key === 'circuit_ouvert' && 'Circuit Ouvert'}
-                      {key === 'circuit_ferme' && 'Circuit Fermé'}
-                      {key === 'bain' && 'Bain'}
-                      {key === 'curarmetre' && 'Curarmètre'}
-                      {key === 'fibroscope' && 'Fibroscope'}
-                      {key === 'thermometre' && 'Thermomètre'}
-                      {key === 'air_pulse' && 'Air Pulse'}
-                      {key === 'accelerateur' && 'Accélérateur'}
-                      {key === 'perfusion' && 'Perfusion'}
-                      {key === 'cell_saver' && 'Cell Saver'}
-                      {key === 'pas' && 'PAS'}
-                      {key === 'swan_ganz' && 'Swan-Ganz'}
-                      {key === 'vvc' && 'VVC'}
-                      {key === 'sonde_gastrique' && 'Sonde Gastrique'}
-                      {key === 'sonde_urinaire' && 'Sonde Urinaire'}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Canvas for drawing */}
+          <canvas
+            ref={canvasRef}
+            className="absolute cursor-crosshair"
+            style={{top: '80px', left: '100px', right: 0, bottom: '60px', width: 'calc(100% - 100px)', height: 'calc(100% - 140px)'}}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          />
 
-          {/* Section ALR */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Détails ALR</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Site de ponction</label>
-                <input
-                  type="text"
-                  id="site_ponction"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Site de ponction"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Aiguille</label>
-                <input
-                  type="text"
-                  id="aiguille"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Type d'aiguille"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Profondeur</label>
-                <input
-                  type="text"
-                  id="profondeur"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Profondeur (cm)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Intensité MA</label>
-                <input
-                  type="text"
-                  id="intensite_ma"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Intensité MA"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">KT</label>
-                <input
-                  type="text"
-                  id="kt"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="KT"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dose test</label>
-                <input
-                  type="text"
-                  id="dose_test"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Dose test"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mélange</label>
-                <input
-                  type="text"
-                  id="melange"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Mélange"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Incident ALR</label>
-                <input
-                  type="text"
-                  id="incident_alr"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Incident ALR"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bloc obtenu</label>
-                <input
-                  type="text"
-                  id="bloc_obtenu"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Bloc obtenu"
-                />
-              </div>
-            </div>
-            
-            {/* Champs ALR supplémentaires */}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ALR Complément</label>
-                <input
-                  type="text"
-                  id="alr_complement"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ALR Complément"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 1</label>
-                <input
-                  type="text"
-                  id="alr_autre1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autre 1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 2</label>
-                <input
-                  type="text"
-                  id="alr_autre2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autre 2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 3</label>
-                <input
-                  type="text"
-                  id="alr_autre3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autre 3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 4</label>
-                <input
-                  type="text"
-                  id="alr_autre4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autre 4"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 5</label>
-                <input
-                  type="text"
-                  id="alr_autre5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autre 5"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autre 6</label>
-                <input
-                  type="text"
-                  id="alr_autre6"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autre 6"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Sélecteur de couleur et légende des paramètres */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-sm font-medium">T°C</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                  <span className="text-sm font-medium">SpO₂</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-green-500 rounded"></div>
-                  <span className="text-sm font-medium">FC</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-purple-500 rounded"></div>
-                  <span className="text-sm font-medium">PA</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">Sélectionner:</span>
-                  <div className="flex space-x-2">
-                    {[
-                      { color: 'red', param: 'temperature', label: 'T°C' },
-                      { color: 'blue', param: 'spo2', label: 'SpO₂' },
-                      { color: 'green', param: 'fc', label: 'FC' },
-                      { color: 'purple', param: 'pa', label: 'PA' }
-                    ].map(({ color, param, label }) => (
-                      <button
-                        key={param}
-                        onClick={() => setSelectedParam(param)}
-                        className={`w-6 h-6 rounded-full border-2 ${
-                          selectedParam === param ? 'border-black' : 'border-gray-300'
-                        }`}
-                        style={{ backgroundColor: color }}
-                        title={label}
-                      />
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">Mode:</span>
-                  <select
-                    value={drawingMode}
-                    onChange={(e) => setDrawingMode(e.target.value)}
-                    className="px-2 py-1 border border-gray-300 rounded text-sm"
-                  >
-                    <option value="line">Lignes</option>
-                    <option value="point">Points</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section Monitoring */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Monitoring</h3>
-            
-            {/* Valeurs de monitoring */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SaO₂</label>
-                <input
-                  type="text"
-                  id="sao2_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="SaO₂ (%)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">EtO₂</label>
-                <input
-                  type="text"
-                  id="eto2_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="EtO₂ (%)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">VS VI</label>
-                <input
-                  type="text"
-                  id="vs_vi_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="VS VI"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">VC FR</label>
-                <input
-                  type="text"
-                  id="vc_fr_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="VC FR"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Pi</label>
-                <input
-                  type="text"
-                  id="pi_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Pi"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">FiO₂/N₂O/Air</label>
-                <input
-                  type="text"
-                  id="fio2_n2o_air"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="FiO₂/N₂O/Air"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Halogéné</label>
-                <input
-                  type="text"
-                  id="halogene"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Halogéné"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fi</label>
-                <input
-                  type="text"
-                  id="fi_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Fi"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fe</label>
-                <input
-                  type="text"
-                  id="fe_value"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Fe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">TOF ALR</label>
-                <input
-                  type="text"
-                  id="tof_alr"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="TOF ALR"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Hématocrite/Dextro</label>
-                <input
-                  type="text"
-                  id="hematocrite_dextro"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Hématocrite/Dextro"
-                />
-              </div>
-            </div>
-
-            {/* Checkboxes VS et VC */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="vs_checked"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="vs_checked" className="text-sm font-medium text-gray-700">VS</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="vc_checked"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="vc_checked" className="text-sm font-medium text-gray-700">VC</label>
-              </div>
-            </div>
-
-            {/* Grilles de dessin complètes (toutes du HTML original) */}
-            <div className="space-y-6">
-              {/* Canvas principal */}
-              <div className="border border-gray-300 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-md font-medium text-gray-700">Canvas Principal</h4>
-                  <button
-                    onClick={() => clearCanvas('main')}
-                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                  >
-                    Effacer
-                  </button>
-                </div>
-                <canvas
-                  ref={(el) => canvasRefs.current.main = el}
-                  onMouseDown={(e) => handleMouseDown(e, 'main')}
-                  onMouseMove={(e) => handleMouseMove(e, 'main')}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  className="border border-gray-200 rounded cursor-crosshair w-full"
-                  style={{ maxWidth: '400px', height: '200px' }}
-                />
-              </div>
-
-              {/* Grilles de monitoring */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* SpO₂ */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-blue-600">SpO₂</h4>
-                    <button
-                      onClick={() => clearCanvas('spo2')}
-                      className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.spo2 = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'spo2')}
-                    onMouseMove={(e) => handleMouseMove(e, 'spo2')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* EtO₂ */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-green-600">EtO₂</h4>
-                    <button
-                      onClick={() => clearCanvas('eto2')}
-                      className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.eto2 = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'eto2')}
-                    onMouseMove={(e) => handleMouseMove(e, 'eto2')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* VS */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-purple-600">VS</h4>
-                    <button
-                      onClick={() => clearCanvas('vs')}
-                      className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.vs = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'vs')}
-                    onMouseMove={(e) => handleMouseMove(e, 'vs')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* VC */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-orange-600">VC</h4>
-                    <button
-                      onClick={() => clearCanvas('vc')}
-                      className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.vc = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'vc')}
-                    onMouseMove={(e) => handleMouseMove(e, 'vc')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Pi */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-red-600">Pi</h4>
-                    <button
-                      onClick={() => clearCanvas('pi')}
-                      className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.pi = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'pi')}
-                    onMouseMove={(e) => handleMouseMove(e, 'pi')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Ventilation 1 */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-indigo-600">Ventilation 1</h4>
-                    <button
-                      onClick={() => clearCanvas('vent1')}
-                      className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.vent1 = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'vent1')}
-                    onMouseMove={(e) => handleMouseMove(e, 'vent1')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Ventilation 2 */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-teal-600">Ventilation 2</h4>
-                    <button
-                      onClick={() => clearCanvas('vent2')}
-                      className="text-xs px-2 py-1 bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.vent2 = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'vent2')}
-                    onMouseMove={(e) => handleMouseMove(e, 'vent2')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Fi */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-pink-600">Fi</h4>
-                    <button
-                      onClick={() => clearCanvas('fi')}
-                      className="text-xs px-2 py-1 bg-pink-100 text-pink-700 rounded hover:bg-pink-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.fi = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'fi')}
-                    onMouseMove={(e) => handleMouseMove(e, 'fi')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Fe */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-yellow-600">Fe</h4>
-                    <button
-                      onClick={() => clearCanvas('fe')}
-                      className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.fe = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'fe')}
-                    onMouseMove={(e) => handleMouseMove(e, 'fe')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Ventilation 3 */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-cyan-600">Ventilation 3</h4>
-                    <button
-                      onClick={() => clearCanvas('vent3')}
-                      className="text-xs px-2 py-1 bg-cyan-100 text-cyan-700 rounded hover:bg-cyan-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.vent3 = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'vent3')}
-                    onMouseMove={(e) => handleMouseMove(e, 'vent3')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* TOF */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-lime-600">TOF</h4>
-                    <button
-                      onClick={() => clearCanvas('tof')}
-                      className="text-xs px-2 py-1 bg-lime-100 text-lime-700 rounded hover:bg-lime-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.tof = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'tof')}
-                    onMouseMove={(e) => handleMouseMove(e, 'tof')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-
-                {/* Hématocrite */}
-                <div className="border border-gray-300 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-amber-600">Hématocrite</h4>
-                    <button
-                      onClick={() => clearCanvas('hema')}
-                      className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition-colors"
-                    >
-                      Effacer
-                    </button>
-                  </div>
-                  <canvas
-                    ref={(el) => canvasRefs.current.hema = el}
-                    onMouseDown={(e) => handleMouseDown(e, 'hema')}
-                    onMouseMove={(e) => handleMouseMove(e, 'hema')}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="border border-gray-200 rounded cursor-crosshair w-full"
-                    style={{ height: '150px' }}
-                  />
-                </div>
-              </div>
-
-              {/* Grilles Drogues */}
-              <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Drogues</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {[1, 2, 3, 4, 5].map(num => (
-                    <div key={num} className="border border-gray-200 rounded p-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="text-sm font-medium text-gray-700">Drogue {num}</h5>
-                        <button
-                          onClick={() => clearCanvas(`drogues${num}`)}
-                          className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                        >
-                          Effacer
-                        </button>
-                      </div>
-                      <canvas
-                        ref={(el) => canvasRefs.current[`drogues${num}`] = el}
-                        onMouseDown={(e) => handleMouseDown(e, `drogues${num}`)}
-                        onMouseMove={(e) => handleMouseMove(e, `drogues${num}`)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
-                        className="border border-gray-200 rounded cursor-crosshair w-full"
-                        style={{ height: '120px' }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Grilles Perfusions */}
-              <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Perfusions</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {[1, 2, 3, 4, 5].map(num => (
-                    <div key={num} className="border border-gray-200 rounded p-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="text-sm font-medium text-gray-700">Perfusion {num}</h5>
-                        <button
-                          onClick={() => clearCanvas(`perf${num}`)}
-                          className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                        >
-                          Effacer
-                        </button>
-                      </div>
-                      <canvas
-                        ref={(el) => canvasRefs.current[`perf${num}`] = el}
-                        onMouseDown={(e) => handleMouseDown(e, `perf${num}`)}
-                        onMouseMove={(e) => handleMouseMove(e, `perf${num}`)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
-                        className="border border-gray-200 rounded cursor-crosshair w-full"
-                        style={{ height: '120px' }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Grilles Bilans */}
-              <div className="border border-gray-300 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Bilans</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { key: 'sang', label: 'Sang' },
-                    { key: 'diurese', label: 'Diurèse' },
-                    { key: 'saignement', label: 'Saignement' },
-                    { key: 'autres', label: 'Autres' }
-                  ].map(({ key, label }) => (
-                    <div key={key} className="border border-gray-200 rounded p-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="text-sm font-medium text-gray-700">{label}</h5>
-                        <button
-                          onClick={() => clearCanvas(key)}
-                          className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                        >
-                          Effacer
-                        </button>
-                      </div>
-                      <canvas
-                        ref={(el) => canvasRefs.current[key] = el}
-                        onMouseDown={(e) => handleMouseDown(e, key)}
-                        onMouseMove={(e) => handleMouseMove(e, key)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
-                        className="border border-gray-200 rounded cursor-crosshair w-full"
-                        style={{ height: '120px' }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section Drogues */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Drogues</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 1</label>
-                <input
-                  type="text"
-                  id="drogue1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Drogue 1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 2</label>
-                <input
-                  type="text"
-                  id="drogue2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Drogue 2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 3</label>
-                <input
-                  type="text"
-                  id="drogue3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Drogue 3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 4</label>
-                <input
-                  type="text"
-                  id="drogue4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Drogue 4"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Drogue 5</label>
-                <input
-                  type="text"
-                  id="drogue5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Drogue 5"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section Perfusions */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Perfusions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 1</label>
-                <input
-                  type="text"
-                  id="perfusion1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Perfusion 1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 2</label>
-                <input
-                  type="text"
-                  id="perfusion2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Perfusion 2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 3</label>
-                <input
-                  type="text"
-                  id="perfusion3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Perfusion 3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 4</label>
-                <input
-                  type="text"
-                  id="perfusion4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Perfusion 4"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Perfusion 5</label>
-                <input
-                  type="text"
-                  id="perfusion5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Perfusion 5"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section Bilans */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Bilans</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autres bilans</label>
-                <input
-                  type="text"
-                  id="autres_bilans"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Autres bilans"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Commentaires */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Commentaires</label>
-            <textarea
-              id="commentaires"
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Commentaires additionnels..."
-            />
+          {/* Bottom section */}
+          <div className="absolute bottom-0 left-0 right-0 bg-yellow-100 border-t-2 border-black p-2 text-[8px] z-10" style={{height: '60px'}}>
+            <input type="text" className="w-full border-b border-black bg-transparent h-4" />
+            <input type="text" className="w-full border-b border-black bg-transparent h-4 mt-1" />
+            <input type="text" className="w-full border-b border-black bg-transparent h-4 mt-1" />
           </div>
         </div>
 
-        {/* Modal de chargement */}
-        {showLoadModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Charger un formulaire</h3>
-                <button
-                  onClick={() => setShowLoadModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
+        {/* Bottom section */}
+        <div className="border-2 border-t-0 border-black p-2">
+          <div className="grid grid-cols-12 gap-2 text-[9px]">
+            {/* Left column */}
+            <div className="col-span-4">
+              <div><span className="font-bold">RINGER-LACTATE</span></div>
+              <div className="mt-1"><span className="font-bold">ATÉEP-PROSP-ELISA</span></div>
+              <div className="mt-2 font-bold">TECHNIQUE D'ANESTHÉSIE</div>
+              <div className="mt-1">Type anesthésie/Nom: <input type="text" className="border-b border-black bg-transparent w-32" /></div>
+              <div>ALR Bloc/Type: <input type="text" className="border-b border-black bg-transparent w-32" /></div>
+              <div>Mode (I) NT/Tube/Timsh bi: <input type="text" className="border-b border-black bg-transparent w-20" /></div>
+              <div>Taille masque/Lary/Mask N° <input type="text" className="border-b border-black bg-transparent w-16" /></div>
+              <div className="mt-1">Prég: <input type="text" className="border-b border-black bg-transparent w-24" /></div>
+              <div className="mt-1">Ventilation</div>
+              <input type="text" className="border-b border-black bg-transparent w-full h-4" />
+              <div className="mt-2">TAR:</div>
+              <input type="text" className="border-b border-black bg-transparent w-full h-4" />
+            </div>
+
+            {/* Middle column */}
+            <div className="col-span-4">
+              <div className="font-bold mb-1">Problèmes per-anesthésiques</div>
+              <div className="text-[8px] space-y-0.5">
+                <div><input type="checkbox" /> A Choc hémorragique</div>
+                <div><input type="checkbox" /> B Arythmie épid/sept</div>
+                <div><input type="checkbox" /> C Allergie</div>
+                <div><input type="checkbox" /> D Convulsion</div>
+                <div><input type="checkbox" /> E Dysfonction matériel</div>
+                <div><input type="checkbox" /> F Technique inadé</div>
+                <div><input type="checkbox" /> G Douleur</div>
+                <div><input type="checkbox" /> H Difficulté technique</div>
+                <div><input type="checkbox" /> I Hypothermie{'>'}30%</div>
+                <div><input type="checkbox" /> J Hypotension{'>'}30%</div>
+                <div><input type="checkbox" /> K Bronchospasme</div>
+                <div><input type="checkbox" /> L Ventilabilité assist</div>
+                <div><input type="checkbox" /> M IDT-DEI difficile</div>
+                <div><input type="checkbox" /> N Ventilation</div>
               </div>
-              
-              {savedForms.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Aucun formulaire sauvegardé</p>
-              ) : (
-                <div className="space-y-2">
-                  {savedForms.map((form) => (
-                    <div
-                      key={form.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                      onClick={() => handleLoadForm(form)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">ID: {form.id}</div>
-                          <div className="text-sm text-gray-500">
-                            {form.salle && `Salle: ${form.salle}`}
-                            {form.chirurgien && ` | Chirurgien: ${form.chirurgien}`}
-                            {form.date_intervention && ` | Date: ${form.date_intervention}`}
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          {new Date(form.created_at).toLocaleDateString('fr-FR')}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            </div>
+
+            {/* Right column */}
+            <div className="col-span-4">
+              <div className="font-bold mb-1">Observations / Coeff. sévérité</div>
+              <div className="text-[8px] space-y-0.5">
+                <div><input type="checkbox" /> Hypotension{'>'}30%</div>
+                <div><input type="checkbox" /> IDT difficile/ 3 essais</div>
+                <div><input type="checkbox" /> Hypoxémie</div>
+                <div><input type="checkbox" /> Bronchospasme</div>
+                <div><input type="checkbox" /> Laryngospasme</div>
+                <div><input type="checkbox" /> Lésion dentaire</div>
+                <div><input type="checkbox" /> ACR</div>
+                <div><input type="checkbox" /> Prémédication</div>
+                <div><input type="checkbox" /> Ventus bronchiques</div>
+              </div>
+              <div className="mt-2 font-bold">Opération</div>
+              <textarea className="w-full border border-black bg-transparent mt-1 text-[8px] p-1" rows={4}></textarea>
+              <div className="mt-2">Pertes sanguines</div>
+              <input type="text" className="w-full border-b border-black bg-transparent h-4 mt-1" />
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
-};
-
-export default AnesthesieForm;
+}
