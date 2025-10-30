@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function AnesthesieForm() {
+export interface AnesthesieFormProps {
+  patientData?: any;
+  editMode?: boolean;
+  onSave?: (data: any) => void;
+  onBack?: () => void;
+}
+
+export default function AnesthesieForm({ patientData, editMode, onSave, onBack }: AnesthesieFormProps) {
   const [formData, setFormData] = useState({
     patientName: '',
     diagnosis: '',
