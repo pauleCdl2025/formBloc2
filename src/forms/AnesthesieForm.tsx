@@ -1,20 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
 
-interface AnesthesieFormProps {
-  formData?: any;
-  patientData?: any;
-  editMode?: boolean;
-  onBack?: () => void;
-  onSave?: (data: any) => void;
-}
-
-export default function AnesthesieForm({ 
-  patientData,
-  editMode = false,
-  onBack,
-  onSave 
-}: AnesthesieFormProps) {
+export default function AnesthesieForm() {
   const [formData, setFormData] = useState({
     patientName: '',
     diagnosis: '',
@@ -30,52 +16,73 @@ export default function AnesthesieForm({
     indications: ''
   });
 
-  const [currentTool, setCurrentTool] = useState('tension'); // tension, frequence, temperature, saturation
+  const [currentTool, setCurrentTool] = useState<'tension' | 'frequence' | 'temperature' | 'saturation'>('tension');
   const [isDrawing, setIsDrawing] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [points, setPoints] = useState<{
-    tension: {x: number, y: number}[],
-    frequence: {x: number, y: number}[],
-    temperature: {x: number, y: number}[],
-    saturation: {x: number, y: number}[]
-  }>({
-    tension: [],
-    frequence: [],
-    temperature: [],
-    saturation: []
-  });
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [points, setPoints] = useState<Record<'tension' | 'frequence' | 'temperature' | 'saturation', Array<{x: number, y: number}>>>(
+    {
+      tension: [],
+      frequence: [],
+      temperature: [],
+      saturation: []
+    }
+  );
+  const [headerHours, setHeaderHours] = useState<string[]>(
+    Array.from({ length: 12 }, () => '')
+  );
+  const [gridColumnLabels, setGridColumnLabels] = useState<string[]>(
+    Array.from({ length: 72 }, () => '')
+  );
 
-  const colors = {
-    tension: '#0000FF',      // Bleu
-    frequence: '#FF0000',    // Rouge
-    temperature: '#00FF00',  // Vert
-    saturation: '#000000'    // Noir
+  const colors: Record<'tension' | 'frequence' | 'temperature' | 'saturation', string> = {
+    tension: '#0000FF',
+    frequence: '#FF0000',
+    temperature: '#00FF00',
+    saturation: '#000000'
   };
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
-    
-    // Redessiner toutes les courbes
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     (Object.keys(points) as Array<keyof typeof points>).forEach(tool => {
       const toolPoints = points[tool];
-      if (toolPoints.length > 1) {
-        ctx.strokeStyle = colors[tool];
-        ctx.lineWidth = 2;
+      if (toolPoints.length < 2) return;
+      ctx.strokeStyle = colors[tool];
+      ctx.lineWidth = 2;
+
+      if (tool === 'tension') {
+        // Draw independent segments linking each pair of points only
+        for (let i = 0; i + 1 < toolPoints.length; i += 2) {
+      ctx.beginPath();
+          ctx.moveTo(toolPoints[i].x, toolPoints[i].y);
+          ctx.lineTo(toolPoints[i + 1].x, toolPoints[i + 1].y);
+      ctx.stroke();
+    }
+        // If odd point remaining, render a small dot
+        if (toolPoints.length % 2 === 1) {
+          const last = toolPoints[toolPoints.length - 1];
+      ctx.beginPath();
+          ctx.arc(last.x, last.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = colors[tool];
+          ctx.fill();
+        }
+      } else {
+        // Default: connect all points in sequence
         ctx.beginPath();
         ctx.moveTo(toolPoints[0].x, toolPoints[0].y);
         for (let i = 1; i < toolPoints.length; i++) {
           ctx.lineTo(toolPoints[i].x, toolPoints[i].y);
         }
-        ctx.stroke();
+    ctx.stroke();
       }
     });
   }, [points]);
@@ -88,7 +95,7 @@ export default function AnesthesieForm({
     const y = e.clientY - rect.top;
     setPoints(prev => ({
       ...prev,
-      [currentTool]: [...prev[currentTool as keyof typeof prev], {x, y}]
+      [currentTool]: [...prev[currentTool], { x, y }]
     }));
   };
 
@@ -100,7 +107,7 @@ export default function AnesthesieForm({
     const y = e.clientY - rect.top;
     setPoints(prev => ({
       ...prev,
-      [currentTool]: [...prev[currentTool as keyof typeof prev], {x, y}]
+      [currentTool]: [...prev[currentTool], { x, y }]
     }));
   };
 
@@ -108,390 +115,490 @@ export default function AnesthesieForm({
     setIsDrawing(false);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({...prev, [field]: value}));
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const clearCurve = (tool: string) => {
-    setPoints(prev => ({...prev, [tool]: []}));
+  const clearCurve = (tool: keyof typeof points) => {
+    setPoints(prev => ({ ...prev, [tool]: [] }));
   };
 
   const clearAll = () => {
-    setPoints({tension: [], frequence: [], temperature: [], saturation: []});
-  };
-
-  const handleSaveClick = () => {
-    if (onSave) {
-      const dataToSave = {
-        ...formData,
-        points,
-        patientData
-      };
-      onSave(dataToSave);
-    }
+    setPoints({ tension: [], frequence: [], temperature: [], saturation: [] });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      {/* Header with back button */}
-      {onBack && (
-        <div className="mb-4 flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors px-4 py-2 bg-white rounded-lg shadow"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Retour</span>
-          </button>
-          {onSave && (
-            <button
-              onClick={handleSaveClick}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+    <div className="w-full max-w-6xl mx-auto p-4 bg-yellow-100" style={{fontFamily: 'Courier New, monospace', fontSize: '10px'}}>
+      {/* Toolbar */}
+      <div className="mb-4 p-3 bg-white border-2 border-black rounded flex items-center gap-4 flex-wrap">
+        <div className="font-bold text-sm">Outils de traçage:</div>
+                <button
+          onClick={() => setCurrentTool('tension')}
+          className={`px-4 py-2 rounded font-bold ${currentTool === 'tension' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                >
+          Tension (Bleu)
+                </button>
+              <button
+          onClick={() => setCurrentTool('frequence')}
+          className={`px-4 py-2 rounded font-bold ${currentTool === 'frequence' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+              >
+          Fréquence (Rouge)
+              </button>
+              <button
+          onClick={() => setCurrentTool('temperature')}
+          className={`px-4 py-2 rounded font-bold ${currentTool === 'temperature' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+              >
+          Température (Vert)
+              </button>
+              <button
+          onClick={() => setCurrentTool('saturation')}
+          className={`px-4 py-2 rounded font-bold ${currentTool === 'saturation' ? 'bg-gray-800 text-white' : 'bg-gray-200'}`}
+              >
+          Saturation (Noir)
+              </button>
+              <button
+          onClick={() => clearCurve(currentTool)}
+          className="px-4 py-2 rounded bg-orange-500 text-white font-bold ml-4"
+              >
+          Effacer courbe actuelle
+              </button>
+              <button
+          onClick={clearAll}
+          className="px-4 py-2 rounded bg-red-700 text-white font-bold"
+              >
+          Tout effacer
+              </button>
+        </div>
+
+      {/* Header Section */}
+      <div className="border-2 border-black">
+        <div className="grid grid-cols-12 border-b-2 border-black">
+          {/* Left column - Patient info */}
+          <div className="col-span-3 border-r-2 border-black p-2">
+            <div className="text-[9px] mb-1">SERVICE D ANESTHESIOLOGIE / CHUQ</div>
+              <input
+                type="text"
+              value={formData.patientName}
+              onChange={(e) => handleInputChange('patientName', e.target.value)}
+              className="w-full border-b border-black bg-transparent h-6 mb-2 text-sm font-bold px-1"
+              placeholder="Nom du patient"
+            />
+            <div className="text-center text-[9px] pb-1">Identité Patient</div>
+              <input
+                type="text"
+              value={formData.diagnosis}
+              onChange={(e) => handleInputChange('diagnosis', e.target.value)}
+              className="w-full border-b border-black bg-transparent h-8 mt-1 text-center font-bold px-1"
+              placeholder="Diagnostic"
+            />
+          </div>
+
+          {/* Middle columns */}
+          <div className="col-span-5 border-r-2 border-black p-2">
+            <div className="grid grid-cols-4 gap-x-2 gap-y-1 text-[9px]">
+              <div>Chirurgien</div>
+              <input type="text" value={formData.surgeon} onChange={(e) => handleInputChange('surgeon', e.target.value)} className="col-span-3 border-b border-black bg-transparent px-1" />
+              <div>Anesthésiste</div>
+              <input type="text" value={formData.anesthetist} onChange={(e) => handleInputChange('anesthetist', e.target.value)} className="col-span-3 border-b border-black bg-transparent px-1" />
+              <div>Date (début)</div>
+              <input type="text" value={formData.dateDebut} onChange={(e) => handleInputChange('dateDebut', e.target.value)} className="border-b border-black bg-transparent px-1" />
+              <div>Heure début</div>
+              <input type="text" value={formData.heureDebut} onChange={(e) => handleInputChange('heureDebut', e.target.value)} className="border-b border-black bg-transparent px-1" />
+                    </div>
+            <div className="mt-3 text-[9px]">
+              <div>Traitement en cours</div>
+              <input type="text" value={formData.traitement} onChange={(e) => handleInputChange('traitement', e.target.value)} className="w-full border-b border-black bg-transparent h-6 mt-1 px-1" />
+            </div>
+          </div>
+
+          {/* Right columns */}
+          <div className="col-span-4 p-2">
+            <div className="grid grid-cols-4 gap-x-2 gap-y-1 text-[9px]">
+              <div>Préliminaire</div>
+              <input type="text" className="col-span-3 border-b border-black bg-transparent px-1" />
+              <div>Heure fin</div>
+              <input type="text" value={formData.heureFin} onChange={(e) => handleInputChange('heureFin', e.target.value)} className="border-b border-black bg-transparent px-1" />
+              <div>Début op</div>
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <div>Fin op</div>
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+                    </div>
+            <div className="mt-3">
+              <div className="text-[9px]">Prémédication</div>
+              <input type="text" value={formData.premedication} onChange={(e) => handleInputChange('premedication', e.target.value)} className="w-full border-b border-black bg-transparent h-6 px-1" />
+              <div className="text-[9px] mt-2">Fin anesthé</div>
+              <input type="text" className="w-full border-b border-black bg-transparent h-6 px-1" />
+                  </div>
+            </div>
+          </div>
+
+        {/* État pathologique section */}
+        <div className="grid grid-cols-12 border-b-2 border-black">
+          <div className="col-span-4 border-r-2 border-black p-2">
+            <div className="font-bold text-[9px] mb-2">État pathologique<span className="ml-4">ASA</span></div>
+            <div className="grid grid-cols-2 gap-x-3 text-[8px]">
+              <div className="space-y-0.5">
+                <div>A <input type="checkbox" className="mr-1" /> RAS</div>
+                <div>B <input type="checkbox" className="mr-1" /> Allergie</div>
+                <div>C <input type="checkbox" className="mr-1" /> Angor</div>
+                <div>D <input type="checkbox" className="mr-1" /> Arthropathie</div>
+                <div>E <input type="checkbox" className="mr-1" /> Arythmie</div>
+                <div>F <input type="checkbox" className="mr-1" /> BPCO</div>
+                <div>G <input type="checkbox" className="mr-1" /> Cardiopathie</div>
+                <div>H <input type="checkbox" className="mr-1" /> Cachexie</div>
+                <div>I <input type="checkbox" className="mr-1" /> Diabète</div>
+                <div>J <input type="checkbox" className="mr-1" /> Obésité hémo</div>
+                <div>K <input type="checkbox" className="mr-1" /> Eau de choc</div>
+                <div>L <input type="checkbox" className="mr-1" /> Hypertension</div>
+              </div>
+              <div className="space-y-0.5">
+                <div>M <input type="checkbox" className="mr-1" /> HyperThyroïdie</div>
+                <div>N <input type="checkbox" className="mr-1" /> Infarctus</div>
+                <div>O <input type="checkbox" className="mr-1" /> Infection</div>
+                <div>P <input type="checkbox" className="mr-1" /> Insuff. hépatique</div>
+                <div>Q <input type="checkbox" className="mr-1" /> Insuff. rénale</div>
+                <div>R <input type="checkbox" className="mr-1" /> Obésité</div>
+                <div>S <input type="checkbox" className="mr-1" /> Asthme</div>
+                <div>T <input type="checkbox" className="mr-1" /> Tabagisme</div>
+                <div>U <input type="checkbox" className="mr-1" /> Troubles nerveu</div>
+                <div>V <input type="checkbox" className="mr-1" /> PTT Anesthésie</div>
+                <div>W <input type="checkbox" className="mr-1" /> TTT stéroïdes</div>
+                <div>Z <input type="checkbox" className="mr-1" /> Autre</div>
+              </div>
+              </div>
+            <div className="mt-3">
+              <div className="font-bold text-[9px]">Indication(s) opératoire(s)</div>
+              <input type="text" value={formData.indications} onChange={(e) => handleInputChange('indications', e.target.value)} className="w-full border-b border-black bg-transparent mt-1 h-6 px-1" />
+              </div>
+            </div>
+            
+          {/* Observations */}
+          <div className="col-span-4 border-r-2 border-black p-2">
+            <div className="font-bold text-[9px] mb-2">Observations</div>
+            <textarea className="w-full border border-black bg-transparent text-[8px] p-1" rows={8}></textarea>
+            <div className="mt-2 text-[8px]">
+              <div className="mb-1">En salle à :</div>
+              <div className="grid grid-cols-2 gap-1">
+                <div>Ouverture de bouche <input type="text" className="border-b border-black bg-transparent w-8" /> cm</div>
+                <div>Etat dentaire <input type="text" className="border-b border-black bg-transparent w-16" /></div>
+              </div>
+              <div className="mt-1">Remarques <input type="text" className="border-b border-black bg-transparent w-32" /></div>
+            </div>
+          </div>
+
+          {/* Vital signs */}
+          <div className="col-span-4 p-2">
+            <div className="grid grid-cols-4 gap-1 text-[8px] mb-1">
+              <div>TA pré</div>
+              <div>Puls</div>
+              <div>Labo Nat</div>
+              <div>K+</div>
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <div>TA post</div>
+              <div>Puls</div>
+              <div>Hb</div>
+              <div>TP</div>
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <div>Dernière injection</div>
+              <div>Hb</div>
+              <div></div>
+              <div>PTT</div>
+              <input type="text" className="col-span-2 border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+              <input type="text" className="border-b border-black bg-transparent px-1" />
+                </div>
+                </div>
+                </div>
+              </div>
+              
+      {/* Main monitoring grid */}
+        <div className="border-2 border-t-0 border-black bg-green-100 relative" style={{height: '560px'}}>
+       
+              
+        {/* Time header grid removed (no vertical lines) */}
+                
+        {/* Time header */}
+        <div className="absolute top-0 left-0 right-0 h-10 bg-yellow-100 border-b-2 border-black flex text-xs font-bold z-30">
+          <div style={{width: '90px'}} className="border-r-2 border-black p-1">
+            <div className="text-[7px] font-bold">Spécial Oeso</div>
+            <div className="text-[8px] font-bold text-center mt-1">TA/Puls 200</div>
+            
+              </div>
+          {Array.from({length: 12}).map((_, i) => (
+            <div key={i} className="flex-1 text-center p-1">
+                <input
+                  type="text"
+                className="w-full text-center bg-transparent border-none font-bold text-xs focus:outline-none"
+                value={headerHours[i]}
+                onChange={(e) => {
+                  const next = [...headerHours];
+                  next[i] = e.target.value;
+                  setHeaderHours(next);
+                }}
+                />
+              </div>
+          ))}
+              </div>
+
+        {/* Editable labels above each minor grid column (6 per hour → 72) */}
+        <div className="absolute top-0 right-0 z-40" style={{ height: '10px', left: '92px' }}>
+          {Array.from({ length: 72 }).map((_, k) => (
+            <div key={`tick-input-${k}`} className="absolute" style={{ left: `${(k / 72) * 100}%`, width: `${100 / 72}%`, top: 0 }}>
+                <input
+                  type="text"
+                className="w-full bg-transparent border-none text-[9px] leading-3 text-center focus:outline-none"
+                value={gridColumnLabels[k]}
+                onChange={(e) => {
+                  const next = [...gridColumnLabels];
+                  next[k] = e.target.value;
+                  setGridColumnLabels(next);
+                }}
+                />
+              </div>
+          ))}
+            </div>
+
+        {/* Prolonger les lignes verticales fines jusque dans l'en-tête */}
+        <div className="absolute top-0 right-0 z-20 pointer-events-none" style={{height: '40px', left: '92px'}}>
+          {Array.from({ length: 72 }).map((_, k) => (
+            <div
+              key={`header-prolong-minor-v-${k}`}
+              className="absolute top-0 bottom-0 border-r border-gray-400"
+              style={{ left: `${(k / 72) * 100}%` }}
+            />
+          ))}
+            </div>
+
+        {/* Grid with Y-axis labels */}
+         <div className="absolute left-0 right-0 z-0" style={{top: '10px', bottom: '30px'}}>
+          {/* Y-axis labels - only filled rows */}
+          {[
+            {left: 'R O 38°', right: 'SaO2 PCO2 180'},
+             {left: 'R O 38°', right: ' SaO2 PCO2 180'},
+            {left: '36°', right: '160'},
+            {left: '34°', right: '140'},
+            {left: '32°', right: '120'},
+            {left: '30°', right: '100'},
+            {left: '28°', right: '80'},
+            {left: '26°', right: '60'},
+            {left: '24°', right: 'Diurese PVC 40'},
+            
+          ].map((item, i) => (
+            <div
+              key={i}
+              className={`absolute left-0 right-0 ${i === 0 ? '' : 'border-b border-gray-500'}`}
+              style={{ top: `${(i / 13) * 100}%`, height: `${100 / 13}%` }}
             >
-              Sauvegarder
-            </button>
-          )}
-        </div>
-      )}
-
-      <div className="w-full max-w-6xl mx-auto bg-yellow-100" style={{fontFamily: 'Courier New, monospace', fontSize: '10px'}}>
-        {/* Toolbar */}
-        <div className="mb-4 p-3 bg-white border-2 border-black rounded flex items-center gap-4 flex-wrap">
-          <div className="font-bold text-sm">Outils de traçage:</div>
-          <button 
-            onClick={() => setCurrentTool('tension')}
-            className={`px-4 py-2 rounded font-bold ${currentTool === 'tension' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            Tension (Bleu)
-          </button>
-          <button 
-            onClick={() => setCurrentTool('frequence')}
-            className={`px-4 py-2 rounded font-bold ${currentTool === 'frequence' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
-          >
-            Fréquence (Rouge)
-          </button>
-          <button 
-            onClick={() => setCurrentTool('temperature')}
-            className={`px-4 py-2 rounded font-bold ${currentTool === 'temperature' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
-          >
-            Température (Vert)
-          </button>
-          <button 
-            onClick={() => setCurrentTool('saturation')}
-            className={`px-4 py-2 rounded font-bold ${currentTool === 'saturation' ? 'bg-gray-800 text-white' : 'bg-gray-200'}`}
-          >
-            Saturation (Noir)
-          </button>
-          <button 
-            onClick={() => clearCurve(currentTool)}
-            className="px-4 py-2 rounded bg-orange-500 text-white font-bold ml-4"
-          >
-            Effacer courbe actuelle
-          </button>
-          <button 
-            onClick={clearAll}
-            className="px-4 py-2 rounded bg-red-700 text-white font-bold"
-          >
-            Tout effacer
-          </button>
-        </div>
-
-        {/* Header Section */}
-        <div className="border-2 border-black">
-          <div className="grid grid-cols-12 border-b-2 border-black">
-            {/* Left column - Patient info */}
-            <div className="col-span-3 border-r-2 border-black p-2">
-              <div className="text-[9px] mb-1">SERVICE D'ANESTHESIOLOGIE / CHUQ</div>
-              <input 
-                type="text" 
-                value={formData.patientName}
-                onChange={(e) => handleInputChange('patientName', e.target.value)}
-                className="w-full border-b border-black bg-transparent h-6 mb-2 text-sm font-bold"
-                placeholder="Nom du patient"
-              />
-              <div className="text-center text-[9px] pb-1">Diagnostic Préopérat</div>
-              <input 
-                type="text" 
-                value={formData.diagnosis}
-                onChange={(e) => handleInputChange('diagnosis', e.target.value)}
-                className="w-full border-b border-black bg-transparent h-8 mt-1 text-center font-bold"
-                placeholder="Diagnostic"
-              />
-            </div>
-            
-            {/* Middle columns - Medical staff and timing */}
-            <div className="col-span-5 border-r-2 border-black p-2">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px]">
-                <div>Chirurgien</div>
-                <input type="text" value={formData.surgeon} onChange={(e) => handleInputChange('surgeon', e.target.value)} className="border-b border-black bg-transparent" />
-                <div>Anesthésiste</div>
-                <input type="text" value={formData.anesthetist} onChange={(e) => handleInputChange('anesthetist', e.target.value)} className="border-b border-black bg-transparent" />
-                <div>Date début</div>
-                <input type="text" value={formData.dateDebut} onChange={(e) => handleInputChange('dateDebut', e.target.value)} className="border-b border-black bg-transparent" />
-                <div>Heure début</div>
-                <input type="text" value={formData.heureDebut} onChange={(e) => handleInputChange('heureDebut', e.target.value)} className="border-b border-black bg-transparent" />
-              </div>
-              <div className="mt-3 text-[9px]">
-                <div>Traitement en cours</div>
-                <input type="text" value={formData.traitement} onChange={(e) => handleInputChange('traitement', e.target.value)} className="w-full border-b border-black bg-transparent h-6 mt-1" />
-              </div>
-            </div>
-            
-            {/* Right columns - Patient details */}
-            <div className="col-span-4 p-2">
-              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px]">
-                <div>Préliminaire</div>
-                <input type="text" className="border-b border-black bg-transparent" />
-                <div>Date fin</div>
-                <input type="text" value={formData.dateFin} onChange={(e) => handleInputChange('dateFin', e.target.value)} className="border-b border-black bg-transparent" />
-                <div>Heure fin</div>
-                <input type="text" value={formData.heureFin} onChange={(e) => handleInputChange('heureFin', e.target.value)} className="border-b border-black bg-transparent" />
-                <div>Age</div>
-                <input type="text" value={formData.age} onChange={(e) => handleInputChange('age', e.target.value)} className="border-b border-black bg-transparent" />
-              </div>
-              <div className="mt-3">
-                <div className="text-[9px]">Prémédication</div>
-                <input type="text" value={formData.premedication} onChange={(e) => handleInputChange('premedication', e.target.value)} className="w-full border-b border-black bg-transparent h-6" />
-              </div>
-            </div>
-          </div>
-
-          {/* État pathologique section */}
-          <div className="grid grid-cols-12 border-b-2 border-black">
-            <div className="col-span-4 border-r-2 border-black p-2">
-              <div className="font-bold text-[9px] mb-2">État pathologique</div>
-              <div className="grid grid-cols-2 gap-x-3 text-[8px]">
-                <div className="space-y-0.5">
-                  <div><input type="checkbox" /> A ASA</div>
-                  <div><input type="checkbox" /> B HBS</div>
-                  <div><input type="checkbox" /> C Allergie</div>
-                  <div><input type="checkbox" /> D Angor</div>
-                  <div><input type="checkbox" /> E IDM récent</div>
-                  <div><input type="checkbox" /> F Arythmie</div>
-                  <div><input type="checkbox" /> G BPCO</div>
-                  <div><input type="checkbox" /> H Asthme sévère</div>
-                  <div><input type="checkbox" /> I Cachexie</div>
-                  <div><input type="checkbox" /> J Diabète</div>
-                  <div><input type="checkbox" /> K Obésité sévère</div>
-                  <div><input type="checkbox" /> L Tare de choc</div>
-                  <div><input type="checkbox" /> M ATCD chirurgicaux</div>
+              <div className="absolute left-0 bg-green-100 border-r-2 border-black text-[7px] z-10 grid grid-cols-2 h-full" style={{width: '90px'}}>
+                <div className="border-r border-black px-1 flex items-center font-bold">{item.left}</div>
+                <div className="px-1 flex items-center">{item.right}</div>
+                  </div>
+              {/* Lignes fines (mineures) uniquement dans les sections hautes */}
+              {i >= 1 && i <= 9 && (
+                <div className="absolute left-[92px] right-0 top-0 bottom-0">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div
+                      key={`minor-h-${i}-${j}`}
+                      className="absolute left-0 right-0 border-b border-gray-400"
+                      style={{ top: `${((j + 1) / 5) * 100}%` }}
+                    />
+                  ))}
                 </div>
-                <div className="space-y-0.5">
-                  <div><input type="checkbox" /> N Intubation</div>
-                  <div><input type="checkbox" /> O Infection</div>
-                  <div><input type="checkbox" /> P Infectious</div>
-                  <div><input type="checkbox" /> Q Dénutrition sévère</div>
-                  <div><input type="checkbox" /> R Insuff. rénale</div>
-                  <div><input type="checkbox" /> S Obésité</div>
-                  <div className="mt-2"><input type="checkbox" /> T Asthme</div>
-                  <div><input type="checkbox" /> U Emphysème</div>
-                  <div><input type="checkbox" /> V Troubles nerveu</div>
-                  <div><input type="checkbox" /> W PTT Anesthésie</div>
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="font-bold text-[9px]">Indication(s) opératoire(s)</div>
-                <input type="text" value={formData.indications} onChange={(e) => handleInputChange('indications', e.target.value)} className="w-full border-b border-black bg-transparent mt-1 h-6" />
-              </div>
-            </div>
-            
-            {/* Observations */}
-            <div className="col-span-4 border-r-2 border-black p-2">
-              <div className="font-bold text-[9px] mb-2">Observations</div>
-              <div className="text-[8px]">
-                <div className="mb-3">En salle à : <input type="text" className="border-b border-black bg-transparent w-20" /></div>
-                <div className="grid grid-cols-2 gap-1 mb-2">
-                  <div>Ouverture de bouche <input type="text" className="border-b border-black bg-transparent w-8" /> cm</div>
-                  <div>Etat dentaire <input type="text" className="border-b border-black bg-transparent w-16" /></div>
-                </div>
-                <div>Mallampati <input type="text" className="border-b border-black bg-transparent w-16" /></div>
-              </div>
-            </div>
-            
-            {/* Vital signs */}
-            <div className="col-span-4 p-2">
-              <div className="grid grid-cols-4 gap-1 text-[8px] mb-2">
-                <div>TA pré</div>
-                <div>Pouls</div>
-                <div>[Label] Stat</div>
-                <div>Ke</div>
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <div>TA post</div>
-                <div>Pouls</div>
-                <div>Hb</div>
-                <div>TP</div>
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <div>Groupe sanguin</div>
-                <div>Hb</div>
-                <div>Hb</div>
-                <div>PTT</div>
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-                <input type="text" className="border-b border-black bg-transparent" />
-              </div>
-            </div>
-          </div>
-        </div>
+              )}
+                  </div>
+          ))}
 
-        {/* Main monitoring grid */}
-        <div className="border-2 border-t-0 border-black bg-green-100 relative" style={{height: '700px'}}>
-          {/* Top left corner labels */}
-          <div className="absolute top-0 left-0 border-r-2 border-b-2 border-black bg-yellow-100 text-[8px] p-1 z-10" style={{width: '100px', height: '80px'}}>
-            <div className="font-bold">Spécial: Dose TA Pouls 200</div>
-            <div className="mt-1 grid grid-cols-2">
-              <div className="border-r border-black text-center">R</div>
-              <div className="text-center">O</div>
-            </div>
-            <div className="mt-2 grid grid-cols-3 text-center border-t border-black pt-1">
-              <div className="border-r border-black">38°</div>
-              <div className="border-r border-black">SaO2</div>
-              <div>180</div>
-            </div>
-            <div className="grid grid-cols-3 text-center border-t border-black">
-              <div className="border-r border-black"></div>
-              <div className="border-r border-black">PCO2</div>
-              <div>180</div>
-            </div>
-          </div>
+          {/* Lignes horizontales: majeures alignées aux libellés + mineures régulières */}
+          <div className="absolute left-[92px] right-0 top-0 bottom-0">
+            {/* Lignes majeures (14, y compris haut et bas) */}
+            {Array.from({ length: 14 }).map((_, i) => {
+              // Conserver jusqu'au 9e palier inclus et la toute dernière (i === 13)
+              if (!(i <= 9 || i === 13)) return null;
+              const topPercent = i === 1 ? (0.6 / 13) * 100 : (i / 13) * 100;
+              return (
+                <div
+                  key={`major-h-${i}`}
+                  className="absolute left-0 right-0 border-b-2 border-black"
+                  style={{ top: `${topPercent}%` }}
+                />
+              );
+            })}
 
-          {/* Time header */}
-          <div className="absolute top-0 left-0 right-0 h-20 bg-yellow-100 border-b-2 border-black flex text-xs font-bold z-10">
-            <div style={{width: '100px'}} className="border-r-2 border-black"></div>
-            <div className="flex-1 border-r-2 border-black text-center pt-1">8H</div>
-            <div className="flex-1 border-r-2 border-black text-center pt-1">9H</div>
-            <div className="flex-1 border-r-2 border-black text-center pt-1">10H</div>
-            <div className="flex-1 border-r-2 border-black text-center pt-1">11H</div>
-            <div className="flex-1 border-r-2 border-black text-center pt-1">12H</div>
-            <div className="flex-1 text-center pt-1">13H</div>
-          </div>
-
-          {/* Grid with Y-axis labels */}
-          <div className="absolute left-0 right-0 z-0" style={{top: '80px', bottom: '60px'}}>
-            {/* Y-axis labels and horizontal lines */}
-            {[
-              {label: '36°', right: 'TA 140'},
-              {label: '34°', right: '120 140'},
-              {label: 'Deb op 22', right: '100 130'},
-              {label: '30°', right: '80 100'},
-              {label: '28°', right: '60 80'},
-              {label: '26°', right: '40 60'},
-              {label: '', right: 'Diurèse'},
-              {label: '24°', right: 'PVC 20 40'},
-              {label: 'PEP', right: '0 20'},
-              {label: '22°', right: ''},
-              {label: 'FIO2/ABG/SAT/HDS', right: '0'},
-              {label: 'PEEP/HYPNOT/MORP', right: ''},
-              {label: 'PAV/NOM/TRA/MIV', right: ''},
-              {label: 'LEPTA/BARI/GTN', right: ''}
-            ].map((item, i) => (
-              <div key={i} className="absolute left-0 right-0 border-b border-gray-500" style={{top: `${(i / 14) * 100}%`}}>
-                <div className="absolute left-0 bg-green-100 border-r-2 border-black text-[8px] px-1 flex justify-between z-10" style={{width: '100px'}}>
-                  <span>{item.label}</span>
-                  <span>{item.right}</span>
-                </div>
-              </div>
-            ))}
-
-            {/* Vertical grid lines */}
-            <div className="absolute top-0 bottom-0" style={{left: '100px', right: 0}}>
-              {/* Major hour lines */}
-              {Array.from({length: 6}).map((_, i) => (
-                <div key={`major${i}`} className="absolute top-0 bottom-0 border-r-2 border-black" style={{left: `${(i / 6) * 100}%`}}></div>
+            {/* Lignes verticales dans la zone haute (mineures + majeures par heure) */}
+            <div className="absolute top-0" style={{ left: '92px', right: 0, bottom: `${(4 / 13) * 100}%` }}>
+              {Array.from({ length: 72 }).map((_, k) => (
+                <div
+                  key={`top-only-minor-v-${k}`}
+                  className="absolute top-0 bottom-0 border-r border-gray-400"
+                  style={{ left: `${(k / 72) * 100}%` }}
+                />
               ))}
-              {/* Minor 10-minute lines */}
-              {Array.from({length: 36}).map((_, i) => (
-                <div key={`minor${i}`} className="absolute top-0 bottom-0 border-r border-gray-400" style={{left: `${(i / 36) * 100}%`}}></div>
+                </div>
+
+            {/* Grille carrée dans la grande zone inférieure */}
+            <div
+              className="absolute left-0 right-0"
+              style={{ top: `${(9 / 13) * 100}%`, bottom: 0 }}
+            >
+              {/* largeur de la colonne de gauche (en px) */}
+              {/* Séparateur entre la colonne gauche (sans grille) et la colonne droite (avec grille) */}
+              <div className="absolute top-0 bottom-0 border-r-2 border-black" style={{ left: '90px', width: 0 }} />
+
+              {/* lignes horizontales fines (maillage plus dense) - colonne gauche */}
+              {Array.from({ length: 24 }).map((_, j) => (
+                <div
+                  key={`bottom-left-minor-h-${j}`}
+                  className="absolute border-b border-gray-400"
+                  style={{ left: 0, width: '90px', top: `${((j + 1) / 25) * 100}%` }}
+                />
               ))}
+              {/* lignes horizontales fines (maillage plus dense) - colonne droite */}
+              {Array.from({ length: 24 }).map((_, j) => (
+                <div
+                  key={`bottom-right-minor-h-${j}`}
+                  className="absolute right-0 border-b border-gray-400"
+                  style={{ left: '92px', top: `${((j + 1) / 25) * 100}%` }}
+                />
+              ))}
+
+              {/* conteneur pour les lignes verticales à droite de la colonne gauche */}
+              {/* Quadrillage uniquement dans la colonne droite */}
+              <div className="absolute top-0 bottom-0" style={{ left: '92px', right: 0 }}>
+                {/* lignes verticales fines (6 par heure → 72 lignes) */}
+                {Array.from({ length: 73 }).map((_, k) => (
+                  <div
+                    key={`bottom-minor-v-${k}`}
+                    className="absolute top-0 bottom-0 border-r border-gray-400"
+                    style={{ left: `${(k / 72) * 100}%` }}
+                  />
+                ))}
+
+                {/* lignes verticales majeures à chaque heure (retirées) */}
+                {/* bordure ferme la toute extrémité droite */}
+                <div className="absolute top-0 bottom-0 right-0 border-r-2 border-black" />
+                  </div>
+                </div>
+
+          {/* Suppression des grilles mineures à droite */}
+                  </div>
+                </div>
+
+        {/* Canvas for drawing */}
+                  <canvas
+          ref={canvasRef}
+          className="absolute cursor-crosshair"
+          style={{top: '70px', left: '90px', right: 0, bottom: '80px', width: 'calc(100% - 90px)', height: 'calc(100% - 150px)'}}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+        />
+
+        {/* Bottom section with medication circles */}
+        <div className="absolute bottom-0 left-0 right-0 bg-yellow-100 border-t-2 border-black p-2 text-[8px] z-10" style={{height: '80px'}}>
+          <div className="grid grid-cols-12">
+            <div className="col-span-1 flex items-center">
+              <div className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center font-bold">SD</div>
+                  </div>
+            <div className="col-span-11">
+              <input type="text" className="w-full border-b border-black bg-transparent h-5" />
+                </div>
+              </div>
+          <div className="grid grid-cols-12 mt-1">
+            <div className="col-span-1 flex items-center gap-1">
+              <div className="w-5 h-5 rounded-full border-2 border-black flex items-center justify-center text-[7px] font-bold">F</div>
+              <div className="w-5 h-5 rounded-full border-2 border-black flex items-center justify-center text-[7px] font-bold">H</div>
+                      </div>
+            <div className="col-span-11">
+              <input type="text" className="w-full border-b border-black bg-transparent h-5" />
+                    </div>
+                </div>
+          <div className="mt-1">
+            <div className="font-bold">RINGER-LACTATE</div>
+            <input type="text" className="w-full border-b border-black bg-transparent h-5" />
+              </div>
+                </div>
+              </div>
+
+      {/* Bottom section */}
+      <div className="border-2 border-t-0 border-black p-2">
+        <div className="grid grid-cols-12 gap-2 text-[9px]">
+          {/* Left column */}
+          <div className="col-span-4">
+            <div className="font-bold">TECHNIQUE D ANESTHÉSIE</div>
+            <div className="mt-1 text-[8px]">
+              <div>Type Anesth <input type="text" className="border-b border-black bg-transparent w-32 px-1" /></div>
+              <div className="mt-1">Echec de <input type="text" className="border-b border-black bg-transparent w-16" /> SG / SV</div>
+              <div className="mt-1">Intub I NT/Tube/Timsh No <input type="text" className="border-b border-black bg-transparent w-12" /></div>
+              <div className="mt-1">Vent Spont / Cont / Ass / Jet <input type="text" className="border-b border-black bg-transparent w-16" /></div>
+              <div className="mt-1">Vt <input type="text" className="w-16 border-b border-black bg-transparent" /> P insp <input type="text" className="w-12 border-b border-black bg-transparent" /></div>
+              <div className="mt-1">Fréq <input type="text" className="w-16 border-b border-black bg-transparent" /> Peep <input type="text" className="w-12 border-b border-black bg-transparent" /></div>
+              <div className="mt-1">Ventilpn(o) <input type="text" className="border-b border-black bg-transparent w-20" /></div>
+              <div className="mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center font-bold">N</div>
+                  <div>TAR <input type="text" className="border-b border-black bg-transparent w-32" /></div>
+                      </div>
+                    </div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center font-bold">O</div>
+                <div>DLG / DLD / DV / Gyné / Trenol</div>
+              </div>
             </div>
           </div>
 
-          {/* Canvas for drawing */}
-          <canvas
-            ref={canvasRef}
-            className="absolute cursor-crosshair"
-            style={{top: '80px', left: '100px', right: 0, bottom: '60px', width: 'calc(100% - 100px)', height: 'calc(100% - 140px)'}}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          />
-
-          {/* Bottom section */}
-          <div className="absolute bottom-0 left-0 right-0 bg-yellow-100 border-t-2 border-black p-2 text-[8px] z-10" style={{height: '60px'}}>
-            <input type="text" className="w-full border-b border-black bg-transparent h-4" />
-            <input type="text" className="w-full border-b border-black bg-transparent h-4 mt-1" />
-            <input type="text" className="w-full border-b border-black bg-transparent h-4 mt-1" />
+          {/* Middle column */}
+          <div className="col-span-4">
+            <div className="font-bold mb-1">Problèmes per-anesthésiques</div>
+            <div className="text-[8px] space-y-0.5">
+              <div>A <input type="checkbox" /> Aucun</div>
+              <div>B <input type="checkbox" /> Arythmie myocarel</div>
+              <div>C <input type="checkbox" /> Allergie</div>
+              <div>D <input type="checkbox" /> Arythmie</div>
+              <div>E <input type="checkbox" /> Dysfonction matériel</div>
+              <div>F <input type="checkbox" /> Technique inadif</div>
+              <div>G <input type="checkbox" /> Erreur drogue</div>
+              <div>H <input type="checkbox" /> Difficulté technique</div>
+              <div>I <input type="checkbox" /> Hémorrhagies 30%</div>
+              <div>J <input type="checkbox" /> Hypotension 30%</div>
+              <div>K <input type="checkbox" /> Bronchospasme</div>
+              <div>L <input type="checkbox" /> Indisponibilité anesth</div>
+              <div>M <input type="checkbox" /> Insufflation</div>
+            </div>
           </div>
-        </div>
 
-        {/* Bottom section */}
-        <div className="border-2 border-t-0 border-black p-2">
-          <div className="grid grid-cols-12 gap-2 text-[9px]">
-            {/* Left column */}
-            <div className="col-span-4">
-              <div><span className="font-bold">RINGER-LACTATE</span></div>
-              <div className="mt-1"><span className="font-bold">ATÉEP-PROSP-ELISA</span></div>
-              <div className="mt-2 font-bold">TECHNIQUE D'ANESTHÉSIE</div>
-              <div className="mt-1">Type anesthésie/Nom: <input type="text" className="border-b border-black bg-transparent w-32" /></div>
-              <div>ALR Bloc/Type: <input type="text" className="border-b border-black bg-transparent w-32" /></div>
-              <div>Mode (I) NT/Tube/Timsh bi: <input type="text" className="border-b border-black bg-transparent w-20" /></div>
-              <div>Taille masque/Lary/Mask N° <input type="text" className="border-b border-black bg-transparent w-16" /></div>
-              <div className="mt-1">Prég: <input type="text" className="border-b border-black bg-transparent w-24" /></div>
-              <div className="mt-1">Ventilation</div>
-              <input type="text" className="border-b border-black bg-transparent w-full h-4" />
-              <div className="mt-2">TAR:</div>
-              <input type="text" className="border-b border-black bg-transparent w-full h-4" />
-            </div>
-
-            {/* Middle column */}
-            <div className="col-span-4">
-              <div className="font-bold mb-1">Problèmes per-anesthésiques</div>
-              <div className="text-[8px] space-y-0.5">
-                <div><input type="checkbox" /> A Choc hémorragique</div>
-                <div><input type="checkbox" /> B Arythmie épid/sept</div>
-                <div><input type="checkbox" /> C Allergie</div>
-                <div><input type="checkbox" /> D Convulsion</div>
-                <div><input type="checkbox" /> E Dysfonction matériel</div>
-                <div><input type="checkbox" /> F Technique inadé</div>
-                <div><input type="checkbox" /> G Douleur</div>
-                <div><input type="checkbox" /> H Difficulté technique</div>
-                <div><input type="checkbox" /> I Hypothermie{'>'}30%</div>
-                <div><input type="checkbox" /> J Hypotension{'>'}30%</div>
-                <div><input type="checkbox" /> K Bronchospasme</div>
-                <div><input type="checkbox" /> L Ventilabilité assist</div>
-                <div><input type="checkbox" /> M IDT-DEI difficile</div>
-                <div><input type="checkbox" /> N Ventilation</div>
+          {/* Right column */}
+          <div className="col-span-4">
+            <div className="font-bold mb-1">Observations<span className="ml-20">Coeff sévérité</span></div>
+            <div className="text-[8px] space-y-0.5">
+              <div>N <input type="checkbox" /> Hypotension 30%</div>
+              <div>O <input type="checkbox" /> Hypothermie 33.5C</div>
+              <div>P <input type="checkbox" /> Hypoxémie</div>
+              <div>Q <input type="checkbox" /> Intubation difficile</div>
+              <div>R <input type="checkbox" /> Laryngospasme</div>
+              <div>S <input type="checkbox" /> Lésion dentaire</div>
+              <div>T <input type="checkbox" /> Instabilité hémodyh</div>
+              <div>U <input type="checkbox" /> Prémédication</div>
+              <div>V <input type="checkbox" /> Ventus bronchiques</div>
+              <div>W <input type="checkbox" /> Agitation réveil</div>
+              <div>X <input type="checkbox" /> Réveil prolongé</div>
+              <div>Y <input type="checkbox" /> Indisponibilité opérat</div>
+              <div>Z <input type="checkbox" /> Autre</div>
               </div>
-            </div>
-
-            {/* Right column */}
-            <div className="col-span-4">
-              <div className="font-bold mb-1">Observations / Coeff. sévérité</div>
-              <div className="text-[8px] space-y-0.5">
-                <div><input type="checkbox" /> Hypotension{'>'}30%</div>
-                <div><input type="checkbox" /> IDT difficile/ 3 essais</div>
-                <div><input type="checkbox" /> Hypoxémie</div>
-                <div><input type="checkbox" /> Bronchospasme</div>
-                <div><input type="checkbox" /> Laryngospasme</div>
-                <div><input type="checkbox" /> Lésion dentaire</div>
-                <div><input type="checkbox" /> ACR</div>
-                <div><input type="checkbox" /> Prémédication</div>
-                <div><input type="checkbox" /> Ventus bronchiques</div>
-              </div>
+            <div className="mt-2">
+              <div className="font-bold">Classe risque <input type="text" className="w-8 border border-black bg-transparent" /></div>
+              <div className="mt-1">Pertes sanguines</div>
               <div className="mt-2 font-bold">Opération</div>
-              <textarea className="w-full border border-black bg-transparent mt-1 text-[8px] p-1" rows={4}></textarea>
-              <div className="mt-2">Pertes sanguines</div>
-              <input type="text" className="w-full border-b border-black bg-transparent h-4 mt-1" />
-            </div>
-          </div>
-        </div>
+              <textarea className="w-full border border-black bg-transparent mt-1 text-[8px] p-1" rows={3}></textarea>
+              </div>
+              </div>
+              </div>
       </div>
     </div>
   );
